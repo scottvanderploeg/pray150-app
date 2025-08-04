@@ -7,7 +7,8 @@ from supabase import create_client
 def get_supabase_client():
     """Get Supabase client instance"""
     supabase_url = os.environ.get('SUPABASE_URL')
-    supabase_key = os.environ.get('SUPABASE_KEY')
+    # Use service role key for bypassing RLS when needed
+    supabase_key = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY')
     return create_client(supabase_url, supabase_key)
 
 def initialize_database():

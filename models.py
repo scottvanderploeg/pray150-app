@@ -190,34 +190,49 @@ class JournalEntry:
     def get_count_by_user(user_id):
         """Get total count of journal entries for a user"""
         try:
+            from database import get_supabase_client
             supabase = get_supabase_client()
+            print(f"DEBUG: Getting count for user_id {user_id}")
+            
             # Use a simple query to get all entries and count them
             result = supabase.table('journal_entries').select('id')\
                 .eq('user_id', str(user_id)).execute()
             
+            print(f"DEBUG: Count query result data: {result.data}")
             count = len(result.data) if result.data else 0
             print(f"DEBUG: Count query for user {user_id} found {count} entries")
             return count
         except Exception as e:
             print(f"Error getting journal entry count: {e}")
+            import traceback
+            traceback.print_exc()
             return 0
 
     @staticmethod
     def get_all_by_user(user_id):
         """Get all journal entries for a user - grouped by psalm and date"""
         try:
+            from database import get_supabase_client
             supabase = get_supabase_client()
+            print(f"DEBUG: Getting all entries for user_id {user_id}")
+            
             # Get journal entries without join first
             result = supabase.table('journal_entries').select('*')\
                 .eq('user_id', str(user_id)).order('created_at', desc=True).execute()
             
-            print(f"DEBUG: Found {len(result.data)} raw journal entries for user {user_id}")
+            print(f"DEBUG: Query result: {result}")
+            print(f"DEBUG: Found {len(result.data) if result.data else 0} raw journal entries for user {user_id}")
+            
+            if not result.data:
+                print("DEBUG: No data returned from query")
+                return []
             
             # Take most recent entries (since we now save consolidated entries)
             # The most recent entries should already have all prompt responses combined
             
             entries = []
             for entry_data in result.data:
+                print(f"DEBUG: Processing entry data: {entry_data}")
                 entry = JournalEntry(
                     id=entry_data['id'],
                     user_id=entry_data['user_id'],
@@ -244,6 +259,8 @@ class JournalEntry:
             return entries
         except Exception as e:
             print(f"Error getting all journal entries: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def save(self):
