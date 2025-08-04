@@ -124,10 +124,15 @@ def forgot_password():
         
         # Use Supabase Auth to send password reset email
         supabase = get_supabase_client()
+        
+        # Use the request's host URL, ensuring it works with Replit's domain
+        base_url = request.host_url.rstrip('/')
+        redirect_url = f"{base_url}/reset-password"
+        
         auth_response = supabase.auth.reset_password_for_email(
             email,
             options={
-                "redirect_to": f"{request.host_url}reset-password"
+                "redirect_to": redirect_url
             }
         )
         
