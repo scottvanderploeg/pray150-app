@@ -45,57 +45,45 @@
         <!-- Main Psalm Content -->
         <div class="col-lg-8">
             <!-- Music Player -->
-            {% if psalm.youtube_url %}
-            <div class="card border-0 shadow-sm mb-4">
+            <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #BFDBFE 0%, #FFFDD0 100%);">
                 <div class="card-body">
-                    <h5 class="fw-bold mb-3">
-                        <i class="fas fa-music text-primary me-2"></i>
+                    <h5 class="fw-bold mb-3" style="color: #1e40af;">
+                        <i class="fas fa-music me-2"></i>
                         Worship Along
                     </h5>
-                    <div class="ratio ratio-16x9">
-                        <iframe src="{{ psalm.youtube_url }}" 
-                                title="Psalm {{ psalm.number }} Music" 
-                                allowfullscreen></iframe>
+                    <div id="youtube-container" class="ratio ratio-16x9" style="max-width: 800px; margin: 0 auto;">
+                        <div class="d-flex justify-content-center align-items-center bg-light rounded" style="height: 100%;">
+                            <div class="text-muted">Loading worship music...</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
 
             <!-- Psalm Text -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent border-0 pt-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mb-0">
-                            <i class="fas fa-book-open text-primary me-2"></i>
+                        <h5 class="fw-bold mb-0" style="color: #1e40af;">
+                            <i class="fas fa-book-open me-2"></i>
                             Scripture Text
                         </h5>
                         <div class="psalm-controls">
                             <select class="form-select form-select-sm" id="translationSelect">
-                                <option value="niv" {% if current_user.preferred_translation == 'NIV' %}selected{% endif %}>NIV</option>
-                                <option value="esv" {% if current_user.preferred_translation == 'ESV' %}selected{% endif %}>ESV</option>
-                                <option value="nlt" {% if current_user.preferred_translation == 'NLT' %}selected{% endif %}>NLT</option>
-                                <option value="nkjv" {% if current_user.preferred_translation == 'NKJV' %}selected{% endif %}>NKJV</option>
-                                <option value="nrsv" {% if current_user.preferred_translation == 'NRSV' %}selected{% endif %}>NRSV</option>
+                                <option value="niv">NIV</option>
+                                <option value="esv">ESV</option>
+                                <option value="nlt">NLT</option>
+                                <option value="nkjv">NKJV</option>
+                                <option value="nrsv">NRSV</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="psalm-text" id="psalmText" data-psalm-id="{{ psalm.id }}">
-                        <div id="text-niv" style="{% if current_user.preferred_translation != 'NIV' %}display: none;{% endif %}">
-                            {{ psalm.text_niv|replace('\n', '<br>')|safe }}
-                        </div>
-                        <div id="text-esv" style="{% if current_user.preferred_translation != 'ESV' %}display: none;{% endif %}">
-                            {{ psalm.text_esv|replace('\n', '<br>')|safe }}
-                        </div>
-                        <div id="text-nlt" style="{% if current_user.preferred_translation != 'NLT' %}display: none;{% endif %}">
-                            {{ psalm.text_nlt|replace('\n', '<br>')|safe }}
-                        </div>
-                        <div id="text-nkjv" style="{% if current_user.preferred_translation != 'NKJV' %}display: none;{% endif %}">
-                            {{ psalm.text_nkjv|replace('\n', '<br>')|safe }}
-                        </div>
-                        <div id="text-nrsv" style="{% if current_user.preferred_translation != 'NRSV' %}display: none;{% endif %}">
-                            {{ psalm.text_nrsv|replace('\n', '<br>')|safe }}
+                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm.number }}" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                        <div class="d-flex justify-content-center align-items-center" style="height: 100px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading psalm text...</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -221,4 +209,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/psalm.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

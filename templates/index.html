@@ -1,106 +1,79 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
-    <!-- Header -->
-    <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-4">
-            Learn to Pray Through the <span class="text-blue-600">Psalms</span>
-        </h1>
-        <p class="text-lg text-gray-600 mb-6">
-            Immerse yourself in Scripture-fed, Spirit-led, worship-based prayer
-        </p>
-    </div>
-
-    <!-- Psalm 1 Display -->
-    <div class="bg-gradient-to-br from-blue-100 to-cream-100 rounded-lg shadow-lg p-8 mb-8">
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-semibold text-blue-800 mb-2" id="psalm-title">Loading Psalm 1...</h2>
-            <div class="w-16 h-1 bg-blue-300 mx-auto rounded"></div>
-        </div>
-
-        <!-- Psalm Text -->
-        <div class="bg-white rounded-lg p-6 mb-6 shadow-sm">
-            <div id="psalm-text" class="text-gray-800 leading-relaxed" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8;">
-                <div class="flex justify-center items-center h-20">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-100">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Learn to Pray Through the <span class="text-primary">Psalms</span>
+                    </h1>
+                    <p class="lead mb-4">
+                        Immerse yourself in Scripture-fed, Spirit-led, worship-based prayer. 
+                        Let the Psalms teach you to listen to God and respond in prayer.
+                    </p>
+                    <div class="hero-features mb-4">
+                        <div class="feature-item d-flex align-items-center mb-2">
+                            <i class="fas fa-book-open text-primary me-3"></i>
+                            <span>Daily Psalm reading with multiple translations</span>
+                        </div>
+                        <div class="feature-item d-flex align-items-center mb-2">
+                            <i class="fas fa-music text-primary me-3"></i>
+                            <span>Worship music to accompany each Psalm</span>
+                        </div>
+                        <div class="feature-item d-flex align-items-center mb-2">
+                            <i class="fas fa-journal-whills text-primary me-3"></i>
+                            <span>Guided journaling with devotional prompts</span>
+                        </div>
+                        <div class="feature-item d-flex align-items-center mb-2">
+                            <i class="fas fa-chart-line text-primary me-3"></i>
+                            <span>Track your prayer journey and growth</span>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        {% if current_user.is_authenticated %}
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">
+                                <i class="fas fa-user-plus me-2"></i>Start Praying Today
+                            </a>
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image text-center">
+                    <div class="psalm-preview-card">
+                        <div class="card shadow-lg border-0">
+                            <div class="card-body p-4">
+                                <h5 class="card-title text-primary mb-3">Psalm 23</h5>
+                                <p class="card-text fst-italic">
+                                    "The Lord is my shepherd, I lack nothing. 
+                                    He makes me lie down in green pastures, 
+                                    he leads me beside quiet waters..."
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-music me-1"></i>With worship music
+                                    </small>
+                                    <small class="text-muted">
+                                        <i class="fas fa-edit me-1"></i>4 journal prompts
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- YouTube Music Player -->
-        <div class="bg-cream-50 rounded-lg p-6">
-            <h3 class="text-lg font-medium text-gray-800 mb-4 text-center">
-                <i class="fas fa-music text-blue-600 mr-2"></i>Worship Along
-            </h3>
-            <div id="youtube-container" class="aspect-video w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-md">
-                <div class="flex justify-center items-center h-full bg-gray-100">
-                    <div class="text-gray-500">Loading worship music...</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-blue-600 text-2xl mb-3">
-                <i class="fas fa-book-open"></i>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Multiple Translations</h3>
-            <p class="text-gray-600 text-sm">Read in NIV, ESV, NLT, NKJV, and NRSV</p>
-        </div>
-        
-        <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-blue-600 text-2xl mb-3">
-                <i class="fas fa-music"></i>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Worship Music</h3>
-            <p class="text-gray-600 text-sm">Curated songs for each Psalm</p>
-        </div>
-        
-        <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-            <div class="text-blue-600 text-2xl mb-3">
-                <i class="fas fa-journal-whills"></i>
-            </div>
-            <h3 class="font-semibold text-gray-800 mb-2">Guided Journaling</h3>
-            <p class="text-gray-600 text-sm">Thoughtful prompts for reflection</p>
-        </div>
-    </div>
-
-    <!-- Call to Action -->
-    <div class="text-center">
-        {% if current_user.is_authenticated %}
-            <a href="{{ url_for('main.dashboard') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors inline-flex items-center">
-                <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
-            </a>
-        {% else %}
-            <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-                <a href="{{ url_for('auth.register') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors inline-flex items-center">
-                    <i class="fas fa-user-plus mr-2"></i>Start Praying Today
-                </a>
-                <a href="{{ url_for('auth.login') }}" class="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-3 px-8 rounded-lg transition-colors inline-flex items-center">
-                    <i class="fas fa-sign-in-alt mr-2"></i>Sign In
-                </a>
-            </div>
-        {% endif %}
     </div>
 </div>
-
-<!-- Scripture Quote Section -->
-<div class="max-w-4xl mx-auto px-4 py-8 text-center">
-    <blockquote class="text-lg italic text-gray-600 mb-4">
-        "Let the word of Christ dwell in you richly, teaching and admonishing 
-        one another in all wisdom, singing psalms and hymns and spiritual songs, 
-        with thankfulness in your hearts to God."
-    </blockquote>
-    <cite class="text-sm text-gray-500">Colossians 3:16 ESV</cite>
-</div>
-
-{% endblock %}
-
-{% block scripts %}
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
 <!-- Features Section -->
 <section class="py-5 bg-light">

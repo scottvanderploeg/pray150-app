@@ -1,55 +1,103 @@
-// Pray150 Psalm Display Script
+// Pray150 Psalm Reading Interface Script
 document.addEventListener('DOMContentLoaded', function() {
-    loadPsalm1();
+    // Check if we're on a psalm page
+    const psalmText = document.getElementById('psalmText');
+    if (psalmText) {
+        const psalmNumber = psalmText.dataset.psalmNumber;
+        if (psalmNumber) {
+            loadPsalmData(psalmNumber);
+        }
+    }
+    
+    // Handle translation selection
+    const translationSelect = document.getElementById('translationSelect');
+    if (translationSelect) {
+        translationSelect.addEventListener('change', function() {
+            updateDisplayedTranslation(this.value);
+        });
+    }
 });
 
-async function loadPsalm1() {
-    const psalmTitle = document.getElementById('psalm-title');
-    const psalmText = document.getElementById('psalm-text');
+async function loadPsalmData(psalmNumber) {
+    const psalmText = document.getElementById('psalmText');
     const youtubeContainer = document.getElementById('youtube-container');
     
     try {
-        // Fetch Psalm 1 data from API
-        const response = await fetch('/api/psalms/1');
+        // Fetch psalm data from API
+        const response = await fetch(`/api/psalms/${psalmNumber}`);
         const result = await response.json();
         
         if (result.success && result.data) {
             const psalm = result.data;
             
-            // Update title
-            psalmTitle.textContent = `Psalm ${psalm.psalm_number}`;
-            
-            // Update text with NIV translation
-            if (psalm.text_niv) {
-                psalmText.innerHTML = formatPsalmText(psalm.text_niv);
-            } else {
-                psalmText.innerHTML = '<p class="text-gray-500 italic">Psalm text not available</p>';
-            }
+            // Update psalm text with all translations
+            updatePsalmText(psalm);
             
             // Load YouTube video if music_url exists
             if (psalm.music_url) {
                 loadYouTubeVideo(psalm.music_url, youtubeContainer);
             } else {
-                youtubeContainer.innerHTML = '<div class="flex justify-center items-center h-full bg-gray-100 text-gray-500">No worship music available</div>';
+                youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">No worship music available</div></div>';
             }
             
         } else {
             // Handle error
-            psalmTitle.textContent = 'Psalm 1';
-            psalmText.innerHTML = '<p class="text-red-500">Error loading psalm content</p>';
-            youtubeContainer.innerHTML = '<div class="flex justify-center items-center h-full bg-gray-100 text-gray-500">Unable to load music</div>';
+            psalmText.innerHTML = '<p class="text-danger">Error loading psalm content</p>';
+            youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">Unable to load music</div></div>';
         }
         
     } catch (error) {
         console.error('Error fetching psalm:', error);
-        psalmTitle.textContent = 'Psalm 1';
-        psalmText.innerHTML = '<p class="text-red-500">Network error loading psalm</p>';
-        youtubeContainer.innerHTML = '<div class="flex justify-center items-center h-full bg-gray-100 text-gray-500">Unable to load music</div>';
+        psalmText.innerHTML = '<p class="text-danger">Network error loading psalm</p>';
+        youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">Unable to load music</div></div>';
+    }
+}
+
+function updatePsalmText(psalm) {
+    const psalmText = document.getElementById('psalmText');
+    const translationSelect = document.getElementById('translationSelect');
+    
+    // Create containers for each translation
+    const translations = {
+        niv: psalm.text_niv,
+        esv: psalm.text_esv,
+        nlt: psalm.text_nlt,
+        nkjv: psalm.text_nkjv,
+        nrsv: psalm.text_nrsv
+    };
+    
+    let html = '';
+    let defaultTranslation = 'niv';
+    
+    for (const [key, text] of Object.entries(translations)) {
+        const isVisible = key === defaultTranslation;
+        const formattedText = text ? formatPsalmText(text) : '<p class="text-muted fst-italic">Translation not available</p>';
+        
+        html += `<div id="text-${key}" class="translation-text" style="${isVisible ? '' : 'display: none;'}">${formattedText}</div>`;
+    }
+    
+    psalmText.innerHTML = html;
+    
+    // Set default translation selection
+    if (translationSelect) {
+        translationSelect.value = defaultTranslation;
+    }
+}
+
+function updateDisplayedTranslation(translation) {
+    // Hide all translations
+    const allTexts = document.querySelectorAll('.translation-text');
+    allTexts.forEach(text => text.style.display = 'none');
+    
+    // Show selected translation
+    const selectedText = document.getElementById(`text-${translation}`);
+    if (selectedText) {
+        selectedText.style.display = 'block';
     }
 }
 
 function formatPsalmText(text) {
-    // Format the psalm text with proper spacing and verse numbers
+    // Format the psalm text with proper spacing and paragraphs
     return text
         .split('\n')
         .map(line => line.trim())
@@ -79,24 +127,26 @@ function loadYouTubeVideo(musicUrl, container) {
     const videoId = extractYouTubeVideoId(musicUrl);
     
     if (videoId) {
-        // Create YouTube iframe after psalm is loaded
+        // Create YouTube iframe
         const iframe = document.createElement('iframe');
-        iframe.className = 'youtube-iframe';
+        iframe.style.cssText = 'width: 100%; height: 100%; border: none; border-radius: 0.5rem;';
         iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
         iframe.allowFullscreen = true;
         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.title = 'Psalm Worship Music';
         
         // Clear loading message and add iframe
         container.innerHTML = '';
         container.appendChild(iframe);
     } else {
-        container.innerHTML = '<div class="flex justify-center items-center h-full bg-gray-100 text-gray-500">Invalid music URL format</div>';
+        container.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">Invalid music URL format</div></div>';
     }
 }
 
 // Export functions for potential use elsewhere
-window.Pray150Psalm = {
-    loadPsalm1,
+window.Pray150PsalmReader = {
+    loadPsalmData,
     extractYouTubeVideoId,
-    formatPsalmText
+    formatPsalmText,
+    updateDisplayedTranslation
 };
