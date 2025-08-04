@@ -1,0 +1,39 @@
+Project: Pray150-New
+Purpose: Pray150 is a devotional web app to teach people how to pray by immersing them in the Psalms, fostering a vibrant relationship with God through Scripture-fed, Spirit-led, worship-based prayer. It guides users to listen to God via Psalm texts and respond through journaling and prayer, promoting daily engagement and Public Reading of Scripture (PRS).
+
+Core Features:
+1. Psalm Experience:
+   - Display full text of each Psalm (NIV, ESV, NLT, NKJV, NRSV translations).
+   - Embed YouTube music URLs for each Psalm (playable alongside text).
+   - Journaling with four devotional prompts (to be provided later) per Psalm, saved and editable.
+   - Markup tools for highlighting and notes, saved per user, with toggle visibility.
+   - Progress tracking for Psalm completion (e.g., Psalm-a-Day rhythm).
+2. Prayer Tools:
+   - Persistent prayer list (categories: family, healing, salvation, personal needs) with option to mark as “answered” (moves to archive).
+   - Answered prayer archive for gratitude and spiritual memory.
+3. Daily Dashboard:
+   - Shows today’s Psalm, recent journal entries, active prayers, and progress summary.
+4. User Accounts:
+   - Secure login/registration with data (journals, markups, prayers, progress) synced across devices.
+5. Social Sharing:
+   - Share journal entries and prayer milestones with Pray150-branded packaging (e.g., for Instagram).
+
+User Interface:
+- Tone: Warm, reflective, devotional, meditative, and encouraging.
+- Style: Modern, sleek, crisp, with a clean default design (soft blues, creams, serif fonts like Georgia).
+- Customization: Users can adjust fonts, text emphasis (bold, italic), and background themes.
+- Navigation: Simple, intuitive, with minimal friction (e.g., clear buttons for Psalms, prayers, dashboard).
+- Mobile-friendly for future iOS/Android apps.
+
+Target Users:
+- New believers learning to pray.
+- Mature believers seeking a deeper, Scripture-rooted prayer life.
+- Pastors/ ministry leaders modeling prayer.
+- Parents/teachers discipling others in prayer.
+- People feeling spiritually dry or inconsistent in prayer.
+- Users seeking community and encouragement in prayer.
+
+Technical Notes:
+- Use Flask (Python) for backend, HTML/CSS/JavaScript for frontend, and Supabase for database and authentication.
+- Store user data (journals, markups, prayers, progress) in Supabase.
+- Embed YouTube music URLs for Psalms (convert to MP3 later for mobile).
