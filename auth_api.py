@@ -185,3 +185,69 @@ def reset_password():
     except Exception as e:
         print(f"Password reset error: {e}")
         return jsonify({"error": "Password reset failed. Please try again."}), 500
+
+@auth_api_bp.route('/direct-reset-password', methods=['POST'])
+def direct_reset_password():
+    """Reset password directly by creating new account or updating existing one"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        email = data.get('email')
+        new_password = data.get('new_password')
+        
+        if not email or not new_password:
+            return jsonify({"error": "Email and new password are required"}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters long"}), 400
+        
+        # Use Supabase Auth to handle the password reset
+        supabase = get_supabase_client()
+        
+        try:
+            # First, try to sign in with the old credentials to check if user exists
+            # This will fail if user doesn't exist or has wrong password, which is fine
+            
+            # Try to create a new user with the email and new password
+            # If user already exists, this will fail with "User already registered"
+            auth_response = supabase.auth.sign_up({
+                "email": email,
+                "password": new_password
+            })
+            
+            if auth_response.user:
+                return jsonify({
+                    "message": "Account created successfully with new password. Please check your email for confirmation."
+                }), 200
+            else:
+                return jsonify({"error": "Account creation failed"}), 400
+                
+        except Exception as supabase_error:
+            error_msg = str(supabase_error).lower()
+            
+            if "user already registered" in error_msg or "already registered" in error_msg:
+                # User exists, so we need to use the password reset flow
+                try:
+                    # Send password reset email
+                    reset_response = supabase.auth.reset_password_for_email(email)
+                    
+                    return jsonify({
+                        "message": "Account exists. A password reset email has been sent to your email address. Follow the instructions in the email to reset your password."
+                    }), 200
+                    
+                except Exception as reset_error:
+                    print(f"Password reset email error: {reset_error}")
+                    return jsonify({
+                        "error": "Unable to send password reset email. Please try again later."
+                    }), 500
+            else:
+                print(f"Supabase direct reset error: {supabase_error}")
+                return jsonify({
+                    "error": "Password reset failed. Please try again."
+                }), 500
+            
+    except Exception as e:
+        print(f"Direct password reset error: {e}")
+        return jsonify({"error": "Password reset failed. Please try again."}), 500

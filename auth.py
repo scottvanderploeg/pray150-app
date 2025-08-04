@@ -110,5 +110,5 @@ def forgot_password():
 
 @auth_bp.route('/reset-password', methods=['GET']) 
 def reset_password():
-    """Display the reset password form"""
-    return render_template('reset_password_manual.html')
+    """Display the simple password reset form"""
+    return render_template('simple_reset.html')
