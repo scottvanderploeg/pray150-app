@@ -159,12 +159,12 @@
                 <div class="card-body">
                     <!-- Prompt 1 -->
                     <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">1. {{ psalm.prompt_1 }}</h6>
+                        <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
                         <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
                             <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
                             <input type="hidden" name="prompt_number" value="1">
                             <textarea class="form-control mb-2" name="content" rows="3" 
-                                      placeholder="Write your thoughts...">{{ entries_dict.get(1).content if entries_dict.get(1) else '' }}</textarea>
+                                      placeholder="Reflect on where your heart and soul are today...">{{ entries_dict.get(1).content if entries_dict.get(1) else '' }}</textarea>
                             <button type="submit" class="btn btn-sm btn-primary">
                                 <i class="fas fa-save me-1"></i>Save
                             </button>
@@ -173,12 +173,12 @@
 
                     <!-- Prompt 2 -->
                     <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">2. {{ psalm.prompt_2 }}</h6>
+                        <h6 class="fw-bold text-primary">2. LOOK! Lord, help me discover new truth from your Word today.</h6>
                         <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
                             <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
                             <input type="hidden" name="prompt_number" value="2">
                             <textarea class="form-control mb-2" name="content" rows="3" 
-                                      placeholder="Write your thoughts...">{{ entries_dict.get(2).content if entries_dict.get(2) else '' }}</textarea>
+                                      placeholder="What new truth or insight do you discover from this Psalm?">{{ entries_dict.get(2).content if entries_dict.get(2) else '' }}</textarea>
                             <button type="submit" class="btn btn-sm btn-primary">
                                 <i class="fas fa-save me-1"></i>Save
                             </button>
@@ -187,12 +187,12 @@
 
                     <!-- Prompt 3 -->
                     <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">3. {{ psalm.prompt_3 }}</h6>
+                        <h6 class="fw-bold text-primary">3. LISTEN! Lord, what is your thought for me today from your Word?</h6>
                         <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
                             <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
                             <input type="hidden" name="prompt_number" value="3">
                             <textarea class="form-control mb-2" name="content" rows="3" 
-                                      placeholder="Write your thoughts...">{{ entries_dict.get(3).content if entries_dict.get(3) else '' }}</textarea>
+                                      placeholder="What is God speaking to you through this Psalm?">{{ entries_dict.get(3).content if entries_dict.get(3) else '' }}</textarea>
                             <button type="submit" class="btn btn-sm btn-primary">
                                 <i class="fas fa-save me-1"></i>Save
                             </button>
@@ -201,12 +201,12 @@
 
                     <!-- Prompt 4 -->
                     <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">4. {{ psalm.prompt_4 }}</h6>
+                        <h6 class="fw-bold text-primary">4. RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?</h6>
                         <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
                             <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
                             <input type="hidden" name="prompt_number" value="4">
                             <textarea class="form-control mb-2" name="content" rows="3" 
-                                      placeholder="Write your thoughts...">{{ entries_dict.get(4).content if entries_dict.get(4) else '' }}</textarea>
+                                      placeholder="How will you respond to God? What action is He calling you to take?">{{ entries_dict.get(4).content if entries_dict.get(4) else '' }}</textarea>
                             <button type="submit" class="btn btn-sm btn-primary">
                                 <i class="fas fa-save me-1"></i>Save
                             </button>
