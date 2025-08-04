@@ -209,41 +209,17 @@ class JournalEntry:
             
             print(f"DEBUG: Found {len(result.data)} raw journal entries for user {user_id}")
             
-            # Group entries by psalm_id and date to consolidate prompts
-            grouped_entries = {}
-            for entry_data in result.data:
-                psalm_id = entry_data['psalm_id']
-                created_at = entry_data.get('created_at', '')
-                date_key = created_at[:10] if created_at else 'unknown'  # Extract date part
-                group_key = f"{psalm_id}_{date_key}"
-                
-                if group_key not in grouped_entries:
-                    grouped_entries[group_key] = {
-                        'id': entry_data['id'],
-                        'user_id': entry_data['user_id'],
-                        'psalm_id': psalm_id,
-                        'prompt_responses': {},
-                        'created_at': created_at,
-                        'latest_id': entry_data['id']
-                    }
-                
-                # Merge prompt responses
-                current_responses = entry_data.get('prompt_responses', {})
-                grouped_entries[group_key]['prompt_responses'].update(current_responses)
-                
-                # Keep the most recent ID and timestamp
-                if entry_data['id'] > grouped_entries[group_key]['latest_id']:
-                    grouped_entries[group_key]['latest_id'] = entry_data['id']
-                    grouped_entries[group_key]['created_at'] = created_at
+            # Take most recent entries (since we now save consolidated entries)
+            # The most recent entries should already have all prompt responses combined
             
             entries = []
-            for group_data in grouped_entries.values():
+            for entry_data in result.data:
                 entry = JournalEntry(
-                    id=group_data['latest_id'],
-                    user_id=group_data['user_id'],
-                    psalm_id=group_data['psalm_id'],
-                    prompt_responses=group_data['prompt_responses'],
-                    created_at=group_data['created_at']
+                    id=entry_data['id'],
+                    user_id=entry_data['user_id'],
+                    psalm_id=entry_data['psalm_id'],
+                    prompt_responses=entry_data.get('prompt_responses', {}),
+                    created_at=entry_data.get('created_at')
                 )
                 
                 # Get psalm number separately since we don't have foreign key relation
@@ -259,9 +235,6 @@ class JournalEntry:
                     entry.psalm = type('Psalm', (), {'number': entry.psalm_id})()
                 
                 entries.append(entry)
-            
-            # Sort by creation date (newest first)
-            entries.sort(key=lambda x: x.created_at or '', reverse=True)
             
             print(f"DEBUG: Returning {len(entries)} consolidated journal entries")
             return entries

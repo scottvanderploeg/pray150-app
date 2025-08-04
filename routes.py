@@ -60,6 +60,7 @@ def journal_history():
     
     # Get all journal entries for the user
     all_entries = JournalEntry.get_all_by_user(current_user.id)
+    print(f"DEBUG: Journal history - found {len(all_entries)} total entries for user {current_user.id}")
     
     # Apply filters
     filtered_entries = all_entries
