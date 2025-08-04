@@ -174,6 +174,32 @@ class JournalEntry:
             print(f"Error getting recent journal entries: {e}")
             return []
 
+    @staticmethod
+    def get_all_by_user(user_id):
+        """Get all journal entries for a user"""
+        try:
+            supabase = get_supabase_client()
+            result = supabase.table('journal_entries').select('*, psalms(psalm_number)')\
+                .eq('user_id', str(user_id)).order('created_at', desc=True).execute()
+            
+            entries = []
+            for entry_data in result.data:
+                entry = JournalEntry(
+                    id=entry_data['id'],
+                    user_id=entry_data['user_id'],
+                    psalm_id=entry_data['psalm_id'],
+                    prompt_responses=entry_data.get('prompt_responses', {}),
+                    created_at=entry_data.get('created_at')
+                )
+                # Add psalm reference for display
+                if entry_data.get('psalms'):
+                    entry.psalm = type('Psalm', (), {'number': entry_data['psalms']['psalm_number']})()
+                entries.append(entry)
+            return entries
+        except Exception as e:
+            print(f"Error getting all journal entries: {e}")
+            return []
+
     def save(self):
         """Save journal entry to Supabase with proper auth context"""
         try:

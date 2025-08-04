@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Journal History - Pray150{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Search and Filter Sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-search me-2"></i>Search & Filter</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('main.journal_history') }}">
+                        <!-- Text Search -->
+                        <div class="mb-3">
+                            <label for="search" class="form-label">Search Text</label>
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search_text or '' }}" 
+                                   placeholder="Search in journal entries...">
+                        </div>
+                        
+                        <!-- Psalm Filter -->
+                        <div class="mb-3">
+                            <label for="psalm" class="form-label">Psalm Number</label>
+                            <input type="number" class="form-control" id="psalm" name="psalm" 
+                                   value="{{ search_psalm or '' }}" 
+                                   placeholder="e.g., 23" min="1" max="150">
+                        </div>
+                        
+                        <!-- Date Filter -->
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ search_date or '' }}">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                            <a href="{{ url_for('main.journal_history') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Quick Stats</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Total Entries:</strong> {{ total }}</p>
+                    {% if search_psalm or search_date or search_text %}
+                    <p class="mb-0 text-muted"><small>Showing filtered results</small></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Journal Entries -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-book-open me-2"></i>Journal History</h2>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+            
+            {% if entries %}
+                <!-- Journal Entries Grid -->
+                <div class="row">
+                    {% for entry in entries %}
+                    <div class="col-md-6 col-xl-4 mb-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong class="text-primary">
+                                        <i class="fas fa-scroll me-1"></i>Psalm {{ entry.psalm.number if entry.psalm else entry.psalm_id }}
+                                    </strong>
+                                </div>
+                                <small class="text-muted">
+                                    {% if entry.created_at %}
+                                        {% if entry.created_at is string %}
+                                            {{ entry.created_at[:10] }}
+                                        {% else %}
+                                            {{ entry.created_at.strftime('%Y-%m-%d') }}
+                                        {% endif %}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <div class="card-body">
+                                <!-- Journal Prompts Preview -->
+                                {% for prompt_num, response in entry.prompt_responses.items() %}
+                                    {% if response and response.strip() %}
+                                    <div class="mb-2">
+                                        <small class="text-muted fw-bold">
+                                            {% if prompt_num == '1' %}
+                                                Heart Check:
+                                            {% elif prompt_num == '2' %}
+                                                New Truth:
+                                            {% elif prompt_num == '3' %}
+                                                God's Voice:
+                                            {% elif prompt_num == '4' %}
+                                                Response:
+                                            {% else %}
+                                                Prompt {{ prompt_num }}:
+                                            {% endif %}
+                                        </small>
+                                        <p class="small mb-0">
+                                            {{ response[:100] }}{% if response|length > 100 %}...{% endif %}
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if not entry.prompt_responses or not entry.prompt_responses.values()|select('string')|list %}
+                                <p class="text-muted small">No journal content recorded.</p>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        {% if entry.created_at %}
+                                            {% if entry.created_at is string %}
+                                                {{ entry.created_at[11:16] }}
+                                            {% else %}
+                                                {{ entry.created_at.strftime('%H:%M') }}
+                                            {% endif %}
+                                        {% endif %}
+                                    </small>
+                                    <a href="{{ url_for('main.psalm', psalm_number=entry.psalm.number if entry.psalm else entry.psalm_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Psalm
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Pagination -->
+                {% if total > per_page %}
+                <nav aria-label="Journal history pagination">
+                    <ul class="pagination justify-content-center">
+                        {% if has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.journal_history', page=prev_num, psalm=search_psalm, date=search_date, search=search_text) }}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% set start_page = [1, page - 2]|max %}
+                        {% set end_page = [start_page + 4, (total + per_page - 1) // per_page]|min %}
+                        
+                        {% if start_page > 1 %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.journal_history', page=1, psalm=search_psalm, date=search_date, search=search_text) }}">1</a>
+                        </li>
+                        {% if start_page > 2 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                        <li class="page-item {{ 'active' if page_num == page else '' }}">
+                            <a class="page-link" href="{{ url_for('main.journal_history', page=page_num, psalm=search_psalm, date=search_date, search=search_text) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% set total_pages = (total + per_page - 1) // per_page %}
+                        {% if end_page < total_pages %}
+                        {% if end_page < total_pages - 1 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.journal_history', page=total_pages, psalm=search_psalm, date=search_date, search=search_text) }}">{{ total_pages }}</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% if has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('main.journal_history', page=next_num, psalm=search_psalm, date=search_date, search=search_text) }}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <!-- No Entries Found -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-search fa-3x text-muted"></i>
+                    </div>
+                    
+                    {% if search_psalm or search_date or search_text %}
+                    <h4 class="text-muted">No journal entries found</h4>
+                    <p class="text-muted">Try adjusting your search filters or clear them to see all entries.</p>
+                    <a href="{{ url_for('main.journal_history') }}" class="btn btn-primary">
+                        <i class="fas fa-times me-1"></i>Clear All Filters
+                    </a>
+                    {% else %}
+                    <h4 class="text-muted">No journal entries yet</h4>
+                    <p class="text-muted">Start your spiritual journey by reading a Psalm and writing your first journal entry.</p>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary">
+                        <i class="fas fa-home me-1"></i>Go to Dashboard
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.page-link {
+    color: #0d6efd;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+</style>
+{% endblock %}

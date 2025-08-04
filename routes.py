@@ -42,6 +42,80 @@ def dashboard():
                          total_psalms_read=total_psalms_read,
                          psalms_this_week=psalms_this_week)
 
+@main_bp.route('/journal-history')
+@login_required
+def journal_history():
+    """Display all journal entries with search and filter capabilities"""
+    # Get search parameters
+    search_psalm = request.args.get('psalm', type=int)
+    search_date = request.args.get('date')
+    search_text = request.args.get('search', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 12  # entries per page
+    
+    # Get all journal entries for the user
+    all_entries = JournalEntry.get_all_by_user(current_user.id)
+    
+    # Apply filters
+    filtered_entries = all_entries
+    
+    # Filter by psalm number
+    if search_psalm:
+        filtered_entries = [entry for entry in filtered_entries if entry.psalm_id == search_psalm]
+    
+    # Filter by date
+    if search_date:
+        try:
+            filter_date = datetime.strptime(search_date, '%Y-%m-%d').date()
+            filtered_entries = [entry for entry in filtered_entries 
+                              if entry.created_at and 
+                              datetime.fromisoformat(entry.created_at.replace('Z', '+00:00')).date() == filter_date]
+        except (ValueError, AttributeError):
+            flash('Invalid date format. Please use YYYY-MM-DD.', 'error')
+    
+    # Filter by text content
+    if search_text:
+        search_lower = search_text.lower()
+        filtered_entries = [entry for entry in filtered_entries 
+                          if any(search_lower in str(response).lower() 
+                                for response in entry.prompt_responses.values())]
+    
+    # Sort by creation date (newest first) - handle string dates from Supabase
+    def get_sort_date(entry):
+        try:
+            if isinstance(entry.created_at, str):
+                return datetime.fromisoformat(entry.created_at.replace('Z', '+00:00'))
+            return entry.created_at or datetime.min
+        except:
+            return datetime.min
+    
+    filtered_entries.sort(key=get_sort_date, reverse=True)
+    
+    # Calculate pagination
+    total = len(filtered_entries)
+    start = (page - 1) * per_page
+    end = start + per_page
+    entries = filtered_entries[start:end]
+    
+    # Calculate pagination info
+    has_prev = page > 1
+    has_next = end < total
+    prev_num = page - 1 if has_prev else None
+    next_num = page + 1 if has_next else None
+    
+    return render_template('journal_history.html', 
+                         entries=entries,
+                         total=total,
+                         page=page,
+                         per_page=per_page,
+                         has_prev=has_prev,
+                         has_next=has_next,
+                         prev_num=prev_num,
+                         next_num=next_num,
+                         search_psalm=search_psalm,
+                         search_date=search_date,
+                         search_text=search_text)
+
 @main_bp.route('/api/psalms/<int:number>')
 def api_get_psalm(number):
     """API endpoint to retrieve psalm data by number"""
