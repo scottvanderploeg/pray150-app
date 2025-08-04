@@ -117,18 +117,13 @@ def initialize_psalms():
         existing_psalm = Psalm.get_by_number(psalm_data['number'])
         if not existing_psalm:
             psalm = Psalm(
-                psalm_number=psalm_data['number'],
-                title=psalm_data['title'],
+                number=psalm_data['number'],
                 text_niv=psalm_data['text_niv'],
                 text_esv=psalm_data['text_niv'],  # Using NIV for all translations in this demo
                 text_nlt=psalm_data['text_niv'],
                 text_nkjv=psalm_data['text_niv'],
                 text_nrsv=psalm_data['text_niv'],
-                music_url=psalm_data['youtube_url'],
-                prompt_1=psalm_data['prompt_1'],
-                prompt_2=psalm_data['prompt_2'],
-                prompt_3=psalm_data['prompt_3'],
-                prompt_4=psalm_data['prompt_4']
+                music_url=psalm_data['youtube_url']
             )
             result = psalm.save()
             if result:

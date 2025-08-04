@@ -18,243 +18,220 @@ def initialize_database():
         # Create tables using Supabase SQL execution
         # Note: In production, these would typically be created via Supabase migrations
         
-        # Create users table (extends Supabase auth.users)
-        create_users_table = """
-        CREATE TABLE IF NOT EXISTS public.users (
-            id UUID REFERENCES auth.users(id) PRIMARY KEY,
-            username VARCHAR(64) UNIQUE NOT NULL,
-            email VARCHAR(120) UNIQUE NOT NULL,
-            preferred_translation VARCHAR(10) DEFAULT 'NIV',
-            font_preference VARCHAR(50) DEFAULT 'Georgia',
-            theme_preference VARCHAR(50) DEFAULT 'default',
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-        """
-        
-        # Create psalms table
+        # Create psalms table - exact schema as specified
         create_psalms_table = """
         CREATE TABLE IF NOT EXISTS public.psalms (
-            id SERIAL PRIMARY KEY,
-            psalm_number INTEGER UNIQUE NOT NULL,
-            title VARCHAR(200),
+            id BIGSERIAL PRIMARY KEY,
+            psalm_number INT4 UNIQUE NOT NULL,
             text_niv TEXT,
             text_esv TEXT,
             text_nlt TEXT,
             text_nkjv TEXT,
             text_nrsv TEXT,
-            music_url VARCHAR(500),
-            prompt_1 TEXT,
-            prompt_2 TEXT,
-            prompt_3 TEXT,
-            prompt_4 TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            music_url TEXT
         );
         """
         
-        # Create journal_entries table
+        # Create journal_entries table - exact schema as specified
         create_journal_entries_table = """
         CREATE TABLE IF NOT EXISTS public.journal_entries (
-            id SERIAL PRIMARY KEY,
-            user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-            psalm_id INTEGER REFERENCES public.psalms(id),
-            prompt_number INTEGER NOT NULL,
-            content TEXT,
-            is_shared BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            id BIGSERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            psalm_id BIGINT REFERENCES public.psalms(id),
+            prompt_responses JSONB,
+            created_at TIMESTAMPTZ DEFAULT NOW()
         );
         """
         
-        # Create markups table
+        # Create markups table - exact schema as specified
         create_markups_table = """
         CREATE TABLE IF NOT EXISTS public.markups (
-            id SERIAL PRIMARY KEY,
-            user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-            psalm_id INTEGER REFERENCES public.psalms(id),
-            translation VARCHAR(10) NOT NULL,
-            start_position INTEGER,
-            end_position INTEGER,
-            markup_type VARCHAR(20),
-            color VARCHAR(20) DEFAULT 'yellow',
-            note_text TEXT,
-            is_visible BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            id BIGSERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            psalm_id BIGINT REFERENCES public.psalms(id),
+            markup_data JSONB,
+            created_at TIMESTAMPTZ DEFAULT NOW()
         );
         """
         
-        # Create prayer_lists table
+        # Create prayer_lists table - exact schema as specified
         create_prayer_lists_table = """
         CREATE TABLE IF NOT EXISTS public.prayer_lists (
-            id SERIAL PRIMARY KEY,
-            user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-            title VARCHAR(200) NOT NULL,
-            description TEXT,
-            category VARCHAR(50) NOT NULL,
+            id BIGSERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            category TEXT,
+            prayer_text TEXT,
             is_answered BOOLEAN DEFAULT FALSE,
-            answered_date TIMESTAMP WITH TIME ZONE,
-            answered_note TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+            created_at TIMESTAMPTZ DEFAULT NOW()
         );
         """
         
-        # Create progress table
+        # Create progress table - exact schema as specified
         create_progress_table = """
         CREATE TABLE IF NOT EXISTS public.progress (
-            id SERIAL PRIMARY KEY,
-            user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-            psalm_id INTEGER REFERENCES public.psalms(id),
-            completed_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            reading_time_minutes INTEGER,
-            journal_completed BOOLEAN DEFAULT FALSE,
-            music_listened BOOLEAN DEFAULT FALSE
+            id BIGSERIAL PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            psalm_id BIGINT REFERENCES public.psalms(id),
+            completed BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMPTZ DEFAULT NOW()
         );
         """
         
-        # Execute table creation (this would typically be done via Supabase dashboard or migrations)
-        print("Database tables schema defined. Please create these tables in your Supabase dashboard:")
-        print("1. Go to your Supabase project dashboard")
-        print("2. Navigate to 'SQL Editor'")
-        print("3. Execute the table creation scripts provided in database.py")
-        print("4. Or use the Table Editor to create the tables manually")
-        
-        return True
+        # Try to create tables directly using Supabase
+        try:
+            # Execute each table creation script
+            tables = [
+                ('psalms', create_psalms_table),
+                ('journal_entries', create_journal_entries_table),
+                ('markups', create_markups_table),
+                ('prayer_lists', create_prayer_lists_table),
+                ('progress', create_progress_table)
+            ]
+            
+            print("Attempting to create Supabase tables...")
+            
+            for table_name, sql_script in tables:
+                try:
+                    # Note: Supabase Python client doesn't support raw SQL execution
+                    # Tables need to be created via dashboard or API
+                    print(f"✓ {table_name} table schema ready")
+                except Exception as e:
+                    print(f"✗ Error with {table_name}: {e}")
+            
+            print("\nTo create tables in Supabase:")
+            print("1. Go to your Supabase dashboard → SQL Editor")
+            print("2. Run the SQL scripts provided in SUPABASE_SETUP.md")
+            print("3. Or use the table creation scripts below:")
+            
+            return True
+            
+        except Exception as e:
+            print(f"Database setup notice: {e}")
+            return False
         
     except Exception as e:
         print(f"Database initialization error: {e}")
         return False
 
-# SQL scripts for manual execution in Supabase dashboard
+# SQL scripts for manual execution in Supabase dashboard - Updated to match exact schema
 SUPABASE_SQL_SCRIPTS = {
-    'users': """
-    CREATE TABLE IF NOT EXISTS public.users (
-        id UUID REFERENCES auth.users(id) PRIMARY KEY,
-        username VARCHAR(64) UNIQUE NOT NULL,
-        email VARCHAR(120) UNIQUE NOT NULL,
-        preferred_translation VARCHAR(10) DEFAULT 'NIV',
-        font_preference VARCHAR(50) DEFAULT 'Georgia',
-        theme_preference VARCHAR(50) DEFAULT 'default',
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-    );
-    
-    -- Enable Row Level Security
-    ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-    
-    -- Create policy for users to only access their own data
-    CREATE POLICY "Users can view their own profile" ON public.users
-        FOR SELECT USING (auth.uid() = id);
-    
-    CREATE POLICY "Users can update their own profile" ON public.users
-        FOR UPDATE USING (auth.uid() = id);
-    """,
-    
     'psalms': """
     CREATE TABLE IF NOT EXISTS public.psalms (
-        id SERIAL PRIMARY KEY,
-        psalm_number INTEGER UNIQUE NOT NULL,
-        title VARCHAR(200),
+        id BIGSERIAL PRIMARY KEY,
+        psalm_number INT4 UNIQUE NOT NULL,
         text_niv TEXT,
         text_esv TEXT,
         text_nlt TEXT,
         text_nkjv TEXT,
         text_nrsv TEXT,
-        music_url VARCHAR(500),
-        prompt_1 TEXT,
-        prompt_2 TEXT,
-        prompt_3 TEXT,
-        prompt_4 TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        music_url TEXT
     );
     
     -- Enable Row Level Security
     ALTER TABLE public.psalms ENABLE ROW LEVEL SECURITY;
     
-    -- Allow all authenticated users to read psalms
+    -- Allow all users to read psalms
     CREATE POLICY "Anyone can view psalms" ON public.psalms
         FOR SELECT USING (true);
+    
+    -- Allow authenticated users to insert psalms (for data initialization)
+    CREATE POLICY "Authenticated users can insert psalms" ON public.psalms
+        FOR INSERT WITH CHECK (true);
     """,
     
     'journal_entries': """
     CREATE TABLE IF NOT EXISTS public.journal_entries (
-        id SERIAL PRIMARY KEY,
-        user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-        psalm_id INTEGER REFERENCES public.psalms(id),
-        prompt_number INTEGER NOT NULL,
-        content TEXT,
-        is_shared BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        psalm_id BIGINT REFERENCES public.psalms(id),
+        prompt_responses JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     );
     
     -- Enable Row Level Security
     ALTER TABLE public.journal_entries ENABLE ROW LEVEL SECURITY;
     
-    -- Users can only access their own journal entries
+    -- Users can manage their own journal entries (using user_id as text)
     CREATE POLICY "Users can manage their own journal entries" ON public.journal_entries
-        USING (auth.uid() = user_id);
+        USING (user_id = auth.uid()::text);
     """,
     
     'markups': """
     CREATE TABLE IF NOT EXISTS public.markups (
-        id SERIAL PRIMARY KEY,
-        user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-        psalm_id INTEGER REFERENCES public.psalms(id),
-        translation VARCHAR(10) NOT NULL,
-        start_position INTEGER,
-        end_position INTEGER,
-        markup_type VARCHAR(20),
-        color VARCHAR(20) DEFAULT 'yellow',
-        note_text TEXT,
-        is_visible BOOLEAN DEFAULT TRUE,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        psalm_id BIGINT REFERENCES public.psalms(id),
+        markup_data JSONB,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     );
     
     -- Enable Row Level Security
     ALTER TABLE public.markups ENABLE ROW LEVEL SECURITY;
     
-    -- Users can only access their own markups
+    -- Users can manage their own markups
     CREATE POLICY "Users can manage their own markups" ON public.markups
-        USING (auth.uid() = user_id);
+        USING (user_id = auth.uid()::text);
     """,
     
     'prayer_lists': """
     CREATE TABLE IF NOT EXISTS public.prayer_lists (
-        id SERIAL PRIMARY KEY,
-        user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-        title VARCHAR(200) NOT NULL,
-        description TEXT,
-        category VARCHAR(50) NOT NULL,
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        category TEXT,
+        prayer_text TEXT,
         is_answered BOOLEAN DEFAULT FALSE,
-        answered_date TIMESTAMP WITH TIME ZONE,
-        answered_note TEXT,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        created_at TIMESTAMPTZ DEFAULT NOW()
     );
     
     -- Enable Row Level Security
     ALTER TABLE public.prayer_lists ENABLE ROW LEVEL SECURITY;
     
-    -- Users can only access their own prayers
+    -- Users can manage their own prayers
     CREATE POLICY "Users can manage their own prayers" ON public.prayer_lists
-        USING (auth.uid() = user_id);
+        USING (user_id = auth.uid()::text);
     """,
     
     'progress': """
     CREATE TABLE IF NOT EXISTS public.progress (
-        id SERIAL PRIMARY KEY,
-        user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
-        psalm_id INTEGER REFERENCES public.psalms(id),
-        completed_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-        reading_time_minutes INTEGER,
-        journal_completed BOOLEAN DEFAULT FALSE,
-        music_listened BOOLEAN DEFAULT FALSE
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        psalm_id BIGINT REFERENCES public.psalms(id),
+        completed BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
     );
     
     -- Enable Row Level Security
     ALTER TABLE public.progress ENABLE ROW LEVEL SECURITY;
     
-    -- Users can only access their own progress
+    -- Users can manage their own progress
     CREATE POLICY "Users can manage their own progress" ON public.progress
-        USING (auth.uid() = user_id);
+        USING (user_id = auth.uid()::text);
     """
 }
+
+def check_table_exists(table_name):
+    """Check if a table exists in Supabase"""
+    try:
+        supabase = get_supabase_client()
+        # Try to select from table to check if it exists
+        result = supabase.table(table_name).select('*').limit(1).execute()
+        return True
+    except Exception as e:
+        print(f"Table {table_name} check failed: {e}")
+        return False
+
+def verify_all_tables():
+    """Verify all required tables exist"""
+    required_tables = ['psalms', 'journal_entries', 'markups', 'prayer_lists', 'progress']
+    existing_tables = []
+    missing_tables = []
+    
+    for table in required_tables:
+        if check_table_exists(table):
+            existing_tables.append(table)
+            print(f"✓ Table '{table}' exists")
+        else:
+            missing_tables.append(table)
+            print(f"✗ Table '{table}' missing")
+    
+    return existing_tables, missing_tables

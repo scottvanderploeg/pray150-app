@@ -25,15 +25,12 @@ def login():
             })
             
             if auth_response.user:
-                # Get user from our users table
+                # Create user object for Flask-Login (simplified)
                 user = User.get_by_id(auth_response.user.id)
-                if user:
-                    login_user(user, remember=True)
-                    flash('Welcome back!', 'success')
-                    next_page = request.args.get('next')
-                    return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
-                else:
-                    flash('User profile not found. Please contact support.', 'error')
+                login_user(user, remember=True)
+                flash('Welcome back!', 'success')
+                next_page = request.args.get('next')
+                return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
             else:
                 flash('Invalid email or password. Please try again.', 'error')
                 
@@ -73,19 +70,16 @@ def register():
             })
             
             if auth_response.user:
-                # Create user profile in our users table
+                # Create user object for Flask-Login (simplified)
                 user = User(
                     id=auth_response.user.id,
                     username=username,
                     email=email
                 )
                 
-                if user.save():
-                    login_user(user, remember=True)
-                    flash('Registration successful! Welcome to Pray150.', 'success')
-                    return redirect(url_for('main.dashboard'))
-                else:
-                    flash('Failed to create user profile. Please try again.', 'error')
+                login_user(user, remember=True)
+                flash('Registration successful! Welcome to Pray150.', 'success')
+                return redirect(url_for('main.dashboard'))
             else:
                 flash('Registration failed. Please try again.', 'error')
                 

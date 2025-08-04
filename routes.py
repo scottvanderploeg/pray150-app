@@ -83,15 +83,16 @@ def save_journal():
             break
     
     if existing_entry:
-        existing_entry.content = content
-        existing_entry.updated_at = datetime.utcnow()
+        # Update existing entry's prompt responses
+        existing_entry.prompt_responses[str(prompt_number)] = content
         entry = existing_entry
     else:
+        # Create new entry with prompt responses
+        prompt_responses = {str(prompt_number): content}
         entry = JournalEntry(
             user_id=current_user.id,
             psalm_id=int(psalm_id),
-            prompt_number=int(prompt_number),
-            content=content
+            prompt_responses=prompt_responses
         )
     
     if entry.save():
@@ -132,9 +133,7 @@ def complete_psalm():
         progress = PsalmProgress(
             user_id=current_user.id,
             psalm_id=int(psalm_id),
-            reading_time_minutes=int(reading_time) if reading_time else 0,
-            journal_completed=journal_completed,
-            music_listened=music_listened
+            completed=True
         )
         
         if progress.save():
@@ -181,9 +180,8 @@ def add_prayer():
     
     prayer = Prayer(
         user_id=current_user.id,
-        title=title,
-        description=description,
-        category=category
+        category=category,
+        prayer_text=f"{title}: {description}" if description else title
     )
     
     if prayer.save():
@@ -214,14 +212,10 @@ def answer_prayer():
             prayer = Prayer(
                 id=prayer_data['id'],
                 user_id=prayer_data['user_id'],
-                title=prayer_data['title'],
-                description=prayer_data.get('description'),
-                category=prayer_data['category'],
+                category=prayer_data.get('category'),
+                prayer_text=prayer_data.get('prayer_text'),
                 is_answered=True,
-                answered_date=datetime.utcnow(),
-                answered_note=answered_note,
-                created_at=prayer_data.get('created_at'),
-                updated_at=datetime.utcnow()
+                created_at=prayer_data.get('created_at')
             )
             
             if prayer.save():

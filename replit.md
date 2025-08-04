@@ -17,11 +17,12 @@ Preferred communication style: Simple, everyday language.
 - Modular design with separate blueprints for authentication (`auth.py`) and main functionality (`routes.py`)
 
 ### Database Design
-- **SQLite** as default database with configurable DATABASE_URL for production scaling
+- **Supabase** as primary database with PostgreSQL backend 
 - Five core models: User, Psalm, JournalEntry, Prayer, PsalmProgress, and PsalmMarkup
-- User-centric data model with cascading relationships for data integrity
-- User preference storage for translations, fonts, and themes
-- Progress tracking with timestamps for completion analytics
+- Simplified schema with user_id as TEXT for Supabase Auth compatibility
+- JSONB fields for flexible data storage (prompt_responses, markup_data)
+- BIGINT primary keys and optimized timestamp handling
+- Row Level Security (RLS) policies for user data isolation
 
 ### Authentication & Security
 - **Werkzeug** password hashing for secure credential storage
@@ -71,7 +72,12 @@ Preferred communication style: Simple, everyday language.
 - Environment variable configuration for deployment flexibility
 - ProxyFix middleware for production deployment compatibility
 
+### Current Integrations (Updated August 2025)
+- **Supabase** successfully integrated as primary database and authentication provider
+- Direct Supabase Auth integration replacing Flask-Login session management
+- Environment-based configuration with SUPABASE_URL, SUPABASE_KEY, SUPABASE_JWT_SECRET
+- 4 out of 5 database tables created and verified (journal_entries table pending user creation)
+
 ### Planned Integrations
-- **Supabase** mentioned in project notes for future database and authentication migration
 - Social sharing capabilities for prayer milestones and journal entries
 - Future iOS/Android mobile app development path

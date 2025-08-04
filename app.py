@@ -42,6 +42,21 @@ from routes import main_bp
 app.register_blueprint(auth_bp)
 app.register_blueprint(main_bp)
 
-# Initialize database tables
-from database import initialize_database
+# Initialize database tables and verify connection
+from database import initialize_database, verify_all_tables
 initialize_database()
+
+# Check table status on startup
+existing_tables, missing_tables = verify_all_tables()
+if missing_tables:
+    print(f"\n⚠️  Missing tables: {', '.join(missing_tables)}")
+    print("Please create them using the SQL scripts in SUPABASE_SETUP.md")
+else:
+    print("\n✅ All required tables exist in Supabase")
+    
+    # Initialize sample psalm data if tables exist but are empty
+    from psalm_data import initialize_psalms
+    from models import Psalm
+    if Psalm.get_count() == 0:
+        print("🎵 Initializing sample Psalm data...")
+        initialize_psalms()

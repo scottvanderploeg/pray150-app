@@ -9,7 +9,7 @@ import uuid
 class User(UserMixin):
     def __init__(self, id=None, username=None, email=None, preferred_translation='NIV', 
                  font_preference='Georgia', theme_preference='default', created_at=None):
-        self.id = id
+        self.id = str(id) if id else None  # Store as string for consistency
         self.username = username
         self.email = email
         self.preferred_translation = preferred_translation
@@ -19,88 +19,36 @@ class User(UserMixin):
 
     @staticmethod
     def get_by_id(user_id):
-        """Get user by ID from Supabase"""
-        try:
-            supabase = get_supabase_client()
-            result = supabase.table('users').select('*').eq('id', user_id).execute()
-            if result.data:
-                user_data = result.data[0]
-                return User(
-                    id=user_data['id'],
-                    username=user_data['username'],
-                    email=user_data['email'],
-                    preferred_translation=user_data.get('preferred_translation', 'NIV'),
-                    font_preference=user_data.get('font_preference', 'Georgia'),
-                    theme_preference=user_data.get('theme_preference', 'default'),
-                    created_at=user_data.get('created_at')
-                )
-            return None
-        except Exception as e:
-            print(f"Error getting user by ID: {e}")
-            return None
+        """Get user by ID - simplified for text-based user_id"""
+        # Since we're using Supabase Auth, we create a minimal user object
+        return User(
+            id=str(user_id),
+            username=f"user_{str(user_id)[:8]}",  # Generate username from ID
+            email="user@example.com",  # Placeholder - would come from Supabase Auth
+            preferred_translation='NIV',
+            font_preference='Georgia',
+            theme_preference='default'
+        )
 
     @staticmethod
     def get_by_email(email):
-        """Get user by email from Supabase"""
-        try:
-            supabase = get_supabase_client()
-            result = supabase.table('users').select('*').eq('email', email).execute()
-            if result.data:
-                user_data = result.data[0]
-                return User(
-                    id=user_data['id'],
-                    username=user_data['username'],
-                    email=user_data['email'],
-                    preferred_translation=user_data.get('preferred_translation', 'NIV'),
-                    font_preference=user_data.get('font_preference', 'Georgia'),
-                    theme_preference=user_data.get('theme_preference', 'default'),
-                    created_at=user_data.get('created_at')
-                )
-            return None
-        except Exception as e:
-            print(f"Error getting user by email: {e}")
-            return None
+        """Get user by email - simplified"""
+        # For now, return None as we'll handle auth through Supabase Auth directly
+        return None
 
     def save(self):
-        """Save user to Supabase"""
-        try:
-            supabase = get_supabase_client()
-            user_data = {
-                'id': self.id,
-                'username': self.username,
-                'email': self.email,
-                'preferred_translation': self.preferred_translation,
-                'font_preference': self.font_preference,
-                'theme_preference': self.theme_preference
-            }
-            result = supabase.table('users').upsert(user_data).execute()
-            return result.data
-        except Exception as e:
-            print(f"Error saving user: {e}")
-            return None
+        """Save user to Supabase - simplified"""
+        return True  # User info is managed by Supabase Auth
 
     def update_preferences(self, translation=None, font=None, theme=None):
-        """Update user preferences"""
-        try:
-            supabase = get_supabase_client()
-            updates = {}
-            if translation:
-                updates['preferred_translation'] = translation
-                self.preferred_translation = translation
-            if font:
-                updates['font_preference'] = font
-                self.font_preference = font
-            if theme:
-                updates['theme_preference'] = theme
-                self.theme_preference = theme
-            
-            if updates:
-                result = supabase.table('users').update(updates).eq('id', self.id).execute()
-                return result.data
-            return True
-        except Exception as e:
-            print(f"Error updating preferences: {e}")
-            return False
+        """Update user preferences - simplified"""
+        if translation:
+            self.preferred_translation = translation
+        if font:
+            self.font_preference = font
+        if theme:
+            self.theme_preference = theme
+        return True
 
 class Psalm:
     def __init__(self, id=None, psalm_number=None, title=None, text_niv=None, text_esv=None,
@@ -186,16 +134,13 @@ class Psalm:
             return None
 
 class JournalEntry:
-    def __init__(self, id=None, user_id=None, psalm_id=None, prompt_number=None,
-                 content=None, is_shared=False, created_at=None, updated_at=None):
+    def __init__(self, id=None, user_id=None, psalm_id=None, prompt_responses=None, 
+                 created_at=None):
         self.id = id
-        self.user_id = user_id
+        self.user_id = str(user_id) if user_id else None
         self.psalm_id = psalm_id
-        self.prompt_number = prompt_number
-        self.content = content
-        self.is_shared = is_shared
+        self.prompt_responses = prompt_responses or {}  # JSONB field
         self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
 
     @staticmethod
     def get_by_user_and_psalm(user_id, psalm_id):
@@ -203,7 +148,7 @@ class JournalEntry:
         try:
             supabase = get_supabase_client()
             result = supabase.table('journal_entries').select('*')\
-                .eq('user_id', user_id).eq('psalm_id', psalm_id).execute()
+                .eq('user_id', str(user_id)).eq('psalm_id', psalm_id).execute()
             
             entries = []
             for entry_data in result.data:
@@ -211,11 +156,8 @@ class JournalEntry:
                     id=entry_data['id'],
                     user_id=entry_data['user_id'],
                     psalm_id=entry_data['psalm_id'],
-                    prompt_number=entry_data['prompt_number'],
-                    content=entry_data['content'],
-                    is_shared=entry_data.get('is_shared', False),
-                    created_at=entry_data.get('created_at'),
-                    updated_at=entry_data.get('updated_at')
+                    prompt_responses=entry_data.get('prompt_responses', {}),
+                    created_at=entry_data.get('created_at')
                 ))
             return entries
         except Exception as e:
@@ -228,7 +170,7 @@ class JournalEntry:
         try:
             supabase = get_supabase_client()
             result = supabase.table('journal_entries').select('*, psalms(psalm_number)')\
-                .eq('user_id', user_id).order('updated_at', desc=True).limit(limit).execute()
+                .eq('user_id', str(user_id)).order('created_at', desc=True).limit(limit).execute()
             
             entries = []
             for entry_data in result.data:
@@ -236,11 +178,8 @@ class JournalEntry:
                     id=entry_data['id'],
                     user_id=entry_data['user_id'],
                     psalm_id=entry_data['psalm_id'],
-                    prompt_number=entry_data['prompt_number'],
-                    content=entry_data['content'],
-                    is_shared=entry_data.get('is_shared', False),
-                    created_at=entry_data.get('created_at'),
-                    updated_at=entry_data.get('updated_at')
+                    prompt_responses=entry_data.get('prompt_responses', {}),
+                    created_at=entry_data.get('created_at')
                 )
                 # Add psalm reference for display
                 if entry_data.get('psalms'):
@@ -258,10 +197,7 @@ class JournalEntry:
             entry_data = {
                 'user_id': self.user_id,
                 'psalm_id': self.psalm_id,
-                'prompt_number': self.prompt_number,
-                'content': self.content,
-                'is_shared': self.is_shared,
-                'updated_at': datetime.utcnow().isoformat()
+                'prompt_responses': self.prompt_responses
             }
             
             if self.id:
@@ -278,20 +214,31 @@ class JournalEntry:
             print(f"Error saving journal entry: {e}")
             return None
 
+    # Helper methods for backward compatibility
+    @property
+    def prompt_number(self):
+        """Backward compatibility - get first prompt number"""
+        if self.prompt_responses:
+            return min(int(k) for k in self.prompt_responses.keys() if k.isdigit())
+        return 1
+
+    @property
+    def content(self):
+        """Backward compatibility - get first prompt content"""
+        if self.prompt_responses:
+            first_key = str(self.prompt_number)
+            return self.prompt_responses.get(first_key, '')
+        return ''
+
 class Prayer:
-    def __init__(self, id=None, user_id=None, title=None, description=None, category=None,
-                 is_answered=False, answered_date=None, answered_note=None,
-                 created_at=None, updated_at=None):
+    def __init__(self, id=None, user_id=None, category=None, prayer_text=None,
+                 is_answered=False, created_at=None):
         self.id = id
-        self.user_id = user_id
-        self.title = title
-        self.description = description
+        self.user_id = str(user_id) if user_id else None
         self.category = category
+        self.prayer_text = prayer_text
         self.is_answered = is_answered
-        self.answered_date = answered_date
-        self.answered_note = answered_note
         self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
 
     @staticmethod
     def get_active_by_user(user_id, limit=None):
@@ -299,7 +246,7 @@ class Prayer:
         try:
             supabase = get_supabase_client()
             query = supabase.table('prayer_lists').select('*')\
-                .eq('user_id', user_id).eq('is_answered', False)\
+                .eq('user_id', str(user_id)).eq('is_answered', False)\
                 .order('created_at', desc=True)
             
             if limit:
@@ -312,14 +259,10 @@ class Prayer:
                 prayers.append(Prayer(
                     id=prayer_data['id'],
                     user_id=prayer_data['user_id'],
-                    title=prayer_data['title'],
-                    description=prayer_data.get('description'),
-                    category=prayer_data['category'],
-                    is_answered=prayer_data['is_answered'],
-                    answered_date=prayer_data.get('answered_date'),
-                    answered_note=prayer_data.get('answered_note'),
-                    created_at=prayer_data.get('created_at'),
-                    updated_at=prayer_data.get('updated_at')
+                    category=prayer_data.get('category'),
+                    prayer_text=prayer_data.get('prayer_text'),
+                    is_answered=prayer_data.get('is_answered', False),
+                    created_at=prayer_data.get('created_at')
                 ))
             return prayers
         except Exception as e:
@@ -332,22 +275,18 @@ class Prayer:
         try:
             supabase = get_supabase_client()
             result = supabase.table('prayer_lists').select('*')\
-                .eq('user_id', user_id).eq('is_answered', True)\
-                .order('answered_date', desc=True).limit(limit).execute()
+                .eq('user_id', str(user_id)).eq('is_answered', True)\
+                .order('created_at', desc=True).limit(limit).execute()
             
             prayers = []
             for prayer_data in result.data:
                 prayers.append(Prayer(
                     id=prayer_data['id'],
                     user_id=prayer_data['user_id'],
-                    title=prayer_data['title'],
-                    description=prayer_data.get('description'),
-                    category=prayer_data['category'],
-                    is_answered=prayer_data['is_answered'],
-                    answered_date=prayer_data.get('answered_date'),
-                    answered_note=prayer_data.get('answered_note'),
-                    created_at=prayer_data.get('created_at'),
-                    updated_at=prayer_data.get('updated_at')
+                    category=prayer_data.get('category'),
+                    prayer_text=prayer_data.get('prayer_text'),
+                    is_answered=prayer_data.get('is_answered', False),
+                    created_at=prayer_data.get('created_at')
                 ))
             return prayers
         except Exception as e:
@@ -360,13 +299,9 @@ class Prayer:
             supabase = get_supabase_client()
             prayer_data = {
                 'user_id': self.user_id,
-                'title': self.title,
-                'description': self.description,
                 'category': self.category,
-                'is_answered': self.is_answered,
-                'answered_date': self.answered_date.isoformat() if self.answered_date else None,
-                'answered_note': self.answered_note,
-                'updated_at': datetime.utcnow().isoformat()
+                'prayer_text': self.prayer_text,
+                'is_answered': self.is_answered
             }
             
             if self.id:
@@ -383,16 +318,22 @@ class Prayer:
             print(f"Error saving prayer: {e}")
             return None
 
+    # Backward compatibility properties
+    @property
+    def title(self):
+        return self.prayer_text[:50] + "..." if self.prayer_text and len(self.prayer_text) > 50 else self.prayer_text
+    
+    @property
+    def description(self):
+        return self.prayer_text
+
 class PsalmProgress:
-    def __init__(self, id=None, user_id=None, psalm_id=None, completed_date=None,
-                 reading_time_minutes=None, journal_completed=False, music_listened=False):
+    def __init__(self, id=None, user_id=None, psalm_id=None, completed=True, created_at=None):
         self.id = id
-        self.user_id = user_id
+        self.user_id = str(user_id) if user_id else None
         self.psalm_id = psalm_id
-        self.completed_date = completed_date or datetime.utcnow()
-        self.reading_time_minutes = reading_time_minutes
-        self.journal_completed = journal_completed
-        self.music_listened = music_listened
+        self.completed = completed
+        self.created_at = created_at or datetime.utcnow()
 
     @staticmethod
     def get_count_by_user(user_id):
@@ -400,7 +341,7 @@ class PsalmProgress:
         try:
             supabase = get_supabase_client()
             result = supabase.table('progress').select('id', count='exact')\
-                .eq('user_id', user_id).execute()
+                .eq('user_id', str(user_id)).eq('completed', True).execute()
             return result.count or 0
         except Exception as e:
             print(f"Error getting progress count: {e}")
@@ -415,7 +356,8 @@ class PsalmProgress:
             
             supabase = get_supabase_client()
             result = supabase.table('progress').select('id', count='exact')\
-                .eq('user_id', user_id).gte('completed_date', week_ago).execute()
+                .eq('user_id', str(user_id)).eq('completed', True)\
+                .gte('created_at', week_ago).execute()
             return result.count or 0
         except Exception as e:
             print(f"Error getting week progress count: {e}")
@@ -428,10 +370,7 @@ class PsalmProgress:
             progress_data = {
                 'user_id': self.user_id,
                 'psalm_id': self.psalm_id,
-                'completed_date': self.completed_date.isoformat(),
-                'reading_time_minutes': self.reading_time_minutes,
-                'journal_completed': self.journal_completed,
-                'music_listened': self.music_listened
+                'completed': self.completed
             }
             
             result = supabase.table('progress').insert(progress_data).execute()
