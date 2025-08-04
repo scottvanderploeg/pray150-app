@@ -1,4 +1,3 @@
-from app import db
 from models import Psalm
 
 # Sample Psalm data - In production, this would be populated from a complete database
@@ -112,24 +111,29 @@ With long life I will satisfy him
 ]
 
 def initialize_psalms():
-    """Initialize the database with sample Psalm data"""
+    """Initialize Supabase with sample Psalm data"""
     for psalm_data in PSALM_DATA:
-        existing_psalm = Psalm.query.filter_by(number=psalm_data['number']).first()
+        # Check if psalm already exists
+        existing_psalm = Psalm.get_by_number(psalm_data['number'])
         if not existing_psalm:
             psalm = Psalm(
-                number=psalm_data['number'],
+                psalm_number=psalm_data['number'],
                 title=psalm_data['title'],
                 text_niv=psalm_data['text_niv'],
                 text_esv=psalm_data['text_niv'],  # Using NIV for all translations in this demo
                 text_nlt=psalm_data['text_niv'],
                 text_nkjv=psalm_data['text_niv'],
                 text_nrsv=psalm_data['text_niv'],
-                youtube_url=psalm_data['youtube_url'],
+                music_url=psalm_data['youtube_url'],
                 prompt_1=psalm_data['prompt_1'],
                 prompt_2=psalm_data['prompt_2'],
                 prompt_3=psalm_data['prompt_3'],
                 prompt_4=psalm_data['prompt_4']
             )
-            db.session.add(psalm)
+            result = psalm.save()
+            if result:
+                print(f"Successfully initialized Psalm {psalm_data['number']}")
+            else:
+                print(f"Failed to initialize Psalm {psalm_data['number']}")
     
-    db.session.commit()
+    print("Psalm initialization complete")

@@ -1,10 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from app import db
-from models import Psalm, JournalEntry, Prayer, PsalmProgress, PsalmMarkup, User
+from models import Psalm, JournalEntry, Prayer, PsalmProgress, User
 from psalm_data import initialize_psalms
 from datetime import datetime, timedelta
-from sqlalchemy import desc
 
 main_bp = Blueprint('main', __name__)
 
@@ -16,28 +14,25 @@ def index():
 @login_required
 def dashboard():
     # Initialize psalms if needed
-    if Psalm.query.count() == 0:
+    psalm_count = Psalm.get_count()
+    if psalm_count == 0:
         initialize_psalms()
+        psalm_count = Psalm.get_count()
     
     # Get today's psalm (using modulo to cycle through available psalms)
-    psalm_count = Psalm.query.count()
     day_of_year = datetime.now().timetuple().tm_yday
-    todays_psalm_number = ((day_of_year - 1) % psalm_count) + 1
-    todays_psalm = Psalm.query.filter_by(number=todays_psalm_number).first()
+    todays_psalm_number = ((day_of_year - 1) % psalm_count) + 1 if psalm_count > 0 else 1
+    todays_psalm = Psalm.get_by_number(todays_psalm_number)
     
     # Get recent journal entries
-    recent_entries = JournalEntry.query.filter_by(user_id=current_user.id)\
-        .order_by(desc(JournalEntry.updated_at)).limit(3).all()
+    recent_entries = JournalEntry.get_recent_by_user(current_user.id, limit=3)
     
     # Get active prayers
-    active_prayers = Prayer.query.filter_by(user_id=current_user.id, is_answered=False)\
-        .order_by(desc(Prayer.created_at)).limit(5).all()
+    active_prayers = Prayer.get_active_by_user(current_user.id, limit=5)
     
     # Get progress summary
-    total_psalms_read = PsalmProgress.query.filter_by(user_id=current_user.id).count()
-    this_week = datetime.now() - timedelta(days=7)
-    psalms_this_week = PsalmProgress.query.filter_by(user_id=current_user.id)\
-        .filter(PsalmProgress.completed_date >= this_week).count()
+    total_psalms_read = PsalmProgress.get_count_by_user(current_user.id)
+    psalms_this_week = PsalmProgress.get_week_count_by_user(current_user.id)
     
     return render_template('dashboard.html',
                          todays_psalm=todays_psalm,
@@ -49,26 +44,19 @@ def dashboard():
 @main_bp.route('/psalm/<int:psalm_number>')
 @login_required
 def psalm(psalm_number):
-    psalm = Psalm.query.filter_by(number=psalm_number).first()
+    psalm = Psalm.get_by_number(psalm_number)
     if not psalm:
         flash('Psalm not found.', 'error')
         return redirect(url_for('main.dashboard'))
     
     # Get user's journal entries for this psalm
-    journal_entries = JournalEntry.query.filter_by(
-        user_id=current_user.id, 
-        psalm_id=psalm.id
-    ).all()
+    journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id)
     
     # Convert to dict for easy template access
     entries_dict = {entry.prompt_number: entry for entry in journal_entries}
     
-    # Get user's markups for this psalm
-    markups = PsalmMarkup.query.filter_by(
-        user_id=current_user.id,
-        psalm_id=psalm.id,
-        translation=current_user.preferred_translation
-    ).all()
+    # Get user's markups for this psalm (placeholder for now)
+    markups = []
     
     return render_template('psalm.html', 
                          psalm=psalm, 
@@ -82,33 +70,48 @@ def save_journal():
     prompt_number = request.form.get('prompt_number')
     content = request.form.get('content')
     
-    # Find existing entry or create new one
-    entry = JournalEntry.query.filter_by(
-        user_id=current_user.id,
-        psalm_id=psalm_id,
-        prompt_number=prompt_number
-    ).first()
+    if not psalm_id or not prompt_number:
+        flash('Invalid journal entry data.', 'error')
+        return redirect(url_for('main.dashboard'))
     
-    if entry:
-        entry.content = content
-        entry.updated_at = datetime.utcnow()
+    # Find existing entry or create new one
+    existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
+    existing_entry = None
+    for entry in existing_entries:
+        if entry.prompt_number == int(prompt_number):
+            existing_entry = entry
+            break
+    
+    if existing_entry:
+        existing_entry.content = content
+        existing_entry.updated_at = datetime.utcnow()
+        entry = existing_entry
     else:
         entry = JournalEntry(
             user_id=current_user.id,
-            psalm_id=psalm_id,
-            prompt_number=prompt_number,
+            psalm_id=int(psalm_id),
+            prompt_number=int(prompt_number),
             content=content
         )
-        db.session.add(entry)
     
-    try:
-        db.session.commit()
+    if entry.save():
         flash('Journal entry saved successfully!', 'success')
-    except Exception as e:
-        db.session.rollback()
+    else:
         flash('Error saving journal entry. Please try again.', 'error')
     
-    return redirect(url_for('main.psalm', psalm_number=Psalm.query.get(psalm_id).number))
+    # Get psalm number for redirect
+    psalm = Psalm.get_by_number(1)  # Default fallback
+    try:
+        from database import get_supabase_client
+        supabase = get_supabase_client()
+        result = supabase.table('psalms').select('psalm_number').eq('id', psalm_id).execute()
+        if result.data:
+            psalm_number = result.data[0]['psalm_number']
+            return redirect(url_for('main.psalm', psalm_number=psalm_number))
+    except:
+        pass
+    
+    return redirect(url_for('main.dashboard'))
 
 @main_bp.route('/complete_psalm', methods=['POST'])
 @login_required
@@ -117,46 +120,49 @@ def complete_psalm():
     reading_time = request.form.get('reading_time', 0)
     music_listened = request.form.get('music_listened') == 'true'
     
-    # Check if already completed today
-    today = datetime.now().date()
-    existing_progress = PsalmProgress.query.filter_by(
-        user_id=current_user.id,
-        psalm_id=psalm_id
-    ).filter(PsalmProgress.completed_date >= today).first()
+    if not psalm_id:
+        flash('Invalid psalm data.', 'error')
+        return redirect(url_for('main.dashboard'))
     
-    if not existing_progress:
+    try:
         # Check if journal is completed (at least one entry)
-        journal_completed = JournalEntry.query.filter_by(
-            user_id=current_user.id,
-            psalm_id=psalm_id
-        ).first() is not None
+        journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
+        journal_completed = len(journal_entries) > 0
         
         progress = PsalmProgress(
             user_id=current_user.id,
-            psalm_id=psalm_id,
-            reading_time_minutes=reading_time,
+            psalm_id=int(psalm_id),
+            reading_time_minutes=int(reading_time) if reading_time else 0,
             journal_completed=journal_completed,
             music_listened=music_listened
         )
         
-        db.session.add(progress)
-        db.session.commit()
-        flash('Psalm completion recorded!', 'success')
+        if progress.save():
+            flash('Psalm completion recorded!', 'success')
+        else:
+            flash('Error recording progress. Please try again.', 'error')
+    except Exception as e:
+        print(f"Error saving progress: {e}")
+        flash('Error recording progress. Please try again.', 'error')
     
-    return redirect(url_for('main.psalm', psalm_number=Psalm.query.get(psalm_id).number))
+    # Get psalm number for redirect
+    try:
+        from database import get_supabase_client
+        supabase = get_supabase_client()
+        result = supabase.table('psalms').select('psalm_number').eq('id', psalm_id).execute()
+        if result.data:
+            psalm_number = result.data[0]['psalm_number']
+            return redirect(url_for('main.psalm', psalm_number=psalm_number))
+    except:
+        pass
+    
+    return redirect(url_for('main.dashboard'))
 
 @main_bp.route('/prayers')
 @login_required
 def prayers():
-    active_prayers = Prayer.query.filter_by(
-        user_id=current_user.id, 
-        is_answered=False
-    ).order_by(desc(Prayer.created_at)).all()
-    
-    answered_prayers = Prayer.query.filter_by(
-        user_id=current_user.id, 
-        is_answered=True
-    ).order_by(desc(Prayer.answered_date)).limit(10).all()
+    active_prayers = Prayer.get_active_by_user(current_user.id)
+    answered_prayers = Prayer.get_answered_by_user(current_user.id, limit=10)
     
     return render_template('prayers.html', 
                          active_prayers=active_prayers,
@@ -169,6 +175,10 @@ def add_prayer():
     description = request.form.get('description')
     category = request.form.get('category')
     
+    if not title or not category:
+        flash('Please fill in the required fields.', 'error')
+        return redirect(url_for('main.prayers'))
+    
     prayer = Prayer(
         user_id=current_user.id,
         title=title,
@@ -176,12 +186,9 @@ def add_prayer():
         category=category
     )
     
-    try:
-        db.session.add(prayer)
-        db.session.commit()
+    if prayer.save():
         flash('Prayer added successfully!', 'success')
-    except Exception as e:
-        db.session.rollback()
+    else:
         flash('Error adding prayer. Please try again.', 'error')
     
     return redirect(url_for('main.prayers'))
@@ -192,22 +199,40 @@ def answer_prayer():
     prayer_id = request.form.get('prayer_id')
     answered_note = request.form.get('answered_note')
     
-    prayer = Prayer.query.filter_by(
-        id=prayer_id, 
-        user_id=current_user.id
-    ).first()
+    if not prayer_id:
+        flash('Invalid prayer ID.', 'error')
+        return redirect(url_for('main.prayers'))
     
-    if prayer:
-        prayer.is_answered = True
-        prayer.answered_date = datetime.utcnow()
-        prayer.answered_note = answered_note
+    try:
+        # Get the prayer and verify ownership
+        from database import get_supabase_client
+        supabase = get_supabase_client()
+        result = supabase.table('prayer_lists').select('*').eq('id', prayer_id).eq('user_id', current_user.id).execute()
         
-        try:
-            db.session.commit()
-            flash('Prayer marked as answered! Praise God!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error updating prayer. Please try again.', 'error')
+        if result.data:
+            prayer_data = result.data[0]
+            prayer = Prayer(
+                id=prayer_data['id'],
+                user_id=prayer_data['user_id'],
+                title=prayer_data['title'],
+                description=prayer_data.get('description'),
+                category=prayer_data['category'],
+                is_answered=True,
+                answered_date=datetime.utcnow(),
+                answered_note=answered_note,
+                created_at=prayer_data.get('created_at'),
+                updated_at=datetime.utcnow()
+            )
+            
+            if prayer.save():
+                flash('Prayer marked as answered! Praise God!', 'success')
+            else:
+                flash('Error updating prayer. Please try again.', 'error')
+        else:
+            flash('Prayer not found.', 'error')
+    except Exception as e:
+        print(f"Error answering prayer: {e}")
+        flash('Error updating prayer. Please try again.', 'error')
     
     return redirect(url_for('main.prayers'))
 
@@ -219,15 +244,13 @@ def profile():
 @main_bp.route('/update_preferences', methods=['POST'])
 @login_required
 def update_preferences():
-    current_user.preferred_translation = request.form.get('translation')
-    current_user.font_preference = request.form.get('font')
-    current_user.theme_preference = request.form.get('theme')
+    translation = request.form.get('translation')
+    font = request.form.get('font')
+    theme = request.form.get('theme')
     
-    try:
-        db.session.commit()
+    if current_user.update_preferences(translation=translation, font=font, theme=theme):
         flash('Preferences updated successfully!', 'success')
-    except Exception as e:
-        db.session.rollback()
+    else:
         flash('Error updating preferences. Please try again.', 'error')
     
     return redirect(url_for('main.profile'))
