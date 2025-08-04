@@ -193,7 +193,16 @@ class JournalEntry:
             supabase = get_supabase_client()
             result = supabase.table('journal_entries').select('id', count='exact')\
                 .eq('user_id', str(user_id)).execute()
-            return result.count if hasattr(result, 'count') and result.count is not None else 0
+            print(f"DEBUG: Count query result: {result}")
+            print(f"DEBUG: Count result.count: {getattr(result, 'count', 'No count attr')}")
+            print(f"DEBUG: Count result.data length: {len(result.data) if result.data else 'No data'}")
+            
+            # Try to get count from the result
+            if hasattr(result, 'count') and result.count is not None:
+                return result.count
+            else:
+                # Fallback to counting data array length
+                return len(result.data) if result.data else 0
         except Exception as e:
             print(f"Error getting journal entry count: {e}")
             return 0
