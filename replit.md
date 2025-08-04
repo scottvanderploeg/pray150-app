@@ -77,7 +77,7 @@ Preferred communication style: Simple, everyday language.
 - Direct Supabase Auth integration with REST API endpoints
 - **Flask-JWT-Extended** for JWT token management and API authentication
 - Environment-based configuration with SUPABASE_URL, SUPABASE_KEY, SUPABASE_JWT_SECRET
-- 4 out of 5 database tables created and verified (journal_entries table pending user creation)
+- All 5 database tables created and verified including journal_entries with Row Level Security
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)
