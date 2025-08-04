@@ -34,13 +34,19 @@ def dashboard():
     # Get progress summary
     total_psalms_read = PsalmProgress.get_count_by_user(current_user.id)
     psalms_this_week = PsalmProgress.get_week_count_by_user(current_user.id)
+    total_journal_entries = JournalEntry.get_count_by_user(current_user.id)
+    
+    # Get dates with journal entries for calendar highlighting
+    journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
     
     return render_template('dashboard.html',
                          todays_psalm=todays_psalm,
                          recent_entries=recent_entries,
                          active_prayers=active_prayers,
                          total_psalms_read=total_psalms_read,
-                         psalms_this_week=psalms_this_week)
+                         psalms_this_week=psalms_this_week,
+                         total_journal_entries=total_journal_entries,
+                         journal_dates=journal_dates)
 
 @main_bp.route('/journal-history')
 @login_required
@@ -103,6 +109,9 @@ def journal_history():
     prev_num = page - 1 if has_prev else None
     next_num = page + 1 if has_next else None
     
+    # Get dates with journal entries for calendar highlighting
+    journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
+    
     return render_template('journal_history.html', 
                          entries=entries,
                          total=total,
@@ -114,7 +123,8 @@ def journal_history():
                          next_num=next_num,
                          search_psalm=search_psalm,
                          search_date=search_date,
-                         search_text=search_text)
+                         search_text=search_text,
+                         journal_dates=journal_dates)
 
 @main_bp.route('/api/psalms/<int:number>')
 def api_get_psalm(number):

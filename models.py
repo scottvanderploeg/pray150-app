@@ -153,7 +153,7 @@ class JournalEntry:
         """Get recent journal entries for a user"""
         try:
             supabase = get_supabase_client()
-            result = supabase.table('journal_entries').select('*, psalms(psalm_number)')\
+            result = supabase.table('journal_entries').select('*')\
                 .eq('user_id', str(user_id)).order('created_at', desc=True).limit(limit).execute()
             
             entries = []
@@ -165,9 +165,19 @@ class JournalEntry:
                     prompt_responses=entry_data.get('prompt_responses', {}),
                     created_at=entry_data.get('created_at')
                 )
-                # Add psalm reference for display
-                if entry_data.get('psalms'):
-                    entry.psalm = type('Psalm', (), {'number': entry_data['psalms']['psalm_number']})()
+                
+                # Get psalm number separately since we don't have foreign key relation
+                try:
+                    psalm_result = supabase.table('psalms').select('psalm_number')\
+                        .eq('id', entry.psalm_id).execute()
+                    if psalm_result.data:
+                        entry.psalm = type('Psalm', (), {'number': psalm_result.data[0]['psalm_number']})()
+                    else:
+                        # Fallback: use psalm_id as number if psalm not found
+                        entry.psalm = type('Psalm', (), {'number': entry.psalm_id})()
+                except:
+                    entry.psalm = type('Psalm', (), {'number': entry.psalm_id})()
+                
                 entries.append(entry)
             return entries
         except Exception as e:
@@ -175,11 +185,51 @@ class JournalEntry:
             return []
 
     @staticmethod
+    def get_entry_dates_by_user(user_id):
+        """Get all dates when user made journal entries for calendar highlighting"""
+        try:
+            supabase = get_supabase_client()
+            result = supabase.table('journal_entries').select('created_at')\
+                .eq('user_id', str(user_id)).execute()
+            
+            dates = []
+            for entry_data in result.data:
+                if entry_data.get('created_at'):
+                    try:
+                        # Handle different date formats from Supabase
+                        created_at = entry_data['created_at']
+                        if isinstance(created_at, str):
+                            # Parse ISO format date string
+                            date_obj = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                            dates.append(date_obj.date().isoformat())
+                        else:
+                            dates.append(created_at.date().isoformat())
+                    except:
+                        continue
+            return list(set(dates))  # Remove duplicates
+        except Exception as e:
+            print(f"Error getting journal entry dates: {e}")
+            return []
+
+    @staticmethod
+    def get_count_by_user(user_id):
+        """Get total count of journal entries for a user"""
+        try:
+            supabase = get_supabase_client()
+            result = supabase.table('journal_entries').select('id', count='exact')\
+                .eq('user_id', str(user_id)).execute()
+            return result.count if hasattr(result, 'count') and result.count is not None else 0
+        except Exception as e:
+            print(f"Error getting journal entry count: {e}")
+            return 0
+
+    @staticmethod
     def get_all_by_user(user_id):
         """Get all journal entries for a user"""
         try:
             supabase = get_supabase_client()
-            result = supabase.table('journal_entries').select('*, psalms(psalm_number)')\
+            # Get journal entries without join first
+            result = supabase.table('journal_entries').select('*')\
                 .eq('user_id', str(user_id)).order('created_at', desc=True).execute()
             
             entries = []
@@ -191,9 +241,19 @@ class JournalEntry:
                     prompt_responses=entry_data.get('prompt_responses', {}),
                     created_at=entry_data.get('created_at')
                 )
-                # Add psalm reference for display
-                if entry_data.get('psalms'):
-                    entry.psalm = type('Psalm', (), {'number': entry_data['psalms']['psalm_number']})()
+                
+                # Get psalm number separately since we don't have foreign key relation
+                try:
+                    psalm_result = supabase.table('psalms').select('psalm_number')\
+                        .eq('id', entry.psalm_id).execute()
+                    if psalm_result.data:
+                        entry.psalm = type('Psalm', (), {'number': psalm_result.data[0]['psalm_number']})()
+                    else:
+                        # Fallback: use psalm_id as number if psalm not found
+                        entry.psalm = type('Psalm', (), {'number': entry.psalm_id})()
+                except:
+                    entry.psalm = type('Psalm', (), {'number': entry.psalm_id})()
+                
                 entries.append(entry)
             return entries
         except Exception as e:

@@ -32,8 +32,13 @@
                         <!-- Date Filter -->
                         <div class="mb-3">
                             <label for="date" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="date" name="date" 
+                            <input type="date" class="form-control calendar-input" id="date" name="date" 
                                    value="{{ search_date or '' }}">
+                            <div class="calendar-legend mt-2">
+                                <small class="text-muted">
+                                    <span class="journal-date-indicator"></span> Days with entries
+                                </small>
+                            </div>
                         </div>
                         
                         <div class="d-grid gap-2">
@@ -247,5 +252,49 @@
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
+
+/* Calendar styling for highlighting journal entry dates */
+.calendar-input {
+    position: relative;
+}
+
+.journal-date-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    background-color: #0d6efd;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+/* Custom calendar highlighting via JavaScript */
+.has-journal-entry {
+    background-color: #e3f2fd !important;
+    font-weight: bold !important;
+    color: #0d6efd !important;
+}
 </style>
+
+<script>
+// Highlight dates with journal entries in the date picker
+document.addEventListener('DOMContentLoaded', function() {
+    const journalDates = {{ journal_dates|tojson }};
+    const dateInput = document.getElementById('date');
+    
+    // Add custom styling for dates with entries
+    if (dateInput && journalDates.length > 0) {
+        dateInput.addEventListener('click', function() {
+            // Note: Native date inputs don't easily support custom styling
+            // This is a placeholder for future enhancement with a custom calendar widget
+            console.log('Journal entry dates:', journalDates);
+        });
+    }
+    
+    // Add visual indicator in the legend
+    const indicator = document.querySelector('.journal-date-indicator');
+    if (indicator && journalDates.length > 0) {
+        indicator.style.display = 'inline-block';
+    }
+});
+</script>
 {% endblock %}
