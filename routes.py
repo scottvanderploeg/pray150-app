@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from models import Psalm, JournalEntry, Prayer, PsalmProgress, User
 from psalm_data import initialize_psalms
 from datetime import datetime, timedelta
+from database import get_supabase_client
 
 main_bp = Blueprint('main', __name__)
 
@@ -40,6 +41,42 @@ def dashboard():
                          active_prayers=active_prayers,
                          total_psalms_read=total_psalms_read,
                          psalms_this_week=psalms_this_week)
+
+@main_bp.route('/api/psalms/<int:number>')
+def api_get_psalm(number):
+    """API endpoint to retrieve psalm data by number"""
+    try:
+        supabase = get_supabase_client()
+        result = supabase.table('psalms').select(
+            'psalm_number, text_niv, text_esv, text_nlt, text_nkjv, text_nrsv, music_url, created_at'
+        ).eq('psalm_number', number).execute()
+        
+        if result.data:
+            psalm_data = result.data[0]
+            return jsonify({
+                'success': True,
+                'data': {
+                    'psalm_number': psalm_data['psalm_number'],
+                    'text_niv': psalm_data.get('text_niv'),
+                    'text_esv': psalm_data.get('text_esv'),
+                    'text_nlt': psalm_data.get('text_nlt'),
+                    'text_nkjv': psalm_data.get('text_nkjv'),
+                    'text_nrsv': psalm_data.get('text_nrsv'),
+                    'music_url': psalm_data.get('music_url'),
+                    'created_at': psalm_data.get('created_at')
+                }
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Psalm not found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 @main_bp.route('/psalm/<int:psalm_number>')
 @login_required
