@@ -114,17 +114,23 @@ def save_journal():
         return redirect(url_for('main.dashboard'))
     
     try:
+        print(f"DEBUG: Saving journal - user_id={current_user.id}, psalm_id={psalm_id}, prompt_number={prompt_number}")
+        
         # Find existing entry or create new one for this psalm
         existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
+        print(f"DEBUG: Found {len(existing_entries)} existing entries")
         
         # Since we store all prompts in one entry, get the first (and should be only) entry
         if existing_entries:
             entry = existing_entries[0]
+            print(f"DEBUG: Updating existing entry ID {entry.id}")
             # Update the specific prompt response
             entry.prompt_responses[str(prompt_number)] = content or ""
+            print(f"DEBUG: Updated prompt_responses: {entry.prompt_responses}")
         else:
             # Create new entry with this prompt response
             prompt_responses = {str(prompt_number): content or ""}
+            print(f"DEBUG: Creating new entry with prompt_responses: {prompt_responses}")
             entry = JournalEntry(
                 user_id=current_user.id,
                 psalm_id=int(psalm_id),
@@ -132,7 +138,12 @@ def save_journal():
             )
         
         # Save the entry
-        if entry.save():
+        print(f"DEBUG: Attempting to save entry...")
+        save_result = entry.save()
+        print(f"DEBUG: Save result: {save_result}")
+        
+        if save_result:
+            print(f"DEBUG: Save successful, entry ID: {entry.id}")
             # For AJAX requests, return JSON response
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
                'application/json' in request.headers.get('Accept', ''):
@@ -140,6 +151,7 @@ def save_journal():
             
             flash('Journal entry saved successfully!', 'success')
         else:
+            print(f"DEBUG: Save failed")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
                'application/json' in request.headers.get('Accept', ''):
                 return jsonify({'success': False, 'error': 'Error saving journal entry'}), 500
@@ -147,10 +159,14 @@ def save_journal():
             flash('Error saving journal entry. Please try again.', 'error')
     
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
         print(f"Error in save_journal: {e}")
+        print(f"Full traceback: {error_details}")
+        
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
            'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e)}), 500
+            return jsonify({'success': False, 'error': str(e), 'details': error_details}), 500
         
         flash('Error saving journal entry. Please try again.', 'error')
     

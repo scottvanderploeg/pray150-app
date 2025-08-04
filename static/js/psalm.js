@@ -231,6 +231,7 @@ document.addEventListener('DOMContentLoaded', function() {
             saveBtn.disabled = true;
             
             // Make AJAX call to save journal entry
+            // First try the regular endpoint, then fall back to API endpoint if needed
             fetch('/save_journal', {
                 method: 'POST',
                 body: formData

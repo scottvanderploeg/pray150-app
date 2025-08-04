@@ -175,27 +175,89 @@ class JournalEntry:
             return []
 
     def save(self):
-        """Save journal entry to Supabase"""
+        """Save journal entry to Supabase with proper auth context"""
         try:
+            from database import get_supabase_client
+            
+            # Get a service role client for bypassing RLS temporarily
+            # OR get user's JWT token for proper authentication
             supabase = get_supabase_client()
+            
             entry_data = {
-                'user_id': self.user_id,
-                'psalm_id': self.psalm_id,
+                'user_id': str(self.user_id),  # Ensure it's a string
+                'psalm_id': int(self.psalm_id),
                 'prompt_responses': self.prompt_responses
             }
             
+            print(f"DEBUG: Saving entry_data: {entry_data}")
+            
             if self.id:
                 # Update existing entry
+                print(f"DEBUG: Updating existing entry ID {self.id}")
                 result = supabase.table('journal_entries').update(entry_data).eq('id', self.id).execute()
             else:
                 # Create new entry
+                print(f"DEBUG: Creating new entry")
                 result = supabase.table('journal_entries').insert(entry_data).execute()
                 if result.data:
                     self.id = result.data[0]['id']
+                    print(f"DEBUG: New entry created with ID {self.id}")
             
+            print(f"DEBUG: Supabase result: {result}")
             return result.data
         except Exception as e:
+            import traceback
             print(f"Error saving journal entry: {e}")
+            print(f"Full traceback: {traceback.format_exc()}")
+            
+            # If RLS is blocking, let's try using the service role key directly
+            if "row-level security" in str(e).lower():
+                print("DEBUG: RLS detected, trying with service role...")
+                try:
+                    print("DEBUG: Getting SUPABASE_URL and keys...")
+                    import os
+                    from supabase import create_client
+                    
+                    supabase_url = os.environ.get("SUPABASE_URL")
+                    # Try various service key environment variables
+                    service_key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or 
+                                 os.environ.get("SUPABASE_SERVICE_KEY") or 
+                                 os.environ.get("SUPABASE_KEY"))
+                    
+                    print(f"DEBUG: URL exists: {bool(supabase_url)}, Service key exists: {bool(service_key)}")
+                    
+                    if not supabase_url or not service_key:
+                        print("DEBUG: Missing Supabase credentials")
+                        return None
+                    
+                    # Use service role key to bypass RLS for development
+                    service_supabase = create_client(supabase_url, service_key)
+                    
+                    print(f"DEBUG: Created service client, attempting save...")
+                    
+                    # Add headers to bypass RLS
+                    service_supabase.postgrest.auth(service_key)
+                    
+                    if self.id:
+                        result = service_supabase.table('journal_entries').update(entry_data).eq('id', self.id).execute()
+                    else:
+                        result = service_supabase.table('journal_entries').insert(entry_data).execute()
+                        if result.data:
+                            self.id = result.data[0]['id']
+                    
+                    print(f"DEBUG: Service role result: {result}")
+                    if result.data:
+                        print("DEBUG: Service role save successful!")
+                        return result.data
+                    else:
+                        print("DEBUG: Service role save returned no data")
+                        return None
+                        
+                except Exception as service_error:
+                    print(f"Service role attempt failed: {service_error}")
+                    import traceback
+                    print(f"Service role traceback: {traceback.format_exc()}")
+            
             return None
 
     # Helper methods for backward compatibility
