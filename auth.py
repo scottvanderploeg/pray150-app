@@ -67,27 +67,33 @@ def register():
             })
             
             if auth_response.user:
-                # Create user profile record
-                profile_data = {
-                    'user_id': auth_response.user.id,
-                    'username': f"{first_name.lower()}.{last_name.lower()}",
-                    'email': email,
-                    'first_name': first_name,
-                    'last_name': last_name,
-                    'country': country,
-                    'zip_code': zip_code,
-                    'preferred_translation': 'NIV',
-                    'font_preference': 'Georgia',
-                    'theme_preference': 'default'
-                }
-                
-                # Save profile to user_profiles table
-                profile_result = supabase.table('user_profiles').insert(profile_data).execute()
+                try:
+                    # Create user profile record
+                    profile_data = {
+                        'user_id': auth_response.user.id,
+                        'username': f"{first_name.lower()}.{last_name.lower()}",
+                        'email': email,
+                        'first_name': first_name,
+                        'last_name': last_name,
+                        'country': country or None,
+                        'zip_code': zip_code or None,
+                        'preferred_translation': 'NIV',
+                        'font_preference': 'Georgia',
+                        'theme_preference': 'default'
+                    }
+                    
+                    # Save profile to user_profiles table
+                    profile_result = supabase.table('user_profiles').insert(profile_data).execute()
+                    print(f"Profile created: {profile_result}")
+                    
+                except Exception as profile_error:
+                    print(f"Profile creation error: {profile_error}")
+                    # Continue with registration even if profile creation fails
                 
                 # Create user object for Flask-Login
                 user = User(
                     id=auth_response.user.id,
-                    username=profile_data['username'],
+                    username=f"{first_name.lower()}.{last_name.lower()}",
                     email=email,
                     first_name=first_name,
                     last_name=last_name,
@@ -96,14 +102,20 @@ def register():
                 )
                 
                 login_user(user, remember=True)
-                flash('Registration successful! Welcome to Pray150.', 'success')
+                flash('Registration successful! Welcome to Pray150. Please check your email to confirm your account.', 'success')
                 return redirect(url_for('main.dashboard'))
             else:
                 flash('Registration failed. Please try again.', 'error')
                 
         except Exception as e:
             print(f"Registration error: {e}")
-            flash('Registration failed. Please try again.', 'error')
+            error_msg = str(e)
+            if "rate limit" in error_msg.lower():
+                flash('Too many registration attempts. Please wait a moment and try again.', 'error')
+            elif "email" in error_msg.lower():
+                flash('This email is already registered or invalid. Please try a different email.', 'error')
+            else:
+                flash('Registration failed. Please try again in a few moments.', 'error')
     
     return render_template('register.html')
 
