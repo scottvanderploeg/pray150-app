@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Pray150{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header">
+                <h1 class="h2 fw-bold mb-2">Welcome back, {{ current_user.username }}!</h1>
+                <p class="text-muted">Let's continue your prayer journey with God's Word</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Psalm Card -->
+    {% if todays_psalm %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm today-psalm-card">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-calendar-day text-primary me-2"></i>
+                                <small class="text-muted">Today's Psalm</small>
+                            </div>
+                            <h3 class="h4 fw-bold mb-2">Psalm {{ todays_psalm.number }}: {{ todays_psalm.title }}</h3>
+                            <p class="text-muted mb-3">
+                                {% if todays_psalm.text_niv %}
+                                    {{ todays_psalm.text_niv[:150] }}...
+                                {% endif %}
+                            </p>
+                            <a href="{{ url_for('main.psalm', psalm_number=todays_psalm.number) }}" 
+                               class="btn btn-primary">
+                                <i class="fas fa-book-open me-2"></i>Read & Pray
+                            </a>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="psalm-number-display">
+                                <div class="psalm-number">{{ todays_psalm.number }}</div>
+                                <small class="text-muted">of 150</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Progress Overview -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 h-100 stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-book fa-2x text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ total_psalms_read }}</h4>
+                    <p class="text-muted mb-0">Psalms Completed</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 h-100 stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-fire fa-2x text-warning"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ psalms_this_week }}</h4>
+                    <p class="text-muted mb-0">This Week</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card border-0 h-100 stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-icon mb-2">
+                        <i class="fas fa-hands fa-2x text-success"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ active_prayers|length }}</h4>
+                    <p class="text-muted mb-0">Active Prayers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Recent Journal Entries -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-journal-whills text-primary me-2"></i>
+                            Recent Journal Entries
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if recent_entries %}
+                        {% for entry in recent_entries %}
+                        <div class="journal-entry-preview mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="fw-bold mb-1">
+                                        Psalm {{ entry.psalm.number }} - Prompt {{ entry.prompt_number }}
+                                    </h6>
+                                    <small class="text-muted">{{ entry.updated_at.strftime('%B %d, %Y') }}</small>
+                                </div>
+                                <a href="{{ url_for('main.psalm', psalm_number=entry.psalm.number) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
+                            </div>
+                            <p class="text-muted mb-0">
+                                {{ entry.content[:120] }}{% if entry.content|length > 120 %}...{% endif %}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-journal-whills fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No journal entries yet. Start by reading today's Psalm!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Prayers -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-hands text-primary me-2"></i>
+                            Active Prayers
+                        </h5>
+                        <a href="{{ url_for('main.prayers') }}" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if active_prayers %}
+                        {% for prayer in active_prayers %}
+                        <div class="prayer-item mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="fw-bold mb-1">{{ prayer.title }}</h6>
+                                    <span class="badge bg-light text-dark mb-2">{{ prayer.category.title() }}</span>
+                                    {% if prayer.description %}
+                                    <p class="small text-muted mb-0">
+                                        {{ prayer.description[:60] }}{% if prayer.description|length > 60 %}...{% endif %}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-hands fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No active prayers yet.</p>
+                            <a href="{{ url_for('main.prayers') }}" class="btn btn-primary btn-sm">
+                                Add Your First Prayer
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Add some interactive elements to the dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate stat cards on page load
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        setTimeout(() => {
+            card.style.transform = 'translateY(0)';
+            card.style.opacity = '1';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}

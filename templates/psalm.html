@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Psalm {{ psalm.number }} - Pray150{% endblock %}
+
+{% block head %}
+<style>
+    .psalm-text {
+        font-family: {{ current_user.font_preference if current_user.font_preference else 'Georgia' }}, serif;
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+    .highlight {
+        background-color: #fff3cd;
+        padding: 2px;
+        border-radius: 3px;
+    }
+    .note-marker {
+        background-color: #d1ecf1;
+        border-left: 3px solid #bee5eb;
+        padding: 2px;
+        border-radius: 3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Psalm Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="psalm-header">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Psalm {{ psalm.number }}</li>
+                    </ol>
+                </nav>
+                <h1 class="h2 fw-bold mb-2">Psalm {{ psalm.number }}</h1>
+                <h2 class="h4 text-muted mb-3">{{ psalm.title }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Psalm Content -->
+        <div class="col-lg-8">
+            <!-- Music Player -->
+            {% if psalm.youtube_url %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-music text-primary me-2"></i>
+                        Worship Along
+                    </h5>
+                    <div class="ratio ratio-16x9">
+                        <iframe src="{{ psalm.youtube_url }}" 
+                                title="Psalm {{ psalm.number }} Music" 
+                                allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Psalm Text -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">
+                            <i class="fas fa-book-open text-primary me-2"></i>
+                            Scripture Text
+                        </h5>
+                        <div class="psalm-controls">
+                            <select class="form-select form-select-sm" id="translationSelect">
+                                <option value="niv" {% if current_user.preferred_translation == 'NIV' %}selected{% endif %}>NIV</option>
+                                <option value="esv" {% if current_user.preferred_translation == 'ESV' %}selected{% endif %}>ESV</option>
+                                <option value="nlt" {% if current_user.preferred_translation == 'NLT' %}selected{% endif %}>NLT</option>
+                                <option value="nkjv" {% if current_user.preferred_translation == 'NKJV' %}selected{% endif %}>NKJV</option>
+                                <option value="nrsv" {% if current_user.preferred_translation == 'NRSV' %}selected{% endif %}>NRSV</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="psalm-text" id="psalmText" data-psalm-id="{{ psalm.id }}">
+                        <div id="text-niv" style="{% if current_user.preferred_translation != 'NIV' %}display: none;{% endif %}">
+                            {{ psalm.text_niv|replace('\n', '<br>')|safe }}
+                        </div>
+                        <div id="text-esv" style="{% if current_user.preferred_translation != 'ESV' %}display: none;{% endif %}">
+                            {{ psalm.text_esv|replace('\n', '<br>')|safe }}
+                        </div>
+                        <div id="text-nlt" style="{% if current_user.preferred_translation != 'NLT' %}display: none;{% endif %}">
+                            {{ psalm.text_nlt|replace('\n', '<br>')|safe }}
+                        </div>
+                        <div id="text-nkjv" style="{% if current_user.preferred_translation != 'NKJV' %}display: none;{% endif %}">
+                            {{ psalm.text_nkjv|replace('\n', '<br>')|safe }}
+                        </div>
+                        <div id="text-nrsv" style="{% if current_user.preferred_translation != 'NRSV' %}display: none;{% endif %}">
+                            {{ psalm.text_nrsv|replace('\n', '<br>')|safe }}
+                        </div>
+                    </div>
+                    
+                    <!-- Markup Tools -->
+                    <div class="markup-tools mt-3 pt-3 border-top">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-warning" id="highlightBtn">
+                                <i class="fas fa-highlighter me-1"></i>Highlight
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="noteBtn">
+                                <i class="fas fa-sticky-note me-1"></i>Add Note
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleMarkupsBtn">
+                                <i class="fas fa-eye me-1"></i>Toggle Markups
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Tracking -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        Mark as Complete
+                    </h5>
+                    <form method="POST" action="{{ url_for('main.complete_psalm') }}">
+                        <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="reading_time" class="form-label">Reading time (minutes)</label>
+                                <input type="number" class="form-control" id="reading_time" name="reading_time" min="1" max="120">
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="music_listened" name="music_listened" value="true">
+                                    <label class="form-check-label" for="music_listened">
+                                        Listened to worship music
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success mt-3">
+                            <i class="fas fa-check me-2"></i>Complete Psalm
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Journal Prompts Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-journal-whills text-primary me-2"></i>
+                        Journal Prompts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Prompt 1 -->
+                    <div class="journal-prompt mb-4">
+                        <h6 class="fw-bold text-primary">1. {{ psalm.prompt_1 }}</h6>
+                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
+                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                            <input type="hidden" name="prompt_number" value="1">
+                            <textarea class="form-control mb-2" name="content" rows="3" 
+                                      placeholder="Write your thoughts...">{{ entries_dict.get(1).content if entries_dict.get(1) else '' }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Prompt 2 -->
+                    <div class="journal-prompt mb-4">
+                        <h6 class="fw-bold text-primary">2. {{ psalm.prompt_2 }}</h6>
+                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
+                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                            <input type="hidden" name="prompt_number" value="2">
+                            <textarea class="form-control mb-2" name="content" rows="3" 
+                                      placeholder="Write your thoughts...">{{ entries_dict.get(2).content if entries_dict.get(2) else '' }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Prompt 3 -->
+                    <div class="journal-prompt mb-4">
+                        <h6 class="fw-bold text-primary">3. {{ psalm.prompt_3 }}</h6>
+                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
+                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                            <input type="hidden" name="prompt_number" value="3">
+                            <textarea class="form-control mb-2" name="content" rows="3" 
+                                      placeholder="Write your thoughts...">{{ entries_dict.get(3).content if entries_dict.get(3) else '' }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Prompt 4 -->
+                    <div class="journal-prompt mb-4">
+                        <h6 class="fw-bold text-primary">4. {{ psalm.prompt_4 }}</h6>
+                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
+                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                            <input type="hidden" name="prompt_number" value="4">
+                            <textarea class="form-control mb-2" name="content" rows="3" 
+                                      placeholder="Write your thoughts...">{{ entries_dict.get(4).content if entries_dict.get(4) else '' }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <i class="fas fa-save me-1"></i>Save
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/psalm.js') }}"></script>
+{% endblock %}

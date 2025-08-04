@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Settings - Pray150{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="h2 fw-bold mb-2">Profile Settings</h1>
+                <p class="text-muted">Customize your Pray150 experience</p>
+            </div>
+
+            <!-- User Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-user text-primary me-2"></i>
+                        Account Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        To change your username or email, please contact support.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Reading Preferences -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-book-open text-primary me-2"></i>
+                        Reading Preferences
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.update_preferences') }}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="translation" class="form-label">Preferred Translation</label>
+                                <select class="form-select" id="translation" name="translation">
+                                    <option value="NIV" {% if current_user.preferred_translation == 'NIV' %}selected{% endif %}>NIV</option>
+                                    <option value="ESV" {% if current_user.preferred_translation == 'ESV' %}selected{% endif %}>ESV</option>
+                                    <option value="NLT" {% if current_user.preferred_translation == 'NLT' %}selected{% endif %}>NLT</option>
+                                    <option value="NKJV" {% if current_user.preferred_translation == 'NKJV' %}selected{% endif %}>NKJV</option>
+                                    <option value="NRSV" {% if current_user.preferred_translation == 'NRSV' %}selected{% endif %}>NRSV</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="font" class="form-label">Font Family</label>
+                                <select class="form-select" id="font" name="font">
+                                    <option value="Georgia" {% if current_user.font_preference == 'Georgia' %}selected{% endif %}>Georgia</option>
+                                    <option value="Merriweather" {% if current_user.font_preference == 'Merriweather' %}selected{% endif %}>Merriweather</option>
+                                    <option value="Times New Roman" {% if current_user.font_preference == 'Times New Roman' %}selected{% endif %}>Times New Roman</option>
+                                    <option value="Arial" {% if current_user.font_preference == 'Arial' %}selected{% endif %}>Arial</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="theme" class="form-label">Theme</label>
+                                <select class="form-select" id="theme" name="theme">
+                                    <option value="default" {% if current_user.theme_preference == 'default' %}selected{% endif %}>Default (Light)</option>
+                                    <option value="warm" {% if current_user.theme_preference == 'warm' %}selected{% endif %}>Warm</option>
+                                    <option value="sepia" {% if current_user.theme_preference == 'sepia' %}selected{% endif %}>Sepia</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Preferences
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Prayer Statistics -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-chart-line text-primary me-2"></i>
+                        Your Prayer Journey
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card bg-light rounded p-3">
+                                <h4 class="fw-bold text-primary mb-1">{{ current_user.progress_records|length }}</h4>
+                                <small class="text-muted">Psalms Completed</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card bg-light rounded p-3">
+                                <h4 class="fw-bold text-success mb-1">{{ current_user.journal_entries|length }}</h4>
+                                <small class="text-muted">Journal Entries</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card bg-light rounded p-3">
+                                <h4 class="fw-bold text-warning mb-1">{{ current_user.prayers|selectattr('is_answered', 'equalto', false)|list|length }}</h4>
+                                <small class="text-muted">Active Prayers</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-card bg-light rounded p-3">
+                                <h4 class="fw-bold text-info mb-1">{{ current_user.prayers|selectattr('is_answered', 'equalto', true)|list|length }}</h4>
+                                <small class="text-muted">Answered Prayers</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Member since {{ current_user.created_at.strftime('%B %Y') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bible Verse -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <blockquote class="blockquote mb-0">
+                        <p class="mb-3 fst-italic">
+                            "Rejoice always, pray continually, give thanks in all circumstances; 
+                            for this is God's will for you in Christ Jesus."
+                        </p>
+                        <footer class="blockquote-footer">
+                            <cite title="Source Title">1 Thessalonians 5:16-18 NIV</cite>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Preview font changes
+document.getElementById('font').addEventListener('change', function() {
+    const selectedFont = this.value;
+    // Could add live preview here if desired
+});
+
+// Preview theme changes
+document.getElementById('theme').addEventListener('change', function() {
+    const selectedTheme = this.value;
+    // Could add live preview here if desired
+});
+</script>
+{% endblock %}

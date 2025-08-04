@@ -1,0 +1,315 @@
+/* Pray150 Custom Styles */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    
+    /* Devotional Colors */
+    --cream: #faf8f3;
+    --soft-blue: #e8f4f8;
+    --warm-gold: #f4e4bc;
+    --gentle-gray: #f5f5f5;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Georgia', serif;
+    line-height: 1.6;
+    color: var(--dark-color);
+    background-color: var(--cream);
+}
+
+.min-vh-100 {
+    min-height: 100vh;
+}
+
+/* Navigation */
+.navbar {
+    background-color: white !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    color: var(--primary-color) !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--soft-blue) 0%, white 100%);
+    padding: 2rem 0;
+}
+
+.hero-content {
+    padding: 2rem 0;
+}
+
+.feature-item {
+    margin-bottom: 0.75rem;
+}
+
+.feature-item i {
+    width: 24px;
+    text-align: center;
+}
+
+.psalm-preview-card {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Cards */
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+}
+
+.today-psalm-card {
+    background: linear-gradient(135deg, var(--soft-blue) 0%, white 100%);
+}
+
+.psalm-number-display {
+    text-align: center;
+}
+
+.psalm-number {
+    font-size: 3rem;
+    font-weight: bold;
+    color: var(--primary-color);
+    line-height: 1;
+}
+
+/* Stats Cards */
+.stat-card {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.stat-icon i {
+    opacity: 0.8;
+}
+
+/* Psalm Text Styling */
+.psalm-text {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+/* Journal Forms */
+.journal-form textarea {
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.journal-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.1rem rgba(74, 144, 226, 0.25);
+}
+
+/* Prayer Cards */
+.prayer-card {
+    transition: all 0.2s ease;
+}
+
+.prayer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+.answered-prayer-card {
+    background: linear-gradient(135deg, #f8fff8 0%, white 100%);
+    border-left: 4px solid var(--success-color) !important;
+}
+
+.answered-note {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    border-left: 3px solid var(--success-color);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #357abd;
+    border-color: #357abd;
+}
+
+/* Markup Tools */
+.markup-tools {
+    background-color: var(--gentle-gray);
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border-bottom: 2px solid #ffc107;
+}
+
+.note-marker {
+    background-color: #d1ecf1;
+    border-left: 3px solid #bee5eb;
+    padding: 2px 4px;
+    border-radius: 3px;
+    position: relative;
+}
+
+/* Theme Variations */
+.theme-warm {
+    --cream: #fff8f0;
+    --soft-blue: #f0f8ff;
+}
+
+.theme-warm .card {
+    background-color: #fefefe;
+}
+
+.theme-sepia {
+    --cream: #f4f1e8;
+    --soft-blue: #f0ede6;
+    filter: sepia(0.1);
+}
+
+/* Modal Enhancements */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    background-color: var(--gentle-gray);
+}
+
+/* Footer */
+footer {
+    background-color: white !important;
+    border-top: 1px solid rgba(0,0,0,0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-content {
+        text-align: center;
+        padding: 1rem 0;
+    }
+    
+    .psalm-text {
+        font-size: 1.1rem;
+        padding: 1rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .hero-actions .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gentle-gray);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #357abd;
+}
+
+/* Focus States for Accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .btn,
+    .modal,
+    footer {
+        display: none !important;
+    }
+    
+    .psalm-text {
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+}

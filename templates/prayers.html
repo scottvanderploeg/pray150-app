@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Prayers - Pray150{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2 fw-bold mb-2">Prayer List</h1>
+            <p class="text-muted">Keep track of your prayers and celebrate God's answers</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPrayerModal">
+                <i class="fas fa-plus me-2"></i>Add Prayer
+            </button>
+        </div>
+    </div>
+
+    <!-- Prayer Categories Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills" id="prayerTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab">
+                        <i class="fas fa-hands me-1"></i>Active Prayers ({{ active_prayers|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="answered-tab" data-bs-toggle="pill" data-bs-target="#answered" type="button" role="tab">
+                        <i class="fas fa-check-circle me-1"></i>Answered Prayers ({{ answered_prayers|length }})
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="prayerTabContent">
+        <!-- Active Prayers -->
+        <div class="tab-pane fade show active" id="active" role="tabpanel">
+            {% if active_prayers %}
+                <div class="row">
+                    {% for prayer in active_prayers %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100 prayer-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-{{ 'primary' if prayer.category == 'family' else 'success' if prayer.category == 'healing' else 'info' if prayer.category == 'salvation' else 'warning' }}">
+                                        {{ prayer.category.title() }}
+                                    </span>
+                                    <small class="text-muted">{{ prayer.created_at.strftime('%m/%d/%y') }}</small>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ prayer.title }}</h5>
+                                {% if prayer.description %}
+                                <p class="card-text text-muted">{{ prayer.description }}</p>
+                                {% endif %}
+                                <div class="prayer-actions mt-3">
+                                    <button class="btn btn-success btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#answerPrayerModal"
+                                            data-prayer-id="{{ prayer.id }}"
+                                            data-prayer-title="{{ prayer.title }}">
+                                        <i class="fas fa-check me-1"></i>Mark Answered
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-hands fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No active prayers yet</h4>
+                    <p class="text-muted mb-4">Add your first prayer request and start building your prayer life</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPrayerModal">
+                        <i class="fas fa-plus me-2"></i>Add Your First Prayer
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Answered Prayers -->
+        <div class="tab-pane fade" id="answered" role="tabpanel">
+            {% if answered_prayers %}
+                <div class="row">
+                    {% for prayer in answered_prayers %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card border-0 shadow-sm h-100 answered-prayer-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Answered
+                                    </span>
+                                    <small class="text-muted">{{ prayer.answered_date.strftime('%m/%d/%y') }}</small>
+                                </div>
+                                <h5 class="card-title fw-bold">{{ prayer.title }}</h5>
+                                {% if prayer.description %}
+                                <p class="card-text text-muted small">{{ prayer.description }}</p>
+                                {% endif %}
+                                {% if prayer.answered_note %}
+                                <div class="answered-note mt-2 p-2 bg-light rounded">
+                                    <small class="fw-bold text-success d-block">God's Answer:</small>
+                                    <small class="text-muted">{{ prayer.answered_note }}</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No answered prayers yet</h4>
+                    <p class="text-muted">As God answers your prayers, you'll see them here for gratitude and remembrance</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Prayer Modal -->
+<div class="modal fade" id="addPrayerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.add_prayer') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus me-2"></i>Add New Prayer
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Prayer Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category *</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Choose a category...</option>
+                            <option value="family">Family</option>
+                            <option value="healing">Healing</option>
+                            <option value="salvation">Salvation</option>
+                            <option value="personal">Personal Needs</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Add more details about your prayer request..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Add Prayer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Answer Prayer Modal -->
+<div class="modal fade" id="answerPrayerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.answer_prayer') }}">
+                <input type="hidden" id="answerPrayerId" name="prayer_id">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle me-2 text-success"></i>Mark Prayer as Answered
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-hands me-2"></i>
+                        Praise God! He has answered your prayer: <strong id="answerPrayerTitle"></strong>
+                    </div>
+                    <div class="mb-3">
+                        <label for="answered_note" class="form-label">How did God answer? (Optional)</label>
+                        <textarea class="form-control" id="answered_note" name="answered_note" rows="3" 
+                                  placeholder="Share how God answered this prayer..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Mark as Answered
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Handle answer prayer modal
+document.addEventListener('DOMContentLoaded', function() {
+    const answerPrayerModal = document.getElementById('answerPrayerModal');
+    answerPrayerModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const prayerId = button.getAttribute('data-prayer-id');
+        const prayerTitle = button.getAttribute('data-prayer-title');
+        
+        document.getElementById('answerPrayerId').value = prayerId;
+        document.getElementById('answerPrayerTitle').textContent = prayerTitle;
+    });
+});
+</script>
+{% endblock %}
