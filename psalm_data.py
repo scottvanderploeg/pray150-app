@@ -117,7 +117,7 @@ def initialize_psalms():
         existing_psalm = Psalm.get_by_number(psalm_data['number'])
         if not existing_psalm:
             psalm = Psalm(
-                number=psalm_data['number'],
+                psalm_number=psalm_data['number'],
                 text_niv=psalm_data['text_niv'],
                 text_esv=psalm_data['text_niv'],  # Using NIV for all translations in this demo
                 text_nlt=psalm_data['text_niv'],

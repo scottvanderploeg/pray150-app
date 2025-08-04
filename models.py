@@ -51,22 +51,16 @@ class User(UserMixin):
         return True
 
 class Psalm:
-    def __init__(self, id=None, psalm_number=None, title=None, text_niv=None, text_esv=None,
-                 text_nlt=None, text_nkjv=None, text_nrsv=None, music_url=None,
-                 prompt_1=None, prompt_2=None, prompt_3=None, prompt_4=None):
+    def __init__(self, id=None, psalm_number=None, text_niv=None, text_esv=None,
+                 text_nlt=None, text_nkjv=None, text_nrsv=None, music_url=None):
         self.id = id
         self.number = psalm_number
-        self.title = title
         self.text_niv = text_niv
         self.text_esv = text_esv
         self.text_nlt = text_nlt
         self.text_nkjv = text_nkjv
         self.text_nrsv = text_nrsv
-        self.youtube_url = music_url  # Keep backward compatibility
-        self.prompt_1 = prompt_1
-        self.prompt_2 = prompt_2
-        self.prompt_3 = prompt_3
-        self.prompt_4 = prompt_4
+        self.music_url = music_url
 
     @staticmethod
     def get_by_number(psalm_number):
@@ -79,17 +73,12 @@ class Psalm:
                 return Psalm(
                     id=psalm_data['id'],
                     psalm_number=psalm_data['psalm_number'],
-                    title=psalm_data.get('title'),
                     text_niv=psalm_data.get('text_niv'),
                     text_esv=psalm_data.get('text_esv'),
                     text_nlt=psalm_data.get('text_nlt'),
                     text_nkjv=psalm_data.get('text_nkjv'),
                     text_nrsv=psalm_data.get('text_nrsv'),
-                    music_url=psalm_data.get('music_url'),
-                    prompt_1=psalm_data.get('prompt_1'),
-                    prompt_2=psalm_data.get('prompt_2'),
-                    prompt_3=psalm_data.get('prompt_3'),
-                    prompt_4=psalm_data.get('prompt_4')
+                    music_url=psalm_data.get('music_url')
                 )
             return None
         except Exception as e:
@@ -113,17 +102,12 @@ class Psalm:
             supabase = get_supabase_client()
             psalm_data = {
                 'psalm_number': self.number,
-                'title': self.title,
                 'text_niv': self.text_niv,
                 'text_esv': self.text_esv,
                 'text_nlt': self.text_nlt,
                 'text_nkjv': self.text_nkjv,
                 'text_nrsv': self.text_nrsv,
-                'music_url': self.youtube_url,
-                'prompt_1': self.prompt_1,
-                'prompt_2': self.prompt_2,
-                'prompt_3': self.prompt_3,
-                'prompt_4': self.prompt_4
+                'music_url': self.music_url
             }
             result = supabase.table('psalms').insert(psalm_data).execute()
             if result.data:
