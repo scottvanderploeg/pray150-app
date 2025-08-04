@@ -85,12 +85,14 @@ Preferred communication style: Simple, everyday language.
 - **GET /api/verify**: JWT token verification and user information retrieval
 - **POST /api/forgot-password**: Password reset email via Supabase Auth
 - **POST /api/reset-password**: Password update using email-provided tokens
+- **POST /api/journal**: Save journal entries with devotional prompts (requires JWT authentication)
 - **GET /forgot-password**: Web interface for password reset requests
 - **GET /reset-password**: Web interface for password reset completion
 - Integration with existing Flask-Login session management for web interface
 - Comprehensive error handling with proper HTTP status codes
 - Email confirmation requirement through Supabase (configurable in Supabase dashboard)
 - Complete password recovery flow with secure token-based verification
+- Journal entries stored in Supabase journal_entries table with JSONB prompt responses
 
 ### Planned Integrations
 - Social sharing capabilities for prayer milestones and journal entries

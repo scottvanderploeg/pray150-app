@@ -251,3 +251,70 @@ def direct_reset_password():
     except Exception as e:
         print(f"Direct password reset error: {e}")
         return jsonify({"error": "Password reset failed. Please try again."}), 500
+
+@auth_api_bp.route('/journal', methods=['POST'])
+@jwt_required()
+def save_journal_entry():
+    """Save journal entry to Supabase journal_entries table"""
+    try:
+        # Get current user from JWT
+        current_user_id = get_jwt_identity()
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        psalm_id = data.get('psalm_id')
+        prompt_responses = data.get('prompt_responses')
+        
+        # Validate required fields
+        if not psalm_id or not prompt_responses:
+            return jsonify({"error": "psalm_id and prompt_responses are required"}), 400
+        
+        # Validate psalm_id is integer
+        try:
+            psalm_id = int(psalm_id)
+        except (ValueError, TypeError):
+            return jsonify({"error": "psalm_id must be a valid integer"}), 400
+        
+        # Validate prompt_responses structure
+        required_prompts = [
+            "Lord, where is my heart/soul today?",
+            "LOOK! Lord, help me discover new truth from your Word today.",
+            "LISTEN! Lord, what is your thought for me today from your Word?",
+            "RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?"
+        ]
+        
+        if not isinstance(prompt_responses, dict):
+            return jsonify({"error": "prompt_responses must be an object"}), 400
+        
+        # Check if all required prompts are present
+        for prompt in required_prompts:
+            if prompt not in prompt_responses:
+                return jsonify({"error": f"Missing response for: {prompt}"}), 400
+        
+        # Save to Supabase journal_entries table
+        supabase = get_supabase_client()
+        
+        from datetime import datetime
+        journal_entry = {
+            "user_id": current_user_id,
+            "psalm_id": psalm_id,
+            "prompt_responses": prompt_responses,
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        result = supabase.table('journal_entries').insert(journal_entry).execute()
+        
+        if result.data:
+            entry_id = result.data[0]['id']
+            return jsonify({
+                "message": "Journal entry saved",
+                "entry_id": str(entry_id)
+            }), 201
+        else:
+            return jsonify({"error": "Failed to save journal entry"}), 500
+            
+    except Exception as e:
+        print(f"Journal entry save error: {e}")
+        return jsonify({"error": "Failed to save journal entry. Please try again."}), 500

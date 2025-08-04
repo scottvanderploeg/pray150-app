@@ -117,6 +117,40 @@ Reset password using tokens from email link.
 - `400`: Missing tokens/password or password too short
 - `500`: Password reset failed
 
+### POST /api/journal
+Save journal entry with devotional prompts (requires JWT authentication).
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Request Body:**
+```json
+{
+  "psalm_id": 1,
+  "prompt_responses": {
+    "Lord, where is my heart/soul today?": "My heart feels peaceful today, grateful for God's presence.",
+    "LOOK! Lord, help me discover new truth from your Word today.": "I discovered that God's love is steadfast even in difficult times.",
+    "LISTEN! Lord, what is your thought for me today from your Word?": "God is reminding me to trust in His timing and provision.",
+    "RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?": "I need to pray for patience and trust. God is calling me to serve others with love."
+  }
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Journal entry saved",
+  "entry_id": "12345"
+}
+```
+
+**Error Responses:**
+- `400`: Missing psalm_id, prompt_responses, or invalid data format
+- `401`: Invalid or missing JWT token
+- `500`: Database error
+
 ## Implementation Details
 
 ### Environment Variables
