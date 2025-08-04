@@ -20,9 +20,8 @@ def dashboard():
         initialize_psalms()
         psalm_count = Psalm.get_count()
     
-    # Get today's psalm (using modulo to cycle through available psalms)
-    day_of_year = datetime.now().timetuple().tm_yday
-    todays_psalm_number = ((day_of_year - 1) % psalm_count) + 1 if psalm_count > 0 else 1
+    # For now, just show Psalm 1 since that's the only one programmed
+    todays_psalm_number = 1
     todays_psalm = Psalm.get_by_number(todays_psalm_number)
     
     # Get recent journal entries
@@ -187,22 +186,56 @@ def psalm(psalm_number):
 @main_bp.route('/save_journal', methods=['POST'])
 @login_required
 def save_journal():
-    psalm_id = request.form.get('psalm_id')
-    prompt_number = request.form.get('prompt_number')
-    content = request.form.get('content')
-    
-    if not psalm_id or not prompt_number:
-        if request.headers.get('Content-Type') == 'application/json' or request.is_json:
-            return jsonify({'success': False, 'error': 'Invalid journal entry data'}), 400
-        flash('Invalid journal entry data.', 'error')
-        return redirect(url_for('main.dashboard'))
-    
     try:
-        print(f"DEBUG: Saving journal - user_id={current_user.id}, psalm_id={psalm_id}, prompt_number={prompt_number}")
+        # Handle JSON requests for auto-save
+        if request.is_json:
+            data = request.get_json()
+            psalm_id = data.get('psalm_id')
+            prompt_responses = data.get('prompt_responses', {})
+        else:
+            # Handle form data for backward compatibility
+            psalm_id = request.form.get('psalm_id')
+            prompt_number = request.form.get('prompt_number')
+            content = request.form.get('content')
+            prompt_responses = {prompt_number: content} if prompt_number and content else {}
         
-        # Find existing entry or create new one for this psalm
+        if not psalm_id:
+            return jsonify({'success': False, 'error': 'Invalid journal entry data'}), 400
+        
+        print(f"DEBUG: Saving journal - user_id={current_user.id}, psalm_id={psalm_id}")
+        print(f"DEBUG: Prompt responses: {prompt_responses}")
+        
+        # For consolidated saving, we need to check for today's entry
+        today = datetime.now().strftime('%Y-%m-%d')
         existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
-        print(f"DEBUG: Found {len(existing_entries)} existing entries")
+        
+        # Filter to today's entries only
+        today_entry = None
+        for entry in existing_entries:
+            if entry.created_at and entry.created_at.startswith(today):
+                today_entry = entry
+                break
+        
+        if today_entry:
+            # Update existing entry with consolidated responses
+            print(f"DEBUG: Updating existing entry ID {today_entry.id}")
+            today_entry.prompt_responses.update(prompt_responses)
+            today_entry.save()
+        else:
+            # Create new consolidated entry
+            print(f"DEBUG: Creating new consolidated entry")
+            entry = JournalEntry(
+                user_id=current_user.id,
+                psalm_id=psalm_id,
+                prompt_responses=prompt_responses
+            )
+            entry.save()
+        
+        return jsonify({'success': True, 'message': 'Journal entry saved successfully!'})
+        
+    except Exception as e:
+        print(f"Error saving journal entry: {e}")
+        return jsonify({'success': False, 'error': 'Error saving journal entry. Please try again.'}), 500
         
         # Since we store all prompts in one entry, get the first (and should be only) entry
         if existing_entries:

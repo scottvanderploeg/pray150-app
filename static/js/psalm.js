@@ -7,9 +7,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const noteBtn = document.getElementById('noteBtn');
     const toggleMarkupsBtn = document.getElementById('toggleMarkupsBtn');
     
+    // Journal auto-save functionality
+    const journalForm = document.getElementById('journalForm');
+    const journalTextareas = document.querySelectorAll('.journal-textarea');
+    const saveStatus = document.getElementById('saveStatus');
+    
     let isHighlightMode = false;
     let isNoteMode = false;
     let markupsVisible = true;
+    let saveTimeout = null;
+    let lastSaveData = {};
 
     // Translation switching
     if (translationSelect) {
@@ -30,6 +37,132 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Update user preference (could be saved via AJAX)
             updateUserPreference('translation', selectedTranslation);
+        });
+    }
+
+    // Journal auto-save functionality
+    if (journalForm && journalTextareas.length > 0) {
+        // Initialize with empty save status
+        if (saveStatus) {
+            saveStatus.textContent = 'Ready';
+            saveStatus.className = 'text-muted';
+        }
+
+        // Function to collect all journal data
+        function getJournalData() {
+            const psalmId = journalForm.dataset.psalmId;
+            const promptResponses = {};
+            
+            journalTextareas.forEach(textarea => {
+                const promptNum = textarea.dataset.prompt;
+                const content = textarea.value.trim();
+                if (content) {
+                    promptResponses[promptNum] = content;
+                }
+            });
+            
+            return {
+                psalm_id: psalmId,
+                prompt_responses: promptResponses
+            };
+        }
+
+        // Function to save journal data
+        function saveJournal() {
+            const data = getJournalData();
+            
+            // Don't save if no content
+            if (Object.keys(data.prompt_responses).length === 0) {
+                if (saveStatus) {
+                    saveStatus.textContent = 'Ready';
+                    saveStatus.className = 'text-muted';
+                }
+                return;
+            }
+
+            // Check if data has changed
+            const dataString = JSON.stringify(data);
+            if (dataString === JSON.stringify(lastSaveData)) {
+                return; // No changes
+            }
+
+            if (saveStatus) {
+                saveStatus.textContent = 'Auto-saving journal entry...';
+                saveStatus.className = 'text-info';
+            }
+
+            console.log('Auto-saving journal entry...');
+
+            fetch('/save_journal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    lastSaveData = data;
+                    if (saveStatus) {
+                        saveStatus.textContent = 'Journal entry saved successfully';
+                        saveStatus.className = 'text-success';
+                    }
+                    console.log('Journal entry saved successfully');
+                } else {
+                    if (saveStatus) {
+                        saveStatus.textContent = 'Error saving entry';
+                        saveStatus.className = 'text-danger';
+                    }
+                    console.error('Error saving journal entry:', result.error);
+                }
+            })
+            .catch(error => {
+                if (saveStatus) {
+                    saveStatus.textContent = 'Error saving entry';
+                    saveStatus.className = 'text-danger';
+                }
+                console.error('Error saving journal entry:', error);
+            });
+        }
+
+        // Add event listeners for auto-save
+        journalTextareas.forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                // Clear existing timeout
+                if (saveTimeout) {
+                    clearTimeout(saveTimeout);
+                }
+                
+                // Set new timeout for auto-save (2 seconds after user stops typing)
+                saveTimeout = setTimeout(saveJournal, 2000);
+                
+                if (saveStatus) {
+                    saveStatus.textContent = 'Typing...';
+                    saveStatus.className = 'text-muted';
+                }
+            });
+
+            // Save on blur (when user clicks away)
+            textarea.addEventListener('blur', function() {
+                if (saveTimeout) {
+                    clearTimeout(saveTimeout);
+                }
+                saveTimeout = setTimeout(saveJournal, 500);
+            });
+        });
+
+        // Save before page unload
+        window.addEventListener('beforeunload', function() {
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+            // Attempt synchronous save (may not work in all browsers)
+            const data = getJournalData();
+            if (Object.keys(data.prompt_responses).length > 0) {
+                navigator.sendBeacon('/save_journal', JSON.stringify(data));
+            }
         });
     }
 

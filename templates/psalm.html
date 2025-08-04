@@ -157,61 +157,40 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <!-- Prompt 1 -->
-                    <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
-                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
-                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
-                            <input type="hidden" name="prompt_number" value="1">
-                            <textarea class="form-control mb-2" name="content" rows="3" 
+                    <form id="journalForm" data-psalm-id="{{ psalm.id }}">
+                        <!-- Prompt 1 -->
+                        <div class="journal-prompt mb-4">
+                            <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
+                            <textarea class="form-control journal-textarea" data-prompt="1" rows="3" 
                                       placeholder="Reflect on where your heart and soul are today...">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('1', '') }}{% endif %}</textarea>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="fas fa-save me-1"></i>Save
-                            </button>
-                        </form>
-                    </div>
+                        </div>
 
-                    <!-- Prompt 2 -->
-                    <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">2. LOOK! Lord, help me discover new truth from your Word today.</h6>
-                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
-                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
-                            <input type="hidden" name="prompt_number" value="2">
-                            <textarea class="form-control mb-2" name="content" rows="3" 
+                        <!-- Prompt 2 -->
+                        <div class="journal-prompt mb-4">
+                            <h6 class="fw-bold text-primary">2. LOOK! Lord, help me discover new truth from your Word today.</h6>
+                            <textarea class="form-control journal-textarea" data-prompt="2" rows="3" 
                                       placeholder="What new truth or insight do you discover from this Psalm?">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('2', '') }}{% endif %}</textarea>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="fas fa-save me-1"></i>Save
-                            </button>
-                        </form>
-                    </div>
+                        </div>
 
-                    <!-- Prompt 3 -->
-                    <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">3. LISTEN! Lord, what is your thought for me today from your Word?</h6>
-                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
-                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
-                            <input type="hidden" name="prompt_number" value="3">
-                            <textarea class="form-control mb-2" name="content" rows="3" 
+                        <!-- Prompt 3 -->
+                        <div class="journal-prompt mb-4">
+                            <h6 class="fw-bold text-primary">3. LISTEN! Lord, what is your thought for me today from your Word?</h6>
+                            <textarea class="form-control journal-textarea" data-prompt="3" rows="3" 
                                       placeholder="What is God speaking to you through this Psalm?">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('3', '') }}{% endif %}</textarea>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="fas fa-save me-1"></i>Save
-                            </button>
-                        </form>
-                    </div>
+                        </div>
 
-                    <!-- Prompt 4 -->
-                    <div class="journal-prompt mb-4">
-                        <h6 class="fw-bold text-primary">4. RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?</h6>
-                        <form method="POST" action="{{ url_for('main.save_journal') }}" class="journal-form">
-                            <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
-                            <input type="hidden" name="prompt_number" value="4">
-                            <textarea class="form-control mb-2" name="content" rows="3" 
+                        <!-- Prompt 4 -->
+                        <div class="journal-prompt mb-4">
+                            <h6 class="fw-bold text-primary">4. RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?</h6>
+                            <textarea class="form-control journal-textarea" data-prompt="4" rows="3" 
                                       placeholder="How will you respond to God? What action is He calling you to take?">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('4', '') }}{% endif %}</textarea>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <i class="fas fa-save me-1"></i>Save
-                            </button>
-                        </form>
-                    </div>
+                        </div>
+                        
+                        <!-- Auto-save status -->
+                        <div class="text-center">
+                            <small id="saveStatus" class="text-muted">Auto-saving...</small>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
