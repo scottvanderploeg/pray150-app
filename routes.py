@@ -89,8 +89,8 @@ def psalm(psalm_number):
     # Get user's journal entries for this psalm
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id)
     
-    # Convert to dict for easy template access
-    entries_dict = {entry.prompt_number: entry for entry in journal_entries}
+    # Pass the entries directly since they now contain all prompts in one entry
+    entries_dict = {entry.id: entry for entry in journal_entries} if journal_entries else {}
     
     # Get user's markups for this psalm (placeholder for now)
     markups = []
@@ -108,37 +108,53 @@ def save_journal():
     content = request.form.get('content')
     
     if not psalm_id or not prompt_number:
+        if request.headers.get('Content-Type') == 'application/json' or request.is_json:
+            return jsonify({'success': False, 'error': 'Invalid journal entry data'}), 400
         flash('Invalid journal entry data.', 'error')
         return redirect(url_for('main.dashboard'))
     
-    # Find existing entry or create new one
-    existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
-    existing_entry = None
-    for entry in existing_entries:
-        if entry.prompt_number == int(prompt_number):
-            existing_entry = entry
-            break
+    try:
+        # Find existing entry or create new one for this psalm
+        existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
+        
+        # Since we store all prompts in one entry, get the first (and should be only) entry
+        if existing_entries:
+            entry = existing_entries[0]
+            # Update the specific prompt response
+            entry.prompt_responses[str(prompt_number)] = content or ""
+        else:
+            # Create new entry with this prompt response
+            prompt_responses = {str(prompt_number): content or ""}
+            entry = JournalEntry(
+                user_id=current_user.id,
+                psalm_id=int(psalm_id),
+                prompt_responses=prompt_responses
+            )
+        
+        # Save the entry
+        if entry.save():
+            # For AJAX requests, return JSON response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+               'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'success': True, 'message': 'Journal entry saved successfully'})
+            
+            flash('Journal entry saved successfully!', 'success')
+        else:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+               'application/json' in request.headers.get('Accept', ''):
+                return jsonify({'success': False, 'error': 'Error saving journal entry'}), 500
+            
+            flash('Error saving journal entry. Please try again.', 'error')
     
-    if existing_entry:
-        # Update existing entry's prompt responses
-        existing_entry.prompt_responses[str(prompt_number)] = content
-        entry = existing_entry
-    else:
-        # Create new entry with prompt responses
-        prompt_responses = {str(prompt_number): content}
-        entry = JournalEntry(
-            user_id=current_user.id,
-            psalm_id=int(psalm_id),
-            prompt_responses=prompt_responses
-        )
-    
-    if entry.save():
-        flash('Journal entry saved successfully!', 'success')
-    else:
+    except Exception as e:
+        print(f"Error in save_journal: {e}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+           'application/json' in request.headers.get('Accept', ''):
+            return jsonify({'success': False, 'error': str(e)}), 500
+        
         flash('Error saving journal entry. Please try again.', 'error')
     
-    # Get psalm number for redirect
-    psalm = Psalm.get_by_number(1)  # Default fallback
+    # For regular form submissions, redirect back to psalm
     try:
         from database import get_supabase_client
         supabase = get_supabase_client()
@@ -146,8 +162,8 @@ def save_journal():
         if result.data:
             psalm_number = result.data[0]['psalm_number']
             return redirect(url_for('main.psalm', psalm_number=psalm_number))
-    except:
-        pass
+    except Exception as e:
+        print(f"Error getting psalm number: {e}")
     
     return redirect(url_for('main.dashboard'))
 

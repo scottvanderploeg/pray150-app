@@ -222,20 +222,39 @@ document.addEventListener('DOMContentLoaded', function() {
         const content = formData.get('content');
         
         if (content && content.trim() !== '') {
+            console.log('Auto-saving journal entry...');
+            
             // Show auto-save indicator
             const saveBtn = form.querySelector('button[type="submit"]');
             const originalText = saveBtn.innerHTML;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Auto-saving...';
             saveBtn.disabled = true;
             
-            // Simulate auto-save (in real implementation, this would be an AJAX call)
-            setTimeout(() => {
-                saveBtn.innerHTML = '<i class="fas fa-check me-1"></i>Saved';
+            // Make AJAX call to save journal entry
+            fetch('/save_journal', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    saveBtn.innerHTML = '<i class="fas fa-check me-1"></i>Saved';
+                    console.log('Journal entry saved successfully');
+                } else {
+                    saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+                    console.error('Failed to save journal entry');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving journal entry:', error);
+                saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Error';
+            })
+            .finally(() => {
+                // Reset button after 2 seconds
                 setTimeout(() => {
                     saveBtn.innerHTML = originalText;
                     saveBtn.disabled = false;
-                }, 1000);
-            }, 1000);
+                }, 2000);
+            });
         }
     }
 
