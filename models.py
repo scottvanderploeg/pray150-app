@@ -191,18 +191,13 @@ class JournalEntry:
         """Get total count of journal entries for a user"""
         try:
             supabase = get_supabase_client()
-            result = supabase.table('journal_entries').select('id', count='exact')\
+            # Use a simple query to get all entries and count them
+            result = supabase.table('journal_entries').select('id')\
                 .eq('user_id', str(user_id)).execute()
-            print(f"DEBUG: Count query result: {result}")
-            print(f"DEBUG: Count result.count: {getattr(result, 'count', 'No count attr')}")
-            print(f"DEBUG: Count result.data length: {len(result.data) if result.data else 'No data'}")
             
-            # Try to get count from the result
-            if hasattr(result, 'count') and result.count is not None:
-                return result.count
-            else:
-                # Fallback to counting data array length
-                return len(result.data) if result.data else 0
+            count = len(result.data) if result.data else 0
+            print(f"DEBUG: Count query for user {user_id} found {count} entries")
+            return count
         except Exception as e:
             print(f"Error getting journal entry count: {e}")
             return 0

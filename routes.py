@@ -34,6 +34,7 @@ def dashboard():
     total_psalms_read = PsalmProgress.get_count_by_user(current_user.id)
     psalms_this_week = PsalmProgress.get_week_count_by_user(current_user.id)
     total_journal_entries = JournalEntry.get_count_by_user(current_user.id)
+    print(f"DEBUG: Dashboard - total_journal_entries = {total_journal_entries}")
     
     # Get dates with journal entries for calendar highlighting
     journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
