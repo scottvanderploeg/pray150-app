@@ -18,11 +18,12 @@ Preferred communication style: Simple, everyday language.
 
 ### Database Design
 - **Supabase** as primary database with PostgreSQL backend 
-- Five core models: User, Psalm, JournalEntry, Prayer, PsalmProgress, and PsalmMarkup
+- Six core models: User, Psalm, JournalEntry, Prayer, PsalmProgress, PsalmMarkup, and UserProfile
 - Simplified schema with user_id as TEXT for Supabase Auth compatibility
 - JSONB fields for flexible data storage (prompt_responses, markup_data)
 - BIGINT primary keys and optimized timestamp handling
 - Row Level Security (RLS) policies for user data isolation
+- **user_profiles** table stores extended user information (first_name, last_name, country, zip_code, preferences)
 
 ### Authentication & Security
 - **Werkzeug** password hashing for secure credential storage
@@ -76,8 +77,10 @@ Preferred communication style: Simple, everyday language.
 - **Supabase** successfully integrated as primary database and authentication provider
 - Direct Supabase Auth integration with REST API endpoints
 - **Flask-JWT-Extended** for JWT token management and API authentication
-- Environment-based configuration with SUPABASE_URL, SUPABASE_KEY, SUPABASE_JWT_SECRET
-- All 5 database tables created and verified including journal_entries with Row Level Security
+- Environment-based configuration with SUPABASE_URL, SUPABASE_KEY, SUPABASE_JWT_SECRET, SUPABASE_SERVICE_ROLE_KEY
+- All 6 database tables created and verified including journal_entries with Row Level Security
+- **User Profiles System**: Enhanced registration with first name, last name, country, zip code collection
+- Service role key authentication for bypassing RLS on journal queries
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)

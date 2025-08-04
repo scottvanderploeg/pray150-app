@@ -7,28 +7,86 @@ from database import get_supabase_client
 import uuid
 
 class User(UserMixin):
-    def __init__(self, id=None, username=None, email=None, preferred_translation='NIV', 
+    def __init__(self, id=None, username=None, email=None, first_name=None, last_name=None,
+                 country=None, zip_code=None, preferred_translation='NIV', 
                  font_preference='Georgia', theme_preference='default', created_at=None):
         self.id = str(id) if id else None  # Store as string for consistency
         self.username = username
         self.email = email
+        self.first_name = first_name
+        self.last_name = last_name
+        self.country = country
+        self.zip_code = zip_code
         self.preferred_translation = preferred_translation
         self.font_preference = font_preference
         self.theme_preference = theme_preference
         self.created_at = created_at or datetime.utcnow()
+    
+    @property
+    def display_name(self):
+        """Get user's display name (first name or fallback)"""
+        if self.first_name:
+            return self.first_name
+        elif self.username:
+            return self.username
+        else:
+            return f"User {str(self.id)[:8]}"
+    
+    @property 
+    def full_name(self):
+        """Get user's full name"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        else:
+            return self.display_name
 
     @staticmethod
     def get_by_id(user_id):
-        """Get user by ID - simplified for text-based user_id"""
-        # Since we're using Supabase Auth, we create a minimal user object
-        return User(
-            id=str(user_id),
-            username=f"user_{str(user_id)[:8]}",  # Generate username from ID
-            email="user@example.com",  # Placeholder - would come from Supabase Auth
-            preferred_translation='NIV',
-            font_preference='Georgia',
-            theme_preference='default'
-        )
+        """Get user by ID - fetch from user_profiles table"""
+        try:
+            from database import get_supabase_client
+            supabase = get_supabase_client()
+            
+            # Try to get user profile data
+            result = supabase.table('user_profiles').select('*')\
+                .eq('user_id', str(user_id)).execute()
+            
+            if result.data:
+                profile = result.data[0]
+                return User(
+                    id=str(user_id),
+                    username=profile.get('username'),
+                    email=profile.get('email'),
+                    first_name=profile.get('first_name'),
+                    last_name=profile.get('last_name'),
+                    country=profile.get('country'),
+                    zip_code=profile.get('zip_code'),
+                    preferred_translation=profile.get('preferred_translation', 'NIV'),
+                    font_preference=profile.get('font_preference', 'Georgia'),
+                    theme_preference=profile.get('theme_preference', 'default'),
+                    created_at=profile.get('created_at')
+                )
+            else:
+                # Fallback for users without profiles
+                return User(
+                    id=str(user_id),
+                    username=f"user_{str(user_id)[:8]}",
+                    first_name="User",
+                    preferred_translation='NIV'
+                )
+        except Exception as e:
+            print(f"Error getting user by ID: {e}")
+            # Fallback user object
+            return User(
+                id=str(user_id),
+                username=f"user_{str(user_id)[:8]}",
+                first_name="User",
+                preferred_translation='NIV'
+            )
 
     @staticmethod
     def get_by_email(email):

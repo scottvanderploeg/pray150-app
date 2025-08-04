@@ -43,12 +43,15 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('username')
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
         email = request.form.get('email')
         password = request.form.get('password')
+        country = request.form.get('country')
+        zip_code = request.form.get('zip_code')
         
-        if not username or not email or not password:
-            flash('Please fill in all fields.', 'error')
+        if not first_name or not last_name or not email or not password:
+            flash('Please fill in all required fields.', 'error')
             return render_template('register.html')
         
         if len(password) < 6:
@@ -56,12 +59,6 @@ def register():
             return render_template('register.html')
         
         try:
-            # Check if username is already taken
-            existing_user = User.get_by_email(email)
-            if existing_user:
-                flash('Email already registered. Please use a different email.', 'error')
-                return render_template('register.html')
-            
             # Use Supabase Auth for registration
             supabase = get_supabase_client()
             auth_response = supabase.auth.sign_up({
@@ -70,11 +67,32 @@ def register():
             })
             
             if auth_response.user:
-                # Create user object for Flask-Login (simplified)
+                # Create user profile record
+                profile_data = {
+                    'user_id': auth_response.user.id,
+                    'username': f"{first_name.lower()}.{last_name.lower()}",
+                    'email': email,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'country': country,
+                    'zip_code': zip_code,
+                    'preferred_translation': 'NIV',
+                    'font_preference': 'Georgia',
+                    'theme_preference': 'default'
+                }
+                
+                # Save profile to user_profiles table
+                profile_result = supabase.table('user_profiles').insert(profile_data).execute()
+                
+                # Create user object for Flask-Login
                 user = User(
                     id=auth_response.user.id,
-                    username=username,
-                    email=email
+                    username=profile_data['username'],
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    country=country,
+                    zip_code=zip_code
                 )
                 
                 login_user(user, remember=True)
