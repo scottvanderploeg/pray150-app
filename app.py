@@ -37,9 +37,11 @@ def load_user(user_id):
 
 # Import and register blueprints
 from auth import auth_bp
+from auth_api import auth_api_bp
 from routes import main_bp
 
 app.register_blueprint(auth_bp)
+app.register_blueprint(auth_api_bp)
 app.register_blueprint(main_bp)
 
 # Initialize database tables and verify connection

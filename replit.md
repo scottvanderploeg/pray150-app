@@ -74,9 +74,18 @@ Preferred communication style: Simple, everyday language.
 
 ### Current Integrations (Updated August 2025)
 - **Supabase** successfully integrated as primary database and authentication provider
-- Direct Supabase Auth integration replacing Flask-Login session management
+- Direct Supabase Auth integration with REST API endpoints
+- **Flask-JWT-Extended** for JWT token management and API authentication
 - Environment-based configuration with SUPABASE_URL, SUPABASE_KEY, SUPABASE_JWT_SECRET
 - 4 out of 5 database tables created and verified (journal_entries table pending user creation)
+
+### Authentication API Endpoints (August 2025)
+- **POST /api/register**: User registration with Supabase Auth (requires email confirmation)
+- **POST /api/login**: User login returning JWT access tokens
+- **GET /api/verify**: JWT token verification and user information retrieval
+- Integration with existing Flask-Login session management for web interface
+- Comprehensive error handling with proper HTTP status codes
+- Email confirmation requirement through Supabase (configurable in Supabase dashboard)
 
 ### Planned Integrations
 - Social sharing capabilities for prayer milestones and journal entries
