@@ -108,3 +108,75 @@ def verify_token():
     except Exception as e:
         print(f"Token verification error: {e}")
         return jsonify({"error": "Token verification failed"}), 401
+
+@auth_api_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    """Send password reset email via Supabase Auth"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        email = data.get('email')
+        
+        if not email:
+            return jsonify({"error": "Email is required"}), 400
+        
+        # Use Supabase Auth to send password reset email
+        supabase = get_supabase_client()
+        auth_response = supabase.auth.reset_password_for_email(
+            email,
+            options={
+                "redirect_to": f"{request.host_url}reset-password"
+            }
+        )
+        
+        # Supabase always returns success for security reasons
+        # (to prevent email enumeration attacks)
+        return jsonify({
+            "message": "If an account with this email exists, a password reset link has been sent."
+        }), 200
+            
+    except Exception as e:
+        print(f"Password reset error: {e}")
+        return jsonify({"error": "Password reset request failed. Please try again."}), 500
+
+@auth_api_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    """Reset password with token from email"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No JSON data provided"}), 400
+        
+        access_token = data.get('access_token')
+        refresh_token = data.get('refresh_token')
+        new_password = data.get('new_password')
+        
+        if not access_token or not refresh_token or not new_password:
+            return jsonify({"error": "Access token, refresh token, and new password are required"}), 400
+        
+        if len(new_password) < 6:
+            return jsonify({"error": "Password must be at least 6 characters long"}), 400
+        
+        # Use Supabase Auth to update password
+        supabase = get_supabase_client()
+        
+        # Set the session with the tokens from the reset email
+        supabase.auth.set_session(access_token, refresh_token)
+        
+        # Update the password
+        auth_response = supabase.auth.update_user({
+            "password": new_password
+        })
+        
+        if auth_response.user:
+            return jsonify({
+                "message": "Password updated successfully"
+            }), 200
+        else:
+            return jsonify({"error": "Password reset failed"}), 400
+            
+    except Exception as e:
+        print(f"Password reset error: {e}")
+        return jsonify({"error": "Password reset failed. Please try again."}), 500

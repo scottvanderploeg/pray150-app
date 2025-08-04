@@ -102,3 +102,13 @@ def logout():
     logout_user()
     flash('You have been logged out successfully.', 'info')
     return redirect(url_for('main.index'))
+
+@auth_bp.route('/forgot-password', methods=['GET'])
+def forgot_password():
+    """Display the forgot password form"""
+    return render_template('forgot_password.html')
+
+@auth_bp.route('/reset-password', methods=['GET']) 
+def reset_password():
+    """Display the reset password form"""
+    return render_template('reset_password.html')
