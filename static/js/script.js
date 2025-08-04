@@ -97,13 +97,34 @@ function updateDisplayedTranslation(translation) {
 }
 
 function formatPsalmText(text) {
-    // Format the psalm text with proper spacing and paragraphs
-    return text
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => `<p class="mb-3">${line}</p>`)
-        .join('');
+    if (!text) return '<p class="text-muted fst-italic">Translation not available</p>';
+    
+    // Split text into lines and process each one
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    let formattedLines = [];
+    
+    for (let line of lines) {
+        // Check if line starts with a verse number (digit followed by space or colon)
+        if (/^\d+[\s:]/.test(line)) {
+            // Add verse number styling
+            const verseMatch = line.match(/^(\d+)[\s:](.+)/);
+            if (verseMatch) {
+                const verseNum = verseMatch[1];
+                const verseText = verseMatch[2].trim();
+                formattedLines.push(`<p class="mb-3"><span class="verse-number text-primary fw-bold me-2">${verseNum}</span>${verseText}</p>`);
+            } else {
+                formattedLines.push(`<p class="mb-3">${line}</p>`);
+            }
+        } else if (line.match(/^Psalm \d+/i)) {
+            // Title formatting
+            formattedLines.push(`<h6 class="psalm-title text-center text-primary mb-4 fw-bold">${line}</h6>`);
+        } else {
+            // Regular verse text
+            formattedLines.push(`<p class="mb-3">${line}</p>`);
+        }
+    }
+    
+    return formattedLines.join('');
 }
 
 function extractYouTubeVideoId(url) {
