@@ -345,6 +345,42 @@ def complete_psalm():
     
     return redirect(url_for('main.dashboard'))
 
+@main_bp.route('/journal/<int:entry_id>')
+@login_required
+def view_journal_entry(entry_id):
+    """View a specific journal entry"""
+    try:
+        # Get the specific journal entry
+        supabase = get_supabase_client()
+        result = supabase.table('journal_entries').select('*')\
+            .eq('id', entry_id).eq('user_id', current_user.id).execute()
+        
+        if not result.data:
+            flash('Journal entry not found.', 'error')
+            return redirect(url_for('main.journal_history'))
+        
+        entry_data = result.data[0]
+        entry = JournalEntry(
+            id=entry_data['id'],
+            user_id=entry_data['user_id'],
+            psalm_id=entry_data['psalm_id'],
+            prompt_responses=entry_data.get('prompt_responses', {}),
+            created_at=entry_data.get('created_at')
+        )
+        
+        # Get the psalm
+        psalm = Psalm.get_by_number(entry.psalm_id)
+        if not psalm:
+            flash('Associated psalm not found.', 'error')
+            return redirect(url_for('main.journal_history'))
+        
+        return render_template('journal_entry.html', entry=entry, psalm=psalm)
+        
+    except Exception as e:
+        print(f"Error viewing journal entry: {e}")
+        flash('Error loading journal entry.', 'error')
+        return redirect(url_for('main.journal_history'))
+
 @main_bp.route('/prayers')
 @login_required
 def prayers():
