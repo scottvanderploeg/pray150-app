@@ -81,7 +81,7 @@ Preferred communication style: Simple, everyday language.
 - All 6 database tables created and verified including journal_entries with Row Level Security
 - **User Profiles System**: Enhanced registration with first name, last name, country, zip code collection
 - Service role key authentication for bypassing RLS on journal queries
-- **Rob Keplin's Bible API**: Complete integration providing access to all 150 Psalms in 9 translations (ESV, NIV, NLT, KJV, ASV, BBE, DARBY, WEB, YLT) with no rate limits
+- **Rob Keplin's Bible API**: Complete integration providing access to all 150 Psalms in 9 translations (ESV, NIV 1984, NLT, KJV, ASV, BBE, DARBY, WEB, YLT) with no rate limits
 - **Bible API Service Layer**: Comprehensive `bible_api.py` module with psalm fetching, translation switching, daily psalm calculation, and search capabilities
 - **Live API Endpoints**: RESTful API endpoints for psalm data including single psalm fetch, multiple translations comparison, and search functionality
 - **Bible API Demo Page**: Interactive demonstration page at `/bible-api-demo` showcasing all Bible API features and translations

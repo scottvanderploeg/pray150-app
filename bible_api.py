@@ -25,7 +25,7 @@ class BibleAPI:
     # Available translations from the API
     AVAILABLE_TRANSLATIONS = {
         'ESV': 'English Standard Version',
-        'NIV': 'New International Version', 
+        'NIV': 'New International Version (1984)', 
         'NLT': 'New Living Translation',
         'KJV': 'King James Version',
         'ASV': 'American Standard-ASV1901',
