@@ -425,22 +425,33 @@ class JournalEntry:
 
 class Prayer:
     def __init__(self, id=None, user_id=None, category=None, prayer_text=None,
-                 is_answered=False, created_at=None):
+                 is_answered=False, answered_note=None, created_at=None, answered_at=None):
         self.id = id
         self.user_id = str(user_id) if user_id else None
         self.category = category
         self.prayer_text = prayer_text
         self.is_answered = is_answered
+        self.answered_note = answered_note
         self.created_at = created_at or datetime.utcnow()
+        self.answered_at = answered_at
 
     @staticmethod
     def get_active_by_user(user_id, limit=None):
         """Get active prayers for a user"""
         try:
             supabase = get_supabase_client()
+            # First check if table exists and has correct structure
             query = supabase.table('prayer_lists').select('*')\
-                .eq('user_id', str(user_id)).eq('is_answered', False)\
-                .order('created_at', desc=True)
+                .eq('user_id', str(user_id))
+            
+            # Try to filter by is_answered if column exists
+            try:
+                query = query.eq('is_answered', False)
+            except:
+                # Column doesn't exist, we'll filter manually
+                pass
+                
+            query = query.order('created_at', desc=True)
             
             if limit:
                 query = query.limit(limit)
@@ -449,14 +460,19 @@ class Prayer:
             
             prayers = []
             for prayer_data in result.data:
-                prayers.append(Prayer(
-                    id=prayer_data['id'],
-                    user_id=prayer_data['user_id'],
-                    category=prayer_data.get('category'),
-                    prayer_text=prayer_data.get('prayer_text'),
-                    is_answered=prayer_data.get('is_answered', False),
-                    created_at=prayer_data.get('created_at')
-                ))
+                # Manual filtering if is_answered column doesn't exist
+                is_answered = prayer_data.get('is_answered', False)
+                if not is_answered:  # Only include active (non-answered) prayers
+                    prayers.append(Prayer(
+                        id=prayer_data['id'],
+                        user_id=prayer_data['user_id'],
+                        category=prayer_data.get('category'),
+                        prayer_text=prayer_data.get('prayer_text'),
+                        is_answered=is_answered,
+                        answered_note=prayer_data.get('answered_note'),
+                        created_at=prayer_data.get('created_at'),
+                        answered_at=prayer_data.get('answered_at')
+                    ))
             return prayers
         except Exception as e:
             print(f"Error getting active prayers: {e}")
@@ -467,20 +483,34 @@ class Prayer:
         """Get answered prayers for a user"""
         try:
             supabase = get_supabase_client()
-            result = supabase.table('prayer_lists').select('*')\
-                .eq('user_id', str(user_id)).eq('is_answered', True)\
-                .order('created_at', desc=True).limit(limit).execute()
+            query = supabase.table('prayer_lists').select('*')\
+                .eq('user_id', str(user_id))
+            
+            # Try to filter by is_answered if column exists
+            try:
+                query = query.eq('is_answered', True)
+            except:
+                # Column doesn't exist, we'll filter manually
+                pass
+                
+            result = query.order('answered_at', desc=True)\
+                .limit(limit).execute()
             
             prayers = []
             for prayer_data in result.data:
-                prayers.append(Prayer(
-                    id=prayer_data['id'],
-                    user_id=prayer_data['user_id'],
-                    category=prayer_data.get('category'),
-                    prayer_text=prayer_data.get('prayer_text'),
-                    is_answered=prayer_data.get('is_answered', False),
-                    created_at=prayer_data.get('created_at')
-                ))
+                # Manual filtering if is_answered column doesn't exist
+                is_answered = prayer_data.get('is_answered', False)
+                if is_answered:  # Only include answered prayers
+                    prayers.append(Prayer(
+                        id=prayer_data['id'],
+                        user_id=prayer_data['user_id'],
+                        category=prayer_data.get('category'),
+                        prayer_text=prayer_data.get('prayer_text'),
+                        is_answered=is_answered,
+                        answered_note=prayer_data.get('answered_note'),
+                        created_at=prayer_data.get('created_at'),
+                        answered_at=prayer_data.get('answered_at')
+                    ))
             return prayers
         except Exception as e:
             print(f"Error getting answered prayers: {e}")
@@ -490,12 +520,23 @@ class Prayer:
         """Save prayer to Supabase"""
         try:
             supabase = get_supabase_client()
+            
+            # Base prayer data that should work with any table structure
             prayer_data = {
                 'user_id': self.user_id,
                 'category': self.category,
-                'prayer_text': self.prayer_text,
-                'is_answered': self.is_answered
+                'prayer_text': self.prayer_text
             }
+            
+            # Add optional fields if they exist
+            if hasattr(self, 'is_answered') and self.is_answered is not None:
+                prayer_data['is_answered'] = self.is_answered
+            if hasattr(self, 'answered_note') and self.answered_note:
+                prayer_data['answered_note'] = self.answered_note
+            if hasattr(self, 'answered_at') and self.answered_at:
+                prayer_data['answered_at'] = self.answered_at.isoformat() if hasattr(self.answered_at, 'isoformat') else self.answered_at
+            
+            print(f"DEBUG: Saving prayer data: {prayer_data}")
             
             if self.id:
                 # Update existing prayer
@@ -506,19 +547,39 @@ class Prayer:
                 if result.data:
                     self.id = result.data[0]['id']
             
+            print(f"DEBUG: Save result: {result}")
             return result.data
         except Exception as e:
             print(f"Error saving prayer: {e}")
+            import traceback
+            traceback.print_exc()
             return None
 
     # Backward compatibility properties
     @property
     def title(self):
-        return self.prayer_text[:50] + "..." if self.prayer_text and len(self.prayer_text) > 50 else self.prayer_text
+        if not self.prayer_text:
+            return "Prayer Request"
+        # Extract title from prayer_text (before colon if exists)
+        if ":" in self.prayer_text:
+            title_part = self.prayer_text.split(":", 1)[0].strip()
+            return title_part[:50] + "..." if len(title_part) > 50 else title_part
+        return self.prayer_text[:50] + "..." if len(self.prayer_text) > 50 else self.prayer_text
     
     @property
     def description(self):
-        return self.prayer_text
+        if not self.prayer_text:
+            return ""
+        # Extract description (after colon if exists)
+        if ":" in self.prayer_text:
+            parts = self.prayer_text.split(":", 1)
+            if len(parts) > 1:
+                return parts[1].strip()
+        return ""
+    
+    @property
+    def answered_date(self):
+        return self.answered_at or self.created_at
 
 class PsalmProgress:
     def __init__(self, id=None, user_id=None, psalm_id=None, completed=True, created_at=None):
