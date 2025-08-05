@@ -74,6 +74,46 @@
     </div>
     {% endif %}
 
+    <!-- Psalm Navigator -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #B5B9C4; border: none;">
+                    <h3 class="mb-0" style="color: #333E4D;">
+                        <i class="fas fa-list me-2"></i>Explore Psalms
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text" style="background-color: #D1AEA9; border-color: #D1AEA9;">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <select class="form-select" id="psalmSelector" onchange="navigateToPsalm()">
+                                    <option value="">Choose a Psalm to read...</option>
+                                    {% for i in range(1, 151) %}
+                                    <option value="{{ i }}" {% if todays_psalm_api and i == todays_psalm_api.psalm_number %}selected{% endif %}>
+                                        Psalm {{ i }}{% if i == (todays_psalm_api.psalm_number if todays_psalm_api else todays_psalm_number) %} (Today's Psalm){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <button class="btn" style="background-color: #E93C02; color: white;" onclick="navigateToPsalm()">
+                                    <i class="fas fa-arrow-right"></i> Go
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="/bible-api-demo" class="btn" style="background-color: #766659; color: white;">
+                                <i class="fas fa-flask me-1"></i> Bible API Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Progress Overview -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
@@ -214,6 +254,16 @@
 
 {% block scripts %}
 <script>
+// Psalm navigation functionality
+function navigateToPsalm() {
+    const selector = document.getElementById('psalmSelector');
+    const psalmNumber = selector.value;
+    
+    if (psalmNumber) {
+        window.location.href = `/psalm/${psalmNumber}`;
+    }
+}
+
 // Add some interactive elements to the dashboard
 document.addEventListener('DOMContentLoaded', function() {
     // Animate stat cards on page load
