@@ -107,7 +107,7 @@
                                 <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
                                     {{ verse.verse_number }}
                                 </span>
-                                <span class="verse-text" style="color: #333E4D;">{{ verse.text }}</span>
+                                <span class="verse-text" style="color: #333E4D;">{{ verse.text|replace('Selah', '<span class="selah">Selah</span>')|safe }}</span>
                             </div>
                             {% endfor %}
                         {% elif psalm %}
@@ -295,17 +295,25 @@
         let html = '';
         
         psalmData.verses.forEach(verse => {
+            // Style "Selah" in the verse text
+            const styledText = styleSelahText(verse.text);
+            
             html += `
                 <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}">
                     <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
                         ${verse.verse_number}
                     </span>
-                    <span class="verse-text" style="color: #333E4D;">${verse.text}</span>
+                    <span class="verse-text" style="color: #333E4D;">${styledText}</span>
                 </div>
             `;
         });
         
         psalmText.innerHTML = html;
+    }
+    
+    function styleSelahText(text) {
+        // Replace "Selah" (case insensitive) with styled version
+        return text.replace(/\bSelah\b/gi, '<span class="selah">Selah</span>');
     }
     
     function updatePageTitle(psalmData) {
