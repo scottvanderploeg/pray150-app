@@ -1,52 +1,10 @@
 // Pray150 Psalm Reading Interface Script
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if we're on a psalm page
-    const psalmText = document.getElementById('psalmText');
-    if (psalmText) {
-        const psalmNumber = psalmText.dataset.psalmNumber;
-        if (psalmNumber) {
-            loadPsalmData(psalmNumber);
-        }
-    }
-    
-    // Translation selection is handled by psalm.js for psalm pages
-    // This avoids duplicate event listeners
+    // Psalm pages are now handled by the Bible API and psalm.js
+    // This script is kept for legacy compatibility
 });
 
-async function loadPsalmData(psalmNumber) {
-    const psalmText = document.getElementById('psalmText');
-    const youtubeContainer = document.getElementById('youtube-container');
-    
-    try {
-        // Fetch psalm data from API
-        const response = await fetch(`/api/psalms/${psalmNumber}`);
-        const result = await response.json();
-        
-        if (result.success && result.data) {
-            const psalm = result.data;
-            
-            // Update psalm text with all translations
-            updatePsalmText(psalm);
-            
-            // Load YouTube video if music_url exists
-            if (psalm.music_url) {
-                loadYouTubeVideo(psalm.music_url, youtubeContainer);
-            } else {
-                youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">No worship music available</div></div>';
-            }
-            
-        } else {
-            // Handle error
-            psalmText.innerHTML = '<p class="text-danger">Error loading psalm content</p>';
-            youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">Unable to load music</div></div>';
-        }
-        
-    } catch (error) {
-        console.error('Error fetching psalm:', error);
-        psalmText.innerHTML = '<p class="text-danger">Network error loading psalm</p>';
-        youtubeContainer.innerHTML = '<div class="d-flex justify-content-center align-items-center bg-light rounded h-100"><div class="text-muted">Unable to load music</div></div>';
-    }
-}
+// Legacy function - no longer used as psalms are loaded via server-side Bible API
 
 // These functions are no longer needed as psalm pages use the Bible API
 // and translation switching is handled by psalm.js
