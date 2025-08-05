@@ -301,8 +301,9 @@ class JournalEntry:
                 
                 # Get psalm number separately since we don't have foreign key relation
                 try:
+                    # psalm_id in journal_entries corresponds to psalm_number in psalms table
                     psalm_result = supabase.table('psalms').select('psalm_number')\
-                        .eq('id', entry.psalm_id).execute()
+                        .eq('psalm_number', entry.psalm_id).execute()
                     if psalm_result.data:
                         entry.psalm = type('Psalm', (), {'number': psalm_result.data[0]['psalm_number']})()
                     else:
