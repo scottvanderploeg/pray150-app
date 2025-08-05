@@ -120,10 +120,16 @@
                                         {% endif %}
                                     </small>
                                 </div>
-                                <a href="{{ url_for('main.psalm', psalm_number=entry.psalm.number if entry.psalm else entry.psalm_id) }}" 
+                                {% if entry.psalm and entry.psalm.number <= 150 %}
+                                <a href="{{ url_for('main.psalm', psalm_number=entry.psalm.number) }}" 
                                    class="btn btn-sm btn-outline-primary">
                                     View
                                 </a>
+                                {% else %}
+                                <span class="btn btn-sm btn-outline-secondary disabled">
+                                    Psalm {{ entry.psalm_id }} (Coming Soon)
+                                </span>
+                                {% endif %}
                             </div>
                             <p class="text-muted mb-0">
                                 {% set content = entry.prompt_responses.values()|list|join(' ') %}
