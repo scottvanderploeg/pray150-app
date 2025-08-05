@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="160" height="160">
-  <!-- Orange hexagon - proper proportions -->
-  <polygon points="50,40 70,25 90,40 90,70 70,85 50,70" fill="#E85A2B"/>
+  <!-- Orange hexagon - mathematically correct proportions -->
+  <polygon points="80,25 95,35 95,55 80,65 65,55 65,35" fill="#E85A2B"/>
   
   <!-- White harp/lyre symbol -->
-  <g transform="translate(70, 55)" fill="white">
+  <g transform="translate(80, 45)" fill="white">
     <!-- Simplified harp shape -->
     <path d="M-8,-10 C-8,-12 -6,-14 -4,-14 L4,-14 C6,-14 8,-12 8,-10 L8,10 C8,12 6,14 4,14 L-4,14 C-6,14 -8,12 -8,10 Z" fill="white"/>
     <!-- Vertical strings -->
@@ -15,5 +15,5 @@
   </g>
   
   <!-- PRAY150 Text -->
-  <text x="80" y="110" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="#4A5568" text-anchor="middle">PRAY150</text>
+  <text x="80" y="95" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="#4A5568" text-anchor="middle">PRAY150</text>
 </svg>
