@@ -305,18 +305,26 @@
             // Style "Selah" in the verse text
             const styledText = styleSelahText(verse.text);
             
-            // Determine text direction for Hebrew and Greek
-            const textDirection = (psalmData.translation === 'WLC') ? 'rtl' : 'ltr';
-            const fontFamily = (psalmData.translation === 'WLC') ? 'SBL Hebrew, David CLM, Frank Ruehl CLM, serif' : 
-                              (psalmData.translation === 'LXX') ? 'SBL Greek, Times, serif' : 
+            // Determine styling for Hebrew, Greek, and English texts
+            const isHebrew = psalmData.translation === 'WLC';
+            const isGreek = psalmData.translation === 'LXX';
+            const isOriginalLanguage = isHebrew || isGreek;
+            
+            const textDirection = isHebrew ? 'rtl' : 'ltr';
+            const textAlign = isHebrew ? 'text-align: right;' : 'text-align: left;';
+            const verseNumberPosition = isHebrew ? 'ms-2' : 'me-2';
+            const verseNumberFloat = isHebrew ? 'float: right; margin-left: 8px; margin-right: 0;' : '';
+            
+            const fontFamily = isHebrew ? 'SBL Hebrew, David CLM, Frank Ruehl CLM, serif' : 
+                              isGreek ? 'SBL Greek, Times, serif' : 
                               'Georgia, serif';
             
             html += `
-                <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}">
-                    <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
+                <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}" style="direction: ${textDirection}; ${textAlign}">
+                    <span class="verse-number ${verseNumberPosition}" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super; ${verseNumberFloat}">
                         ${verse.verse_number}
                     </span>
-                    <span class="verse-text" style="color: #333E4D; direction: ${textDirection}; font-family: ${fontFamily}; font-size: ${psalmData.translation === 'WLC' || psalmData.translation === 'LXX' ? '18px' : '16px'};">${styledText}</span>
+                    <span class="verse-text" style="color: #333E4D; font-family: ${fontFamily}; font-size: ${isOriginalLanguage ? '18px' : '16px'}; line-height: ${isOriginalLanguage ? '1.8' : '1.6'};">${styledText}</span>
                 </div>
             `;
         });

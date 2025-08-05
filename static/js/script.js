@@ -1,13 +1,25 @@
 // Pray150 Psalm Reading Interface Script
 document.addEventListener('DOMContentLoaded', function() {
     // Psalm pages are now handled by the Bible API and psalm.js
-    // This script is kept for legacy compatibility
+    // This script provides supporting functions
 });
 
-// Legacy function - no longer used as psalms are loaded via server-side Bible API
-
-// These functions are no longer needed as psalm pages use the Bible API
-// and translation switching is handled by psalm.js
+// Function to load psalm data via Bible API - used by psalm templates
+function loadPsalmData(psalmNumber, translation = 'ESV') {
+    return fetch(`/api/psalms/${psalmNumber}?translation=${translation}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                return data.data;
+            } else {
+                throw new Error(data.error || 'Failed to load psalm data');
+            }
+        })
+        .catch(error => {
+            console.error('Error loading psalm data:', error);
+            return null;
+        });
+}
 
 function formatPsalmText(text) {
     if (!text) return '<p class="text-muted fst-italic">Translation not available</p>';
