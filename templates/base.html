@@ -24,8 +24,10 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
-                <i class="fas fa-praying-hands text-primary me-2"></i>
-                <span class="fw-bold">Pray150</span>
+                <img src="{{ url_for('static', filename='images/pray150-logo-horizontal.svg') }}" 
+                     alt="Pray150" 
+                     height="32" 
+                     class="me-2">
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">

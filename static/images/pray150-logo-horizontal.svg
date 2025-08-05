@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120" width="600" height="120">
+  <!-- Orange hexagon -->
+  <defs>
+    <polygon id="hexagon" points="30,15 50,5 70,15 70,35 50,45 30,35"/>
+  </defs>
+  
+  <use href="#hexagon" fill="#E85A2B" transform="scale(1.2)"/>
+  
+  <!-- White harp/lyre symbol -->
+  <g transform="translate(50, 30) scale(0.8)" fill="white">
+    <!-- Harp frame -->
+    <path d="M-8,-10 C-12,-10 -15,-7 -15,0 L-15,15 C-15,18 -12,20 -8,20 L8,20 C12,20 15,18 15,15 L15,0 C15,-7 12,-10 8,-10 Z"/>
+    <!-- Harp strings -->
+    <line x1="-8" y1="-5" x2="-8" y2="15" stroke="white" stroke-width="1"/>
+    <line x1="-3" y1="-8" x2="-3" y2="15" stroke="white" stroke-width="1"/>
+    <line x1="2" y1="-8" x2="2" y2="15" stroke="white" stroke-width="1"/>
+    <line x1="7" y1="-5" x2="7" y2="15" stroke="white" stroke-width="1"/>
+  </g>
+  
+  <!-- PRAY150 Text -->
+  <text x="110" y="70" font-family="serif" font-size="48" font-weight="bold" fill="#4A5568">PRAY150</text>
+</svg>
