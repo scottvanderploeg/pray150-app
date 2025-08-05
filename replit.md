@@ -85,6 +85,9 @@ Preferred communication style: Simple, everyday language.
 - **Bible API Service Layer**: Comprehensive `bible_api.py` module with psalm fetching, translation switching, daily psalm calculation, and search capabilities
 - **Live API Endpoints**: RESTful API endpoints for psalm data including single psalm fetch, multiple translations comparison, and search functionality
 - **Bible API Demo Page**: Interactive demonstration page at `/bible-api-demo` showcasing all Bible API features and translations
+- **Psalm Selector**: Dashboard includes "Explore Psalms" selector allowing users to choose any of the 150 psalms for reading
+- **Live Translation Switching**: Real-time translation switching on psalm pages using Bible API with proper error handling
+- **Unified Template System**: Updated psalm.html template to display live Bible API data with fallback to static content
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)

@@ -35,7 +35,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 selectedText.style.display = 'block';
             } else {
                 // If translation text doesn't exist, this means we're using the new Bible API
-                // The changeTranslation() function in the psalm template will handle this
+                // Trigger the Bible API translation change function
+                if (typeof changeTranslation === 'function') {
+                    // Set the value and trigger the change
+                    const headerSelect = document.getElementById('translationSelect');
+                    if (headerSelect) {
+                        headerSelect.value = selectedTranslation.toUpperCase();
+                        changeTranslation();
+                    }
+                }
                 console.log('Using Bible API for translation switching');
             }
             
