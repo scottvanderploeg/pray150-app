@@ -89,6 +89,13 @@ function loadYouTubeVideo(musicUrl, container) {
     }
 }
 
+// Legacy function placeholder - no longer used
+function updateDisplayedTranslation() {
+    // This function is no longer used as translation switching 
+    // is handled by the Bible API and psalm.js
+    console.log('Legacy function called - translation switching handled by Bible API');
+}
+
 // Export functions for potential use elsewhere
 window.Pray150PsalmReader = {
     loadPsalmData,

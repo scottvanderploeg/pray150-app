@@ -87,9 +87,10 @@
 .hebrew-text {
     direction: rtl;
     text-align: right;
-    font-family: 'SBL Hebrew', 'David CLM', 'Frank Ruehl CLM', serif;
+    font-family: 'Frank Ruhl Libre', 'Noto Sans Hebrew', 'SBL Hebrew', serif;
     font-size: 18px;
     line-height: 1.8;
+    font-weight: 400;
 }
 
 .greek-text {

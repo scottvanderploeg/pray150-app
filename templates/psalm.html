@@ -3,6 +3,9 @@
 {% block title %}Psalm {{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }} - Pray150{% endblock %}
 
 {% block head %}
+<!-- Hebrew Fonts from Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Noto+Sans+Hebrew:wght@300;400;500;700&display=swap" rel="stylesheet">
+
 <style>
     .psalm-text {
         font-family: Georgia, serif;
@@ -315,7 +318,7 @@
             const verseNumberPosition = isHebrew ? 'ms-2' : 'me-2';
             const verseNumberFloat = isHebrew ? 'float: right; margin-left: 8px; margin-right: 0;' : '';
             
-            const fontFamily = isHebrew ? 'SBL Hebrew, David CLM, Frank Ruehl CLM, serif' : 
+            const fontFamily = isHebrew ? 'Frank Ruhl Libre, Noto Sans Hebrew, SBL Hebrew, serif' : 
                               isGreek ? 'SBL Greek, Times, serif' : 
                               'Georgia, serif';
             
