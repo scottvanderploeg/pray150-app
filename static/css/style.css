@@ -1,22 +1,23 @@
-/* Pray150 Custom Styles with New Psalm Color Palette */
+/* Pray150 Custom Styles - Restricted to Psalm Color Palette Only */
 :root {
-    /* New Psalm Color Palette */
+    /* Psalm Color Palette - ONLY these colors allowed */
     --primary-color: #E93C02;        /* Bright Orange */
     --secondary-color: #333E4D;      /* Dark Blue-Gray */
     --accent-color: #D1AEA9;         /* Soft Pink-Beige */
     --text-color: #766659;           /* Warm Brown */
     --light-color: #B5B9C4;          /* Light Blue-Gray */
+    --white: #FFFFFF;                /* White */
     
-    /* Bootstrap compatible colors */
-    --success-color: #28a745;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-    --danger-color: #dc3545;
+    /* All other colors mapped to palette */
+    --success-color: #E93C02;        /* Use primary orange for success */
+    --warning-color: #E93C02;        /* Use primary orange for warning */
+    --info-color: #333E4D;           /* Use secondary for info */
+    --danger-color: #E93C02;         /* Use primary orange for danger */
     
-    /* Background and surface colors */
-    --background-color: #f8f9fa;
-    --surface-color: #ffffff;
-    --border-color: #e9ecef;
+    /* Background and surface colors from palette */
+    --background-color: #B5B9C4;     /* Light Blue-Gray background */
+    --surface-color: #FFFFFF;        /* White surfaces */
+    --border-color: #D1AEA9;         /* Accent color for borders */
 }
 
 /* Tailwind-like Utilities */
@@ -40,19 +41,19 @@
 .font-medium { font-weight: 500; }
 .text-gray-800 { color: var(--secondary-color); }
 .text-gray-600 { color: var(--text-color); }
-.text-gray-500 { color: var(--light-color); }
+.text-gray-500 { color: var(--text-color); }
 .text-blue-600 { color: var(--primary-color); }
 .text-blue-800 { color: var(--secondary-color); }
-.bg-white { background-color: var(--surface-color); }
+.bg-white { background-color: var(--white); }
 .bg-gray-100 { background-color: var(--accent-color); }
 .bg-blue-600 { background-color: var(--primary-color); }
-.bg-blue-50 { background-color: var(--light-color); }
-.hover\:bg-blue-700:hover { background-color: #d63602; }
-.hover\:bg-blue-50:hover { background-color: var(--accent-color); }
+.bg-blue-50 { background-color: var(--accent-color); }
+.hover\:bg-blue-700:hover { background-color: var(--secondary-color); }
+.hover\:bg-blue-50:hover { background-color: var(--light-color); }
 .bg-gradient-to-br { background-image: linear-gradient(to bottom right, var(--tw-gradient-stops)); }
-.from-blue-100 { --tw-gradient-from: #dbeafe; --tw-gradient-to: rgb(219 234 254 / 0); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
-.to-cream-100 { --tw-gradient-to: var(--cream-100); }
-.bg-cream-50 { background-color: var(--cream-50); }
+.from-blue-100 { --tw-gradient-from: var(--light-color); --tw-gradient-to: var(--white); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.to-cream-100 { --tw-gradient-to: var(--accent-color); }
+.bg-cream-50 { background-color: var(--accent-color); }
 .rounded-lg { border-radius: 0.5rem; }
 .shadow-lg { box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
 .shadow-sm { box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
@@ -73,17 +74,17 @@
 .h-8 { height: 2rem; }
 .h-20 { height: 5rem; }
 .h-full { height: 100%; }
-.bg-blue-300 { background-color: #93c5fd; }
+.bg-blue-300 { background-color: var(--light-color); }
 .leading-relaxed { line-height: 1.625; }
 .aspect-video { aspect-ratio: 16 / 9; }
 .overflow-hidden { overflow: hidden; }
 .animate-spin { animation: spin 1s linear infinite; }
 .rounded-full { border-radius: 9999px; }
 .border-b-2 { border-bottom-width: 2px; }
-.border-blue-600 { border-color: #2563eb; }
+.border-blue-600 { border-color: var(--primary-color); }
 .border { border-width: 1px; }
-.text-white { color: white; }
-.text-blue-600 { color: #2563eb; }
+.text-white { color: var(--white); }
+.text-blue-600 { color: var(--primary-color); }
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 
 @keyframes spin {
@@ -125,8 +126,8 @@ body {
 
 /* Navigation */
 .navbar {
-    background-color: var(--surface-color) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background-color: var(--white) !important;
+    box-shadow: 0 2px 4px var(--light-color);
 }
 
 .navbar-brand {
@@ -136,7 +137,7 @@ body {
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(135deg, var(--light-color) 0%, var(--surface-color) 100%);
+    background: linear-gradient(135deg, var(--light-color) 0%, var(--white) 100%);
     padding: 2rem 0;
 }
 
@@ -174,7 +175,7 @@ body {
 }
 
 .today-psalm-card {
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--surface-color) 100%);
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--white) 100%);
 }
 
 .psalm-number-display {
@@ -204,7 +205,7 @@ body {
     font-size: 1.2rem;
     line-height: 1.8;
     padding: 1.5rem;
-    background-color: var(--surface-color);
+    background-color: var(--white);
     border-radius: 8px;
     border-left: 4px solid var(--primary-color);
 }
@@ -217,7 +218,7 @@ body {
 
 .journal-form textarea:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.1rem rgba(233, 60, 2, 0.25);
+    box-shadow: 0 0 0 0.1rem var(--accent-color);
 }
 
 /* Prayer Cards */
@@ -231,13 +232,13 @@ body {
 }
 
 .answered-prayer-card {
-    background: linear-gradient(135deg, #f8fff8 0%, white 100%);
-    border-left: 4px solid var(--success-color) !important;
+    background: linear-gradient(135deg, var(--accent-color) 0%, var(--white) 100%);
+    border-left: 4px solid var(--primary-color) !important;
 }
 
 .answered-note {
-    background-color: rgba(40, 167, 69, 0.1) !important;
-    border-left: 3px solid var(--success-color);
+    background-color: var(--accent-color) !important;
+    border-left: 3px solid var(--primary-color);
 }
 
 /* Buttons */
@@ -258,8 +259,8 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #d63602;
-    border-color: #d63602;
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
 }
 
 /* Markup Tools */
@@ -270,34 +271,33 @@ body {
 }
 
 .highlight {
-    background-color: #fff3cd;
+    background-color: var(--accent-color);
     padding: 2px 4px;
     border-radius: 3px;
-    border-bottom: 2px solid #ffc107;
+    border-bottom: 2px solid var(--primary-color);
 }
 
 .note-marker {
-    background-color: #d1ecf1;
-    border-left: 3px solid #bee5eb;
+    background-color: var(--light-color);
+    border-left: 3px solid var(--primary-color);
     padding: 2px 4px;
     border-radius: 3px;
     position: relative;
 }
 
-/* Theme Variations */
+/* Theme Variations - Using Only Psalm Palette */
 .theme-warm {
-    --cream: #fff8f0;
-    --soft-blue: #f0f8ff;
+    --background-color: var(--accent-color);
+    --surface-color: var(--white);
 }
 
 .theme-warm .card {
-    background-color: #fefefe;
+    background-color: var(--white);
 }
 
 .theme-sepia {
-    --cream: #f4f1e8;
-    --soft-blue: #f0ede6;
-    filter: sepia(0.1);
+    --background-color: var(--light-color);
+    --surface-color: var(--accent-color);
 }
 
 /* Modal Enhancements */
@@ -313,8 +313,8 @@ body {
 
 /* Footer */
 footer {
-    background-color: var(--surface-color) !important;
-    border-top: 1px solid var(--border-color);
+    background-color: var(--white) !important;
+    border-top: 1px solid var(--accent-color);
 }
 
 /* Responsive Design */
