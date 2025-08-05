@@ -24,9 +24,9 @@ class User(UserMixin):
     
     @property
     def display_name(self):
-        """Get user's display name (first name or fallback)"""
+        """Get user's display name (first name capitalized or fallback)"""
         if self.first_name:
-            return self.first_name
+            return self.first_name.title()
         elif self.username:
             return self.username
         else:
