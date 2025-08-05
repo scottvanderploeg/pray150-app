@@ -476,6 +476,22 @@ class Prayer:
                 # Manual filtering if is_answered column doesn't exist
                 is_answered = prayer_data.get('is_answered', False)
                 if not is_answered:  # Only include active (non-answered) prayers
+                    # Parse datetime strings from Supabase
+                    created_at = prayer_data.get('created_at')
+                    if isinstance(created_at, str):
+                        try:
+                            from datetime import datetime
+                            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        except:
+                            created_at = datetime.utcnow()
+                    
+                    answered_at = prayer_data.get('answered_at')
+                    if isinstance(answered_at, str):
+                        try:
+                            answered_at = datetime.fromisoformat(answered_at.replace('Z', '+00:00'))
+                        except:
+                            answered_at = None
+                    
                     prayers.append(Prayer(
                         id=prayer_data['id'],
                         user_id=prayer_data['user_id'],
@@ -485,8 +501,8 @@ class Prayer:
                         prayer_text=prayer_data.get('prayer_text'),
                         is_answered=is_answered,
                         answered_note=prayer_data.get('answered_note'),
-                        created_at=prayer_data.get('created_at'),
-                        answered_at=prayer_data.get('answered_at')
+                        created_at=created_at,
+                        answered_at=answered_at
                     ))
             return prayers
         except Exception as e:
@@ -516,6 +532,22 @@ class Prayer:
                 # Manual filtering if is_answered column doesn't exist
                 is_answered = prayer_data.get('is_answered', False)
                 if is_answered:  # Only include answered prayers
+                    # Parse datetime strings from Supabase
+                    created_at = prayer_data.get('created_at')
+                    if isinstance(created_at, str):
+                        try:
+                            from datetime import datetime
+                            created_at = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                        except:
+                            created_at = datetime.utcnow()
+                    
+                    answered_at = prayer_data.get('answered_at')
+                    if isinstance(answered_at, str):
+                        try:
+                            answered_at = datetime.fromisoformat(answered_at.replace('Z', '+00:00'))
+                        except:
+                            answered_at = None
+                    
                     prayers.append(Prayer(
                         id=prayer_data['id'],
                         user_id=prayer_data['user_id'],
@@ -525,8 +557,8 @@ class Prayer:
                         prayer_text=prayer_data.get('prayer_text'),
                         is_answered=is_answered,
                         answered_note=prayer_data.get('answered_note'),
-                        created_at=prayer_data.get('created_at'),
-                        answered_at=prayer_data.get('answered_at')
+                        created_at=created_at,
+                        answered_at=answered_at
                     ))
             return prayers
         except Exception as e:
