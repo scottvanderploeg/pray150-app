@@ -15,7 +15,7 @@
     </div>
 
     <!-- Today's Psalm Card -->
-    {% if todays_psalm %}
+    {% if todays_psalm_api or todays_psalm %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm today-psalm-card">
@@ -23,23 +23,47 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-calendar-day text-primary me-2"></i>
+                                <i class="fas fa-calendar-day" style="color: #E93C02;" me-2></i>
                                 <small class="text-muted">Today's Psalm</small>
                             </div>
-                            <h3 class="h4 fw-bold mb-2">Psalm {{ todays_psalm.number }}: {{ todays_psalm.title }}</h3>
-                            <p class="text-muted mb-3">
-                                {% if todays_psalm.text_niv %}
-                                    {{ todays_psalm.text_niv[:150] }}...
-                                {% endif %}
-                            </p>
-                            <a href="{{ url_for('main.psalm', psalm_number=todays_psalm.number) }}" 
-                               class="btn btn-primary">
-                                <i class="fas fa-book-open me-2"></i>Read & Pray
-                            </a>
+                            
+                            {% if todays_psalm_api %}
+                                <h3 class="h4 fw-bold mb-2" style="color: #333E4D;">
+                                    Psalm {{ todays_psalm_api.psalm_number }}
+                                    <span class="badge ms-2" style="background-color: #D1AEA9; color: #333E4D;">{{ todays_psalm_api.translation }}</span>
+                                </h3>
+                                <p class="text-muted mb-3">
+                                    {% if todays_psalm_api.verses and todays_psalm_api.verses|length > 0 %}
+                                        {{ todays_psalm_api.verses[0].text[:150] }}...
+                                    {% endif %}
+                                </p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ url_for('main.psalm', psalm_number=todays_psalm_api.psalm_number) }}" 
+                                       class="btn btn-primary" style="background-color: #E93C02; border-color: #E93C02;">
+                                        <i class="fas fa-book-open me-2"></i>Read & Pray
+                                    </a>
+                                    <span class="small text-muted align-self-center">
+                                        {{ todays_psalm_api.verse_count }} verses • Live Bible API
+                                    </span>
+                                </div>
+                            {% elif todays_psalm %}
+                                <h3 class="h4 fw-bold mb-2" style="color: #333E4D;">Psalm {{ todays_psalm.number }}: {{ todays_psalm.title }}</h3>
+                                <p class="text-muted mb-3">
+                                    {% if todays_psalm.text_niv %}
+                                        {{ todays_psalm.text_niv[:150] }}...
+                                    {% endif %}
+                                </p>
+                                <a href="{{ url_for('main.psalm', psalm_number=todays_psalm.number) }}" 
+                                   class="btn btn-primary" style="background-color: #E93C02; border-color: #E93C02;">
+                                    <i class="fas fa-book-open me-2"></i>Read & Pray
+                                </a>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 text-center">
                             <div class="psalm-number-display">
-                                <div class="psalm-number">{{ todays_psalm.number }}</div>
+                                <div class="psalm-number" style="color: #333E4D; font-size: 3rem; font-weight: bold;">
+                                    {{ todays_psalm_api.psalm_number if todays_psalm_api else todays_psalm.number }}
+                                </div>
                                 <small class="text-muted">of 150</small>
                             </div>
                         </div>

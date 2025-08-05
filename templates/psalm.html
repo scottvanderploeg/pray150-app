@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Psalm {{ psalm.number }} - Pray150{% endblock %}
+{% block title %}Psalm {{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }} - Pray150{% endblock %}
 
 {% block head %}
 <style>
@@ -43,12 +43,43 @@
             <div class="psalm-header">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Psalm {{ psalm.number }}</li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}" style="color: #766659;">Dashboard</a></li>
+                        <li class="breadcrumb-item active" style="color: #333E4D;">
+                            Psalm {{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}
+                        </li>
                     </ol>
                 </nav>
-                <h1 class="h2 fw-bold mb-2">Psalm {{ psalm.number }}</h1>
-                <h2 class="h4 text-muted mb-3">{{ psalm.title }}</h2>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h1 class="h2 fw-bold mb-2" style="color: #333E4D;">
+                            Psalm {{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}
+                        </h1>
+                        {% if psalm_api_data %}
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge" style="background-color: #E93C02; color: white;">
+                                    {{ psalm_api_data.translation }}
+                                </span>
+                                <small class="text-muted">
+                                    {{ psalm_api_data.translation_name }} • {{ psalm_api_data.verse_count }} verses
+                                </small>
+                            </div>
+                        {% elif psalm %}
+                            <h2 class="h4 text-muted mb-0">{{ psalm.title }}</h2>
+                        {% endif %}
+                    </div>
+                    <!-- Translation Selector -->
+                    {% if available_translations %}
+                    <div class="translation-controls">
+                        <select class="form-select form-select-sm" id="translationSelect" onchange="changeTranslation()">
+                            {% for code, name in available_translations.items() %}
+                            <option value="{{ code }}" {% if code == user_translation %}selected{% endif %}>
+                                {{ code }} - {{ name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -76,12 +107,29 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm.number }}" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
-                        <div class="d-flex justify-content-center align-items-center" style="height: 100px;">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading psalm text...</span>
+                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                        {% if psalm_api_data %}
+                            <!-- Live Bible API Content -->
+                            {% for verse in psalm_api_data.verses %}
+                            <div class="verse mb-3" data-verse="{{ verse.verse_number }}" data-verse-id="{{ verse.verse_id }}">
+                                <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
+                                    {{ verse.verse_number }}
+                                </span>
+                                <span class="verse-text" style="color: #333E4D;">{{ verse.text }}</span>
                             </div>
-                        </div>
+                            {% endfor %}
+                        {% elif psalm %}
+                            <!-- Fallback Static Content -->
+                            <div class="psalm-text-fallback">
+                                {% if psalm.text_niv %}
+                                    <div style="color: #333E4D;">{{ psalm.text_niv | safe }}</div>
+                                {% else %}
+                                    <div class="d-flex justify-content-center align-items-center" style="height: 100px;">
+                                        <div class="text-muted">Loading psalm text...</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
                     
                     <!-- Markup Tools -->
@@ -200,5 +248,85 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/psalm.js') }}"></script>
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}">    // Translation switching functionality
+    function changeTranslation() {
+        const select = document.getElementById('translationSelect');
+        const newTranslation = select.value;
+        const psalmNumber = document.getElementById('psalmText').dataset.psalmNumber;
+        
+        if (newTranslation && psalmNumber) {
+            // Show loading state
+            const psalmText = document.getElementById('psalmText');
+            psalmText.innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="height: 100px;">
+                    <div class="spinner-border" style="color: #E93C02;" role="status">
+                        <span class="visually-hidden">Loading ${newTranslation} translation...</span>
+                    </div>
+                </div>
+            `;
+            
+            // Fetch new translation
+            fetch(`/api/psalms/${psalmNumber}?translation=${newTranslation}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updatePsalmContent(data.data);
+                        updatePageTitle(data.data);
+                    } else {
+                        console.error('Error fetching psalm:', data.error);
+                        psalmText.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Failed to load ${newTranslation} translation. Please try again.
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Network error:', error);
+                    psalmText.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-times-circle me-2"></i>
+                            Network error loading translation. Please check your connection.
+                        </div>
+                    `;
+                });
+        }
+    }
+    
+    function updatePsalmContent(psalmData) {
+        const psalmText = document.getElementById('psalmText');
+        let html = '';
+        
+        psalmData.verses.forEach(verse => {
+            html += `
+                <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}">
+                    <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
+                        ${verse.verse_number}
+                    </span>
+                    <span class="verse-text" style="color: #333E4D;">${verse.text}</span>
+                </div>
+            `;
+        });
+        
+        psalmText.innerHTML = html;
+    }
+    
+    function updatePageTitle(psalmData) {
+        // Update the page title and header
+        document.title = `Psalm ${psalmData.psalm_number} - Pray150`;
+        
+        // Update the translation badge if it exists
+        const translationBadge = document.querySelector('.badge');
+        if (translationBadge) {
+            translationBadge.textContent = psalmData.translation;
+        }
+        
+        // Update verse count info
+        const verseInfo = document.querySelector('small.text-muted');
+        if (verseInfo) {
+            verseInfo.textContent = `${psalmData.translation_name} • ${psalmData.verse_count} verses`;
+        }
+    }
+</script>
 {% endblock %}
