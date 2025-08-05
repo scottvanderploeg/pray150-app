@@ -1,6 +1,7 @@
 """
 Bible API Integration for Pray150
 Uses Rob Keplin's Bible API to fetch all 150 Psalms with multiple translations
+Includes psalm superscripts/inscriptions for complete biblical context
 """
 
 import requests
@@ -8,6 +9,7 @@ import logging
 from typing import List, Dict, Optional
 from functools import lru_cache
 import time
+from psalm_superscripts import get_psalm_superscript
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -79,13 +81,17 @@ class BibleAPI:
                 logger.warning(f"No verses found for Psalm {psalm_number} in {translation}")
                 return None
             
+            # Add superscript/inscription if available
+            superscript = get_psalm_superscript(psalm_number)
+            
             # Format the response
             psalm_data = {
                 'psalm_number': psalm_number,
                 'translation': translation,
                 'translation_name': self.AVAILABLE_TRANSLATIONS.get(translation, translation),
                 'verse_count': len(verses_data),
-                'verses': []
+                'verses': [],
+                'superscript': superscript
             }
             
             for verse in verses_data:

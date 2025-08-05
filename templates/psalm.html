@@ -63,6 +63,13 @@
                                     {{ psalm_api_data.translation_name }} • {{ psalm_api_data.verse_count }} verses
                                 </small>
                             </div>
+                            {% if psalm_api_data.superscript %}
+                            <div class="mt-2">
+                                <small class="psalm-superscript" style="font-style: italic; color: #766659; font-family: Georgia, serif;">
+                                    {{ psalm_api_data.superscript }}
+                                </small>
+                            </div>
+                            {% endif %}
                         {% elif psalm %}
                             <h2 class="h4 text-muted mb-0">{{ psalm.title }}</h2>
                         {% endif %}
@@ -330,6 +337,25 @@
         const verseInfo = document.querySelector('small.text-muted');
         if (verseInfo) {
             verseInfo.textContent = `${psalmData.translation_name} • ${psalmData.verse_count} verses`;
+        }
+        
+        // Update or add superscript
+        let superscriptElement = document.querySelector('.psalm-superscript');
+        const superscriptContainer = document.querySelector('.d-flex.align-items-center.gap-2').parentElement;
+        
+        if (psalmData.superscript) {
+            if (!superscriptElement) {
+                const superscriptDiv = document.createElement('div');
+                superscriptDiv.className = 'mt-2';
+                superscriptDiv.innerHTML = `<small class="psalm-superscript" style="font-style: italic; color: #766659; font-family: Georgia, serif;"></small>`;
+                superscriptContainer.appendChild(superscriptDiv);
+                superscriptElement = superscriptDiv.querySelector('.psalm-superscript');
+            }
+            superscriptElement.textContent = psalmData.superscript;
+        } else {
+            if (superscriptElement) {
+                superscriptElement.parentElement.remove();
+            }
         }
     }
 </script>
