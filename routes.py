@@ -369,7 +369,8 @@ def add_prayer():
     prayer = Prayer(
         user_id=current_user.id,
         category=category,
-        prayer_text=f"{title}: {description}" if description else title
+        title=title,
+        description=description or ""
     )
     
     if prayer.save():
@@ -401,8 +402,12 @@ def answer_prayer():
                 id=prayer_data['id'],
                 user_id=prayer_data['user_id'],
                 category=prayer_data.get('category'),
+                title=prayer_data.get('title'),
+                description=prayer_data.get('description'),
                 prayer_text=prayer_data.get('prayer_text'),
                 is_answered=True,
+                answered_note=answered_note,
+                answered_at=datetime.utcnow(),
                 created_at=prayer_data.get('created_at')
             )
             

@@ -51,16 +51,16 @@
                                     </span>
                                     <small class="text-muted">{{ prayer.created_at.strftime('%m/%d/%y') }}</small>
                                 </div>
-                                <h5 class="card-title fw-bold">{{ prayer.title }}</h5>
-                                {% if prayer.description %}
-                                <p class="card-text text-muted">{{ prayer.description }}</p>
+                                <h5 class="card-title fw-bold">{{ prayer.get_title() }}</h5>
+                                {% if prayer.get_description() %}
+                                <p class="card-text text-muted">{{ prayer.get_description() }}</p>
                                 {% endif %}
                                 <div class="prayer-actions mt-3">
                                     <button class="btn btn-success btn-sm" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#answerPrayerModal"
                                             data-prayer-id="{{ prayer.id }}"
-                                            data-prayer-title="{{ prayer.title }}">
+                                            data-prayer-title="{{ prayer.get_title() }}">
                                         <i class="fas fa-check me-1"></i>Mark Answered
                                     </button>
                                 </div>
@@ -95,9 +95,9 @@
                                     </span>
                                     <small class="text-muted">{{ prayer.answered_date.strftime('%m/%d/%y') }}</small>
                                 </div>
-                                <h5 class="card-title fw-bold">{{ prayer.title }}</h5>
-                                {% if prayer.description %}
-                                <p class="card-text text-muted small">{{ prayer.description }}</p>
+                                <h5 class="card-title fw-bold">{{ prayer.get_title() }}</h5>
+                                {% if prayer.get_description() %}
+                                <p class="card-text text-muted small">{{ prayer.get_description() }}</p>
                                 {% endif %}
                                 {% if prayer.answered_note %}
                                 <div class="answered-note mt-2 p-2 bg-light rounded">

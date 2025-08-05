@@ -424,12 +424,25 @@ class JournalEntry:
         return ''
 
 class Prayer:
-    def __init__(self, id=None, user_id=None, category=None, prayer_text=None,
-                 is_answered=False, answered_note=None, created_at=None, answered_at=None):
+    def __init__(self, id=None, user_id=None, category=None, title=None, description=None,
+                 prayer_text=None, is_answered=False, answered_note=None, created_at=None, answered_at=None):
         self.id = id
         self.user_id = str(user_id) if user_id else None
         self.category = category
-        self.prayer_text = prayer_text
+        # Support both new structure (title/description) and old structure (prayer_text)
+        if prayer_text and not title:
+            # Parse old format "title: description"
+            if ":" in prayer_text:
+                parts = prayer_text.split(":", 1)
+                self.title = parts[0].strip()
+                self.description = parts[1].strip() if len(parts) > 1 else ""
+            else:
+                self.title = prayer_text
+                self.description = ""
+        else:
+            self.title = title
+            self.description = description or ""
+        self.prayer_text = prayer_text  # Keep for backward compatibility
         self.is_answered = is_answered
         self.answered_note = answered_note
         self.created_at = created_at or datetime.utcnow()
@@ -467,6 +480,8 @@ class Prayer:
                         id=prayer_data['id'],
                         user_id=prayer_data['user_id'],
                         category=prayer_data.get('category'),
+                        title=prayer_data.get('title'),
+                        description=prayer_data.get('description'),
                         prayer_text=prayer_data.get('prayer_text'),
                         is_answered=is_answered,
                         answered_note=prayer_data.get('answered_note'),
@@ -505,6 +520,8 @@ class Prayer:
                         id=prayer_data['id'],
                         user_id=prayer_data['user_id'],
                         category=prayer_data.get('category'),
+                        title=prayer_data.get('title'),
+                        description=prayer_data.get('description'),
                         prayer_text=prayer_data.get('prayer_text'),
                         is_answered=is_answered,
                         answered_note=prayer_data.get('answered_note'),
@@ -525,7 +542,8 @@ class Prayer:
             prayer_data = {
                 'user_id': self.user_id,
                 'category': self.category,
-                'prayer_text': self.prayer_text
+                'title': self.title,
+                'description': self.description
             }
             
             # Add optional fields if they exist
@@ -555,23 +573,22 @@ class Prayer:
             traceback.print_exc()
             return None
 
-    # Backward compatibility properties
-    @property
-    def title(self):
-        if not self.prayer_text:
-            return "Prayer Request"
-        # Extract title from prayer_text (before colon if exists)
-        if ":" in self.prayer_text:
-            title_part = self.prayer_text.split(":", 1)[0].strip()
-            return title_part[:50] + "..." if len(title_part) > 50 else title_part
-        return self.prayer_text[:50] + "..." if len(self.prayer_text) > 50 else self.prayer_text
+    # Ensure title property works
+    def get_title(self):
+        if hasattr(self, 'title') and self.title:
+            return self.title
+        elif self.prayer_text:
+            # Extract title from prayer_text (before colon if exists)
+            if ":" in self.prayer_text:
+                title_part = self.prayer_text.split(":", 1)[0].strip()
+                return title_part[:50] + "..." if len(title_part) > 50 else title_part
+            return self.prayer_text[:50] + "..." if len(self.prayer_text) > 50 else self.prayer_text
+        return "Prayer Request"
     
-    @property
-    def description(self):
-        if not self.prayer_text:
-            return ""
-        # Extract description (after colon if exists)
-        if ":" in self.prayer_text:
+    def get_description(self):
+        if hasattr(self, 'description') and self.description:
+            return self.description
+        elif self.prayer_text and ":" in self.prayer_text:
             parts = self.prayer_text.split(":", 1)
             if len(parts) > 1:
                 return parts[1].strip()

@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS public.prayer_lists (
     id BIGSERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
     category TEXT,
-    prayer_text TEXT,
+    title TEXT,
+    description TEXT,
     is_answered BOOLEAN DEFAULT FALSE,
     answered_note TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -31,6 +32,8 @@ FROM information_schema.columns
 WHERE table_name = 'prayer_lists' AND table_schema = 'public';
 
 -- Add missing columns if needed
+ALTER TABLE public.prayer_lists ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.prayer_lists ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.prayer_lists ADD COLUMN IF NOT EXISTS is_answered BOOLEAN DEFAULT FALSE;
 ALTER TABLE public.prayer_lists ADD COLUMN IF NOT EXISTS answered_note TEXT;
 ALTER TABLE public.prayer_lists ADD COLUMN IF NOT EXISTS answered_at TIMESTAMPTZ;
