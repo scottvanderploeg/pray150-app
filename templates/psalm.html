@@ -169,7 +169,7 @@
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">2. LOOK! Lord, help me discover new truth from your Word today.</h6>
                             <textarea class="form-control journal-textarea" data-prompt="2" rows="3" 
-                                      placeholder="What new truth or insight do you discover from this Psalm?">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('2', '') }}{% endif %}</textarea>
+                                      placeholder="What is the Psalm saying? What is this Psalm about?">{% if entries_dict and entries_dict.values() %}{{ entries_dict.values()|first.prompt_responses.get('2', '') }}{% endif %}</textarea>
                         </div>
 
                         <!-- Prompt 3 -->
