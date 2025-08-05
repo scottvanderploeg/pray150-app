@@ -338,9 +338,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update user preference
     function updateUserPreference(key, value) {
-        // This would typically be an AJAX call to update user preferences
+        // Save to localStorage for immediate use
+        localStorage.setItem(`pray150_${key}`, value);
         console.log(`Updating preference: ${key} = ${value}`);
         
+        // This would typically be an AJAX call to update user preferences
         // fetch('/update_preference', {
         //     method: 'POST',
         //     headers: {'Content-Type': 'application/json'},

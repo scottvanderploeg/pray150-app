@@ -77,17 +77,35 @@
                             <h2 class="h4 text-muted mb-0">{{ psalm.title }}</h2>
                         {% endif %}
                     </div>
-                    <!-- Single Translation Selector -->
+                    <!-- Translation Selector and Font Controls -->
                     {% if available_translations %}
                     <div class="translation-controls">
-                        <label class="form-label small text-muted mb-1">Bible Translation:</label>
-                        <select class="form-select form-select-sm" id="translationSelect" onchange="changeTranslation()">
-                            {% for code, name in available_translations.items() %}
-                            <option value="{{ code }}" {% if code == user_translation %}selected{% endif %}>
-                                {{ code }} - {{ name }}
-                            </option>
-                            {% endfor %}
-                        </select>
+                        <div class="d-flex flex-column gap-2">
+                            <!-- Translation Selector -->
+                            <div>
+                                <label class="form-label small text-muted mb-1">Bible Translation:</label>
+                                <select class="form-select form-select-sm" id="translationSelect" onchange="changeTranslation()">
+                                    {% for code, name in available_translations.items() %}
+                                    <option value="{{ code }}" {% if code == user_translation %}selected{% endif %}>
+                                        {{ code }} - {{ name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <!-- Font Size Controls -->
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="form-label small text-muted mb-0">Font Size:</label>
+                                <div class="d-flex align-items-center gap-1">
+                                    <button class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="adjustFontSize(-2)" title="Decrease font size">
+                                        <i class="fas fa-minus" style="font-size: 10px;"></i>
+                                    </button>
+                                    <span id="fontSizeDisplay" class="mx-2 text-muted small" style="min-width: 35px; text-align: center;">16px</span>
+                                    <button class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="adjustFontSize(2)" title="Increase font size">
+                                        <i class="fas fa-plus" style="font-size: 10px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     {% endif %}
                 </div>
@@ -109,7 +127,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}" data-base-font-size="16" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
                         {% if psalm_api_data %}
                             <!-- Live Bible API Content -->
                             {% for verse in psalm_api_data.verses %}
@@ -322,12 +340,18 @@
                               isGreek ? 'SBL Greek, Times, serif' : 
                               'Georgia, serif';
             
+            // Get current font size from the psalm text container
+            const psalmContainer = document.getElementById('psalmText');
+            const currentFontSize = parseInt(psalmContainer.style.fontSize) || parseInt(psalmContainer.dataset.baseFontSize) || 16;
+            const baseFontSize = isOriginalLanguage ? Math.max(18, currentFontSize) : currentFontSize;
+            const verseNumberSize = Math.max(12, Math.round(baseFontSize * 0.875));
+            
             html += `
                 <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}" style="direction: ${textDirection}; ${textAlign}">
-                    <span class="verse-number ${verseNumberPosition}" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super; ${verseNumberFloat}">
+                    <span class="verse-number ${verseNumberPosition}" style="color: #E93C02; font-weight: bold; font-size: ${verseNumberSize}px; vertical-align: super; ${verseNumberFloat}">
                         ${verse.verse_number}
                     </span>
-                    <span class="verse-text" style="color: #333E4D; font-family: ${fontFamily}; font-size: ${isOriginalLanguage ? '18px' : '16px'}; line-height: ${isOriginalLanguage ? '1.8' : '1.6'};">${styledText}</span>
+                    <span class="verse-text" style="color: #333E4D; font-family: ${fontFamily}; font-size: ${baseFontSize}px; line-height: ${isOriginalLanguage ? '1.8' : '1.6'};">${styledText}</span>
                 </div>
             `;
         });
@@ -375,5 +399,74 @@
             }
         }
     }
+    
+    // Font size adjustment functionality
+    let currentFontSize = 16; // Default font size
+    
+    function adjustFontSize(change) {
+        const psalmText = document.getElementById('psalmText');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        
+        if (!psalmText || !fontSizeDisplay) return;
+        
+        // Get current font size or use default
+        if (currentFontSize === 16) {
+            const currentStyle = window.getComputedStyle(psalmText).fontSize;
+            currentFontSize = parseInt(currentStyle) || 16;
+        }
+        
+        // Apply change within reasonable limits
+        const newSize = Math.max(12, Math.min(32, currentFontSize + change));
+        currentFontSize = newSize;
+        
+        // Update display
+        fontSizeDisplay.textContent = newSize + 'px';
+        psalmText.style.fontSize = newSize + 'px';
+        
+        // Update all verse text and numbers proportionally
+        const verses = psalmText.querySelectorAll('.verse');
+        verses.forEach(verse => {
+            const verseText = verse.querySelector('.verse-text');
+            const verseNumber = verse.querySelector('.verse-number');
+            
+            if (verseText) {
+                // Check if this is Hebrew or Greek text for larger base size
+                const isOriginalLang = verseText.style.fontFamily.includes('Frank Ruhl Libre') || 
+                                     verseText.style.fontFamily.includes('SBL Greek');
+                const adjustedSize = isOriginalLang ? Math.max(18, newSize) : newSize;
+                verseText.style.fontSize = adjustedSize + 'px';
+            }
+            
+            if (verseNumber) {
+                verseNumber.style.fontSize = Math.max(12, Math.round(newSize * 0.875)) + 'px';
+            }
+        });
+        
+        // Save user preference
+        updateUserPreference('fontSize', newSize);
+    }
+    
+    // Initialize font size display on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const psalmText = document.getElementById('psalmText');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        
+        if (psalmText && fontSizeDisplay) {
+            // Get saved font size from user preference or use default
+            const savedSize = localStorage.getItem('pray150_fontSize');
+            if (savedSize) {
+                const size = parseInt(savedSize);
+                if (size >= 12 && size <= 32) {
+                    currentFontSize = size;
+                    psalmText.style.fontSize = size + 'px';
+                    fontSizeDisplay.textContent = size + 'px';
+                }
+            } else {
+                const currentStyle = window.getComputedStyle(psalmText).fontSize;
+                currentFontSize = parseInt(currentStyle) || 16;
+                fontSizeDisplay.textContent = currentFontSize + 'px';
+            }
+        }
+    });
 </script>
 {% endblock %}
