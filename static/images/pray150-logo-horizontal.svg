@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 450 90" width="450" height="90">
-  <!-- Orange hexagon - doubled size -->
-  <polygon points="40,5 55,15 55,35 40,45 25,35 25,15" fill="#E93C02"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="500" height="120">
+  <!-- Background hexagon with psalm color -->
+  <polygon points="60,20 85,30 85,60 60,70 35,60 35,30" fill="#E93C02" stroke="none"/>
   
-  <!-- White harp/lyre symbol -->
-  <g transform="translate(40, 25)" fill="white">
-    <!-- Harp frame -->
-    <path d="M-12,-15 C-15,-15 -18,-12 -18,-9 L-18,9 C-18,12 -15,15 -12,15 L12,15 C15,15 18,12 18,9 L18,-9 C18,-12 15,-15 12,-15 Z"/>
-    <!-- Harp strings -->
-    <line x1="-9" y1="-9" x2="-9" y2="9" stroke="#E93C02" stroke-width="1.8"/>
-    <line x1="-3" y1="-12" x2="-3" y2="12" stroke="#E93C02" stroke-width="1.8"/>
-    <line x1="3" y1="-12" x2="3" y2="12" stroke="#E93C02" stroke-width="1.8"/>
-    <line x1="9" y1="-9" x2="9" y2="9" stroke="#E93C02" stroke-width="1.8"/>
+  <!-- Inner prayer hands symbol in white -->
+  <g transform="translate(60, 45)" fill="white">
+    <!-- Prayer hands silhouette -->
+    <path d="M-12,-18 C-14,-18 -15,-17 -15,-15 L-15,-5 C-15,-3 -13,-1 -11,-1 L-8,-1 L-8,12 C-8,14 -6,16 -4,16 C-2,16 0,14 0,12 L0,-1 L3,-1 C5,-1 7,-3 7,-5 L7,-15 C7,-17 6,-18 4,-18 L-12,-18 Z"/>
+    <!-- Highlight line on hands -->
+    <path d="M-3,-10 L-3,8" stroke="#E93C02" stroke-width="1.5" fill="none"/>
+    <path d="M3,-10 L3,8" stroke="#E93C02" stroke-width="1.5" fill="none"/>
   </g>
   
-  <!-- PRAY150 Text -->
-  <text x="75" y="35" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="#333E4D">PRAY150</text>
+  <!-- PRAY150 Text in dark blue-gray -->
+  <text x="110" y="55" font-family="Georgia, serif" font-size="44" font-weight="bold" fill="#333E4D">PRAY</text>
+  <text x="230" y="55" font-family="Georgia, serif" font-size="36" font-weight="normal" fill="#766659">150</text>
+  
+  <!-- Subtle tagline -->
+  <text x="110" y="80" font-family="Georgia, serif" font-size="14" fill="#766659">Scripture-Fed, Spirit-Led Prayer</text>
 </svg>
