@@ -124,7 +124,7 @@
                         Mark as Complete
                     </h5>
                     <form method="POST" action="{{ url_for('main.complete_psalm') }}">
-                        <input type="hidden" name="psalm_id" value="{{ psalm.id }}">
+                        <input type="hidden" name="psalm_id" value="{{ psalm.number }}">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="reading_time" class="form-label">Reading time (minutes)</label>
@@ -157,7 +157,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="journalForm" data-psalm-id="{{ psalm.id }}">
+                    <form id="journalForm" data-psalm-id="{{ psalm.number }}">
                         <!-- Prompt 1 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
