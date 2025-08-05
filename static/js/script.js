@@ -9,13 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle translation selection
-    const translationSelect = document.getElementById('translationSelect');
-    if (translationSelect) {
-        translationSelect.addEventListener('change', function() {
-            updateDisplayedTranslation(this.value);
-        });
-    }
+    // Translation selection is handled by psalm.js for psalm pages
+    // This avoids duplicate event listeners
 });
 
 async function loadPsalmData(psalmNumber) {
@@ -53,48 +48,8 @@ async function loadPsalmData(psalmNumber) {
     }
 }
 
-function updatePsalmText(psalm) {
-    const psalmText = document.getElementById('psalmText');
-    const translationSelect = document.getElementById('translationSelect');
-    
-    // Create containers for each translation
-    const translations = {
-        niv: psalm.text_niv,
-        esv: psalm.text_esv,
-        nlt: psalm.text_nlt,
-        nkjv: psalm.text_nkjv,
-        nrsv: psalm.text_nrsv
-    };
-    
-    let html = '';
-    let defaultTranslation = 'niv';
-    
-    for (const [key, text] of Object.entries(translations)) {
-        const isVisible = key === defaultTranslation;
-        const formattedText = text ? formatPsalmText(text) : '<p class="text-muted fst-italic">Please use the translation selector above to load this translation</p>';
-        
-        html += `<div id="text-${key}" class="translation-text" style="${isVisible ? '' : 'display: none;'}">${formattedText}</div>`;
-    }
-    
-    psalmText.innerHTML = html;
-    
-    // Set default translation selection
-    if (translationSelect) {
-        translationSelect.value = defaultTranslation;
-    }
-}
-
-function updateDisplayedTranslation(translation) {
-    // Hide all translations
-    const allTexts = document.querySelectorAll('.translation-text');
-    allTexts.forEach(text => text.style.display = 'none');
-    
-    // Show selected translation
-    const selectedText = document.getElementById(`text-${translation}`);
-    if (selectedText) {
-        selectedText.style.display = 'block';
-    }
-}
+// These functions are no longer needed as psalm pages use the Bible API
+// and translation switching is handled by psalm.js
 
 function formatPsalmText(text) {
     if (!text) return '<p class="text-muted fst-italic">Translation not available</p>';

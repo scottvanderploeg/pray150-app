@@ -67,9 +67,10 @@
                             <h2 class="h4 text-muted mb-0">{{ psalm.title }}</h2>
                         {% endif %}
                     </div>
-                    <!-- Translation Selector -->
+                    <!-- Single Translation Selector -->
                     {% if available_translations %}
                     <div class="translation-controls">
+                        <label class="form-label small text-muted mb-1">Bible Translation:</label>
                         <select class="form-select form-select-sm" id="translationSelect" onchange="changeTranslation()">
                             {% for code, name in available_translations.items() %}
                             <option value="{{ code }}" {% if code == user_translation %}selected{% endif %}>
