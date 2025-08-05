@@ -85,6 +85,18 @@
 .border { border-width: 1px; }
 .text-white { color: var(--white); }
 .text-blue-600 { color: var(--primary-color); }
+.text-success { color: var(--primary-color); }
+.text-warning { color: var(--primary-color); }
+.text-danger { color: var(--primary-color); }
+.text-info { color: var(--secondary-color); }
+.text-muted { color: var(--text-color); }
+.text-primary { color: var(--primary-color); }
+
+/* Bootstrap spinner using palette colors */
+.spinner-border {
+    border-color: var(--light-color);
+    border-top-color: var(--primary-color);
+}
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 
 @keyframes spin {
@@ -263,6 +275,40 @@ body {
     border-color: var(--secondary-color);
 }
 
+/* Custom button outline styles using palette colors */
+.btn-outline-warning {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-warning:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-outline-info {
+    color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-outline-info:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--white);
+}
+
+.btn-outline-secondary {
+    color: var(--text-color);
+    border-color: var(--accent-color);
+}
+
+.btn-outline-secondary:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: var(--secondary-color);
+}
+
 /* Markup Tools */
 .markup-tools {
     background-color: var(--light-color);
@@ -356,7 +402,7 @@ footer {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--gentle-gray);
+    background: var(--light-color);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -365,14 +411,14 @@ footer {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #357abd;
+    background: var(--secondary-color);
 }
 
 /* Focus States for Accessibility */
 .btn:focus,
 .form-control:focus,
 .form-select:focus {
-    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+    box-shadow: 0 0 0 0.2rem var(--accent-color);
 }
 
 /* Loading States */
@@ -385,9 +431,9 @@ footer {
     display: inline-block;
     width: 20px;
     height: 20px;
-    border: 3px solid rgba(255,255,255,.3);
+    border: 3px solid var(--light-color);
     border-radius: 50%;
-    border-top-color: #fff;
+    border-top-color: var(--white);
     animation: spin 1s ease-in-out infinite;
 }
 
@@ -405,7 +451,7 @@ footer {
     }
     
     .psalm-text {
-        border: 1px solid #ddd;
+        border: 1px solid var(--accent-color);
         page-break-inside: avoid;
     }
 }
