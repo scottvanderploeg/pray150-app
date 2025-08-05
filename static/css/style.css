@@ -82,6 +82,21 @@
     font-weight: 500;
     opacity: 0.9;
 }
+
+/* Original Language Text Styling */
+.hebrew-text {
+    direction: rtl;
+    font-family: 'SBL Hebrew', 'David CLM', 'Frank Ruehl CLM', serif;
+    font-size: 18px;
+    line-height: 1.8;
+}
+
+.greek-text {
+    direction: ltr;
+    font-family: 'SBL Greek', Times, serif;
+    font-size: 18px;
+    line-height: 1.8;
+}
 .h-full { height: 100%; }
 .bg-blue-300 { background-color: var(--light-color); }
 .leading-relaxed { line-height: 1.625; }

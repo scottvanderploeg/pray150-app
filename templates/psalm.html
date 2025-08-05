@@ -305,12 +305,18 @@
             // Style "Selah" in the verse text
             const styledText = styleSelahText(verse.text);
             
+            // Determine text direction for Hebrew and Greek
+            const textDirection = (psalmData.translation === 'WLC') ? 'rtl' : 'ltr';
+            const fontFamily = (psalmData.translation === 'WLC') ? 'SBL Hebrew, David CLM, Frank Ruehl CLM, serif' : 
+                              (psalmData.translation === 'LXX') ? 'SBL Greek, Times, serif' : 
+                              'Georgia, serif';
+            
             html += `
                 <div class="verse mb-3" data-verse="${verse.verse_number}" data-verse-id="${verse.verse_id}">
                     <span class="verse-number me-2" style="color: #E93C02; font-weight: bold; font-size: 14px; vertical-align: super;">
                         ${verse.verse_number}
                     </span>
-                    <span class="verse-text" style="color: #333E4D;">${styledText}</span>
+                    <span class="verse-text" style="color: #333E4D; direction: ${textDirection}; font-family: ${fontFamily}; font-size: ${psalmData.translation === 'WLC' || psalmData.translation === 'LXX' ? '18px' : '16px'};">${styledText}</span>
                 </div>
             `;
         });

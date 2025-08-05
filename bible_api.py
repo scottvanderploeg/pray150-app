@@ -10,6 +10,7 @@ from typing import List, Dict, Optional
 from functools import lru_cache
 import time
 from psalm_superscripts import get_psalm_superscript
+from bolls_bible_api import bolls_api
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,7 +33,9 @@ class BibleAPI:
         'BBE': 'Bible in Basic English',
         'DARBY': 'Darby English Bible',
         'WEB': 'World English Bible',
-        'YLT': "Young's Literal Translation"
+        'YLT': "Young's Literal Translation",
+        'WLC': 'Hebrew (Westminster Leningrad Codex)',
+        'LXX': 'Greek (Septuagint)'
     }
     
     def __init__(self):
@@ -65,6 +68,10 @@ class BibleAPI:
         if translation not in self.AVAILABLE_TRANSLATIONS:
             logger.warning(f"Unknown translation: {translation}. Using ESV as fallback.")
             translation = 'ESV'
+        
+        # Check if this is a Hebrew or Greek translation
+        if translation in ['WLC', 'LXX']:
+            return self._get_original_language_psalm(translation, psalm_number)
         
         try:
             url = f"{self.BASE_URL}/books/{self.PSALMS_BOOK_ID}/chapters/{psalm_number}"
@@ -112,6 +119,39 @@ class BibleAPI:
             return None
         except Exception as e:
             logger.error(f"Unexpected error fetching Psalm {psalm_number} ({translation}): {e}")
+            return None
+    
+    def _get_original_language_psalm(self, translation: str, psalm_number: int) -> Optional[Dict]:
+        """
+        Fetch a psalm in Hebrew or Greek using Bolls Bible API
+        
+        Args:
+            translation: WLC (Hebrew) or LXX (Greek)
+            psalm_number: Psalm number (1-150)
+            
+        Returns:
+            Dictionary with psalm data from Bolls API
+        """
+        try:
+            if translation == 'WLC':
+                psalm_data = bolls_api.get_psalm_hebrew(psalm_number)
+            elif translation == 'LXX':
+                psalm_data = bolls_api.get_psalm_greek(psalm_number)
+            else:
+                return None
+            
+            if psalm_data:
+                # Add superscript for consistency (only applies to Hebrew, but keeping structure consistent)
+                superscript = get_psalm_superscript(psalm_number) if translation == 'WLC' else None
+                psalm_data['superscript'] = superscript
+                
+                # Update translation name to match our format
+                psalm_data['translation_name'] = self.AVAILABLE_TRANSLATIONS[translation]
+                
+            return psalm_data
+            
+        except Exception as e:
+            logger.error(f"Error fetching original language psalm {psalm_number} ({translation}): {e}")
             return None
     
     def get_psalm_multiple_translations(self, psalm_number: int, translations: Optional[List[str]] = None) -> Dict[str, Dict]:
