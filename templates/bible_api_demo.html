@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+
+{% block title %}Bible API Demo - Pray150{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="text-center">
+                <h1 class="display-4 mb-3" style="color: #333E4D;">Bible API Integration</h1>
+                <p class="lead" style="color: #766659;">
+                    Explore all 150 Psalms from Rob Keplin's Bible API with 9 different translations
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-book-open fa-3x" style="color: #E93C02;"></i>
+                    </div>
+                    <h4 style="color: #333E4D;">150 Psalms</h4>
+                    <p class="text-muted">Complete Book of Psalms available</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-language fa-3x" style="color: #E93C02;"></i>
+                    </div>
+                    <h4 style="color: #333E4D;">9 Translations</h4>
+                    <p class="text-muted">Multiple Bible versions supported</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-bolt fa-3x" style="color: #E93C02;"></i>
+                    </div>
+                    <h4 style="color: #333E4D;">Live API</h4>
+                    <p class="text-muted">Real-time data from Bible API</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Translations -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #D1AEA9; border: none;">
+                    <h3 class="mb-0" style="color: #333E4D;">
+                        <i class="fas fa-language me-2"></i>Available Translations
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for code, name in available_translations.items() %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="badge me-2" style="background-color: #E93C02; color: white;">{{ code }}</span>
+                                <span style="color: #333E4D;">{{ name }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Psalm Lookup Tool -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #B5B9C4; border: none;">
+                    <h3 class="mb-0" style="color: #333E4D;">
+                        <i class="fas fa-search me-2"></i>Psalm Lookup
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" style="background-color: #D1AEA9; border-color: #D1AEA9;">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <input type="number" class="form-control" id="psalmNumber" 
+                                       placeholder="Enter Psalm number (1-150)" min="1" max="150" value="23">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select mb-3" id="translationSelect">
+                                {% for code, name in available_translations.items() %}
+                                <option value="{{ code }}" {% if code == 'ESV' %}selected{% endif %}>{{ code }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn me-2" style="background-color: #E93C02; color: white;" onclick="fetchPsalm()">
+                        <i class="fas fa-download me-1"></i>Fetch Psalm
+                    </button>
+                    <button class="btn" style="background-color: #766659; color: white;" onclick="fetchMultipleTranslations()">
+                        <i class="fas fa-layer-group me-1"></i>Compare Translations
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Display -->
+    <div class="row">
+        <div class="col-12">
+            <div id="resultsContainer" style="display: none;">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center" 
+                         style="background-color: #333E4D; border: none;">
+                        <h3 class="mb-0 text-white">
+                            <i class="fas fa-scroll me-2"></i><span id="resultTitle">Psalm Results</span>
+                        </h3>
+                        <button class="btn btn-sm btn-outline-light" onclick="clearResults()">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="psalmContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="text-center py-4" style="display: none;">
+        <div class="spinner-border" style="color: #E93C02;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2" style="color: #766659;">Fetching psalm data...</p>
+    </div>
+
+    <!-- API Information -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #D1AEA9; border: none;">
+                    <h3 class="mb-0" style="color: #333E4D;">
+                        <i class="fas fa-info-circle me-2"></i>API Information
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p style="color: #333E4D;">
+                        This demonstration uses <strong>Rob Keplin's Bible API</strong>, a free and open-source REST API 
+                        for accessing the complete Bible with no rate limits.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 style="color: #766659;">API Endpoints Used:</h5>
+                            <ul style="color: #333E4D;">
+                                <li><code>/api/psalms/{number}</code> - Single psalm</li>
+                                <li><code>/api/psalms/{number}/multiple-translations</code> - Multiple translations</li>
+                                <li><code>/api/translations</code> - Available translations</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 style="color: #766659;">Features:</h5>
+                            <ul style="color: #333E4D;">
+                                <li>No authentication required</li>
+                                <li>No rate limiting</li>
+                                <li>9 Bible translations</li>
+                                <li>Complete verse data with IDs</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Bible API Demo JavaScript
+function fetchPsalm() {
+    const psalmNumber = document.getElementById('psalmNumber').value;
+    const translation = document.getElementById('translationSelect').value;
+    
+    if (!psalmNumber || psalmNumber < 1 || psalmNumber > 150) {
+        alert('Please enter a valid psalm number between 1 and 150.');
+        return;
+    }
+    
+    showLoading();
+    
+    fetch(`/api/psalms/${psalmNumber}?translation=${translation}`)
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                displaySinglePsalm(data.data);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Failed to fetch psalm data');
+        });
+}
+
+function fetchMultipleTranslations() {
+    const psalmNumber = document.getElementById('psalmNumber').value;
+    
+    if (!psalmNumber || psalmNumber < 1 || psalmNumber > 150) {
+        alert('Please enter a valid psalm number between 1 and 150.');
+        return;
+    }
+    
+    showLoading();
+    
+    fetch(`/api/psalms/${psalmNumber}/multiple-translations?translations=ESV,NIV,NLT`)
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            if (data.success) {
+                displayMultipleTranslations(data.data, psalmNumber);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            alert('Failed to fetch psalm data');
+        });
+}
+
+function displaySinglePsalm(psalmData) {
+    const resultTitle = document.getElementById('resultTitle');
+    const psalmContent = document.getElementById('psalmContent');
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    resultTitle.textContent = `Psalm ${psalmData.psalm_number} (${psalmData.translation_name})`;
+    
+    let html = '<div class="psalm-verses">';
+    psalmData.verses.forEach(verse => {
+        html += `
+            <div class="verse mb-3">
+                <span class="verse-number me-2" style="color: #E93C02; font-weight: bold;">${verse.verse_number}.</span>
+                <span style="color: #333E4D;">${verse.text}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    
+    psalmContent.innerHTML = html;
+    resultsContainer.style.display = 'block';
+    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayMultipleTranslations(translationsData, psalmNumber) {
+    const resultTitle = document.getElementById('resultTitle');
+    const psalmContent = document.getElementById('psalmContent');
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    resultTitle.textContent = `Psalm ${psalmNumber} - Multiple Translations`;
+    
+    let html = '<div class="translations-comparison">';
+    
+    for (const [translation, psalmData] of Object.entries(translationsData)) {
+        html += `
+            <div class="translation-section mb-4">
+                <h4 class="mb-3" style="color: #766659;">
+                    <span class="badge me-2" style="background-color: #E93C02;">${translation}</span>
+                    ${psalmData.translation_name}
+                </h4>
+                <div class="psalm-verses ps-3" style="border-left: 3px solid #D1AEA9;">
+        `;
+        
+        psalmData.verses.slice(0, 3).forEach(verse => {
+            html += `
+                <div class="verse mb-2">
+                    <span class="verse-number me-2" style="color: #E93C02; font-weight: bold;">${verse.verse_number}.</span>
+                    <span style="color: #333E4D;">${verse.text}</span>
+                </div>
+            `;
+        });
+        
+        if (psalmData.verses.length > 3) {
+            html += `<p class="text-muted fst-italic">... and ${psalmData.verses.length - 3} more verses</p>`;
+        }
+        
+        html += '</div></div>';
+    }
+    
+    html += '</div>';
+    
+    psalmContent.innerHTML = html;
+    resultsContainer.style.display = 'block';
+    resultsContainer.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showLoading() {
+    document.getElementById('loadingSpinner').style.display = 'block';
+    document.getElementById('resultsContainer').style.display = 'none';
+}
+
+function hideLoading() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+}
+
+function clearResults() {
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('psalmContent').innerHTML = '';
+}
+
+// Allow Enter key to trigger psalm fetch
+document.getElementById('psalmNumber').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        fetchPsalm();
+    }
+});
+</script>
+{% endblock %}

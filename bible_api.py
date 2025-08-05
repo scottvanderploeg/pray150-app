@@ -1,0 +1,255 @@
+"""
+Bible API Integration for Pray150
+Uses Rob Keplin's Bible API to fetch all 150 Psalms with multiple translations
+"""
+
+import requests
+import logging
+from typing import List, Dict, Optional
+from functools import lru_cache
+import time
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+class BibleAPI:
+    """Bible API client for fetching Psalms from Rob Keplin's API"""
+    
+    BASE_URL = "https://bible-go-api.rkeplin.com/v1"
+    PSALMS_BOOK_ID = 19
+    TIMEOUT = 30
+    
+    # Available translations from the API
+    AVAILABLE_TRANSLATIONS = {
+        'ESV': 'English Standard Version',
+        'NIV': 'New International Version', 
+        'NLT': 'New Living Translation',
+        'KJV': 'King James Version',
+        'ASV': 'American Standard-ASV1901',
+        'BBE': 'Bible in Basic English',
+        'DARBY': 'Darby English Bible',
+        'WEB': 'World English Bible',
+        'YLT': "Young's Literal Translation"
+    }
+    
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Pray150-DevotionalApp/1.0',
+            'Accept': 'application/json'
+        })
+    
+    def get_available_translations(self) -> Dict[str, str]:
+        """Get all available Bible translations"""
+        return self.AVAILABLE_TRANSLATIONS.copy()
+    
+    @lru_cache(maxsize=1000)
+    def get_psalm(self, psalm_number: int, translation: str = 'ESV') -> Optional[Dict]:
+        """
+        Fetch a specific Psalm with verses
+        
+        Args:
+            psalm_number: Psalm number (1-150)
+            translation: Bible translation code (ESV, NIV, etc.)
+            
+        Returns:
+            Dictionary with psalm data and verses
+        """
+        if not (1 <= psalm_number <= 150):
+            logger.error(f"Invalid psalm number: {psalm_number}. Must be 1-150.")
+            return None
+            
+        if translation not in self.AVAILABLE_TRANSLATIONS:
+            logger.warning(f"Unknown translation: {translation}. Using ESV as fallback.")
+            translation = 'ESV'
+        
+        try:
+            url = f"{self.BASE_URL}/books/{self.PSALMS_BOOK_ID}/chapters/{psalm_number}"
+            params = {'translation': translation}
+            
+            logger.info(f"Fetching Psalm {psalm_number} ({translation}) from Bible API...")
+            
+            response = self.session.get(url, params=params, timeout=self.TIMEOUT)
+            response.raise_for_status()
+            
+            verses_data = response.json()
+            
+            if not verses_data:
+                logger.warning(f"No verses found for Psalm {psalm_number} in {translation}")
+                return None
+            
+            # Format the response
+            psalm_data = {
+                'psalm_number': psalm_number,
+                'translation': translation,
+                'translation_name': self.AVAILABLE_TRANSLATIONS.get(translation, translation),
+                'verse_count': len(verses_data),
+                'verses': []
+            }
+            
+            for verse in verses_data:
+                psalm_data['verses'].append({
+                    'verse_number': verse['verseId'],
+                    'text': verse['verse'].strip(),
+                    'verse_id': verse['id']
+                })
+            
+            logger.info(f"Successfully fetched Psalm {psalm_number} ({translation}) with {len(verses_data)} verses")
+            return psalm_data
+            
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout fetching Psalm {psalm_number} ({translation})")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error fetching Psalm {psalm_number} ({translation}): {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error fetching Psalm {psalm_number} ({translation}): {e}")
+            return None
+    
+    def get_psalm_multiple_translations(self, psalm_number: int, translations: Optional[List[str]] = None) -> Dict[str, Dict]:
+        """
+        Fetch a Psalm in multiple translations
+        
+        Args:
+            psalm_number: Psalm number (1-150)
+            translations: List of translation codes (default: ESV, NIV, NLT)
+            
+        Returns:
+            Dictionary with translation codes as keys and psalm data as values
+        """
+        if translations is None:
+            translations = ['ESV', 'NIV', 'NLT']
+        
+        results = {}
+        for translation in translations:
+            psalm_data = self.get_psalm(psalm_number, translation)
+            if psalm_data:
+                results[translation] = psalm_data
+            else:
+                logger.warning(f"Failed to fetch Psalm {psalm_number} in {translation}")
+        
+        return results
+    
+    def get_daily_psalm(self, day_of_year: int, translation: str = 'ESV') -> Optional[Dict]:
+        """
+        Get the daily Psalm based on day of year (cycles through all 150 Psalms)
+        
+        Args:
+            day_of_year: Day of year (1-365/366)
+            translation: Bible translation code
+            
+        Returns:
+            Psalm data for the day
+        """
+        # Cycle through all 150 Psalms
+        psalm_number = ((day_of_year - 1) % 150) + 1
+        
+        logger.info(f"Day {day_of_year} corresponds to Psalm {psalm_number}")
+        return self.get_psalm(psalm_number, translation)
+    
+    def search_psalms(self, query: str, limit: int = 10) -> List[Dict]:
+        """
+        Search for verses in Psalms containing specific text
+        
+        Args:
+            query: Search term
+            limit: Maximum number of results
+            
+        Returns:
+            List of matching verses
+        """
+        try:
+            url = f"{self.BASE_URL}/search"
+            params = {
+                'query': f"psalms {query}",
+                'limit': limit
+            }
+            
+            logger.info(f"Searching Psalms for: '{query}'")
+            
+            response = self.session.get(url, params=params, timeout=self.TIMEOUT)
+            response.raise_for_status()
+            
+            search_results = response.json()
+            
+            # Filter results to only include Psalms (book id 19)
+            psalm_results = []
+            for result in search_results:
+                # Handle both dict and object responses
+                if isinstance(result, dict):
+                    book_info = result.get('book', {})
+                    book_id = book_info.get('id') if isinstance(book_info, dict) else getattr(book_info, 'id', None)
+                else:
+                    book_id = getattr(getattr(result, 'book', None), 'id', None)
+                
+                if book_id == self.PSALMS_BOOK_ID:
+                    psalm_results.append({
+                        'psalm_number': getattr(result, 'chapterId', result.get('chapterId')) if hasattr(result, 'chapterId') else result.get('chapterId'),
+                        'verse_number': getattr(result, 'verseId', result.get('verseId')) if hasattr(result, 'verseId') else result.get('verseId'),
+                        'text': (getattr(result, 'verse', result.get('verse')) if hasattr(result, 'verse') else result.get('verse', '')).strip(),
+                        'verse_id': getattr(result, 'id', result.get('id')) if hasattr(result, 'id') else result.get('id')
+                    })
+            
+            logger.info(f"Found {len(psalm_results)} matching verses in Psalms")
+            return psalm_results
+            
+        except Exception as e:
+            logger.error(f"Error searching Psalms: {e}")
+            return []
+    
+    def validate_psalm_number(self, psalm_number: int) -> bool:
+        """Validate if psalm number is within valid range"""
+        return 1 <= psalm_number <= 150
+    
+    def get_psalm_range(self, start_psalm: int, end_psalm: int, translation: str = 'ESV') -> Dict[int, Dict]:
+        """
+        Fetch multiple consecutive Psalms
+        
+        Args:
+            start_psalm: Starting Psalm number
+            end_psalm: Ending Psalm number (inclusive)
+            translation: Bible translation code
+            
+        Returns:
+            Dictionary with psalm numbers as keys and psalm data as values
+        """
+        if not (1 <= start_psalm <= end_psalm <= 150):
+            logger.error(f"Invalid psalm range: {start_psalm}-{end_psalm}")
+            return {}
+        
+        results = {}
+        for psalm_num in range(start_psalm, end_psalm + 1):
+            psalm_data = self.get_psalm(psalm_num, translation)
+            if psalm_data:
+                results[psalm_num] = psalm_data
+            # Add small delay to be respectful to the API
+            time.sleep(0.1)
+        
+        return results
+
+
+# Global Bible API instance for use across the application
+bible_api = BibleAPI()
+
+
+# Convenience functions for easy integration
+def get_psalm(psalm_number: int, translation: str = 'ESV') -> Optional[Dict]:
+    """Get a single Psalm"""
+    return bible_api.get_psalm(psalm_number, translation)
+
+
+def get_daily_psalm(day_of_year: int, translation: str = 'ESV') -> Optional[Dict]:
+    """Get today's Psalm based on day of year"""
+    return bible_api.get_daily_psalm(day_of_year, translation)
+
+
+def get_available_translations() -> Dict[str, str]:
+    """Get available Bible translations"""
+    return bible_api.get_available_translations()
+
+
+def search_psalms(query: str, limit: int = 10) -> List[Dict]:
+    """Search Psalms for specific text"""
+    return bible_api.search_psalms(query, limit)

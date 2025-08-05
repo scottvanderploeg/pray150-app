@@ -4,6 +4,7 @@ from models import Psalm, JournalEntry, Prayer, PsalmProgress, User
 from psalm_data import initialize_psalms
 from datetime import datetime, timedelta
 from database import get_supabase_client
+from bible_api import bible_api, get_psalm, get_daily_psalm, get_available_translations
 
 main_bp = Blueprint('main', __name__)
 
@@ -20,8 +21,18 @@ def dashboard():
         initialize_psalms()
         psalm_count = Psalm.get_count()
     
-    # For now, just show Psalm 1 since that's the only one programmed
-    todays_psalm_number = 1
+    # Calculate today's psalm based on day of year (cycles through all 150 Psalms)
+    today = datetime.now()
+    day_of_year = today.timetuple().tm_yday
+    todays_psalm_number = ((day_of_year - 1) % 150) + 1
+    
+    # Get user's preferred translation
+    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'ESV'
+    
+    # Fetch today's psalm from Bible API
+    todays_psalm_api = get_daily_psalm(day_of_year, user_translation)
+    
+    # Get local psalm data for backward compatibility
     todays_psalm = Psalm.get_by_number(todays_psalm_number)
     
     # Get recent journal entries
@@ -41,6 +52,9 @@ def dashboard():
     
     return render_template('dashboard.html',
                          todays_psalm=todays_psalm,
+                         todays_psalm_api=todays_psalm_api,
+                         todays_psalm_number=todays_psalm_number,
+                         user_translation=user_translation,
                          recent_entries=recent_entries,
                          active_prayers=active_prayers,
                          total_psalms_read=total_psalms_read,
@@ -129,32 +143,30 @@ def journal_history():
 
 @main_bp.route('/api/psalms/<int:number>')
 def api_get_psalm(number):
-    """API endpoint to retrieve psalm data by number"""
+    """API endpoint to retrieve psalm data by number from Bible API"""
     try:
-        supabase = get_supabase_client()
-        result = supabase.table('psalms').select(
-            'psalm_number, text_niv, text_esv, text_nlt, text_nkjv, text_nrsv, music_url, created_at'
-        ).eq('psalm_number', number).execute()
+        # Get translation preference from query parameter
+        translation = request.args.get('translation', 'ESV').upper()
         
-        if result.data:
-            psalm_data = result.data[0]
+        # Validate psalm number
+        if not (1 <= number <= 150):
+            return jsonify({
+                'success': False,
+                'error': 'Invalid psalm number. Must be between 1 and 150.'
+            }), 400
+        
+        # Fetch from Bible API
+        psalm_data = get_psalm(number, translation)
+        
+        if psalm_data:
             return jsonify({
                 'success': True,
-                'data': {
-                    'psalm_number': psalm_data['psalm_number'],
-                    'text_niv': psalm_data.get('text_niv'),
-                    'text_esv': psalm_data.get('text_esv'),
-                    'text_nlt': psalm_data.get('text_nlt'),
-                    'text_nkjv': psalm_data.get('text_nkjv'),
-                    'text_nrsv': psalm_data.get('text_nrsv'),
-                    'music_url': psalm_data.get('music_url'),
-                    'created_at': psalm_data.get('created_at')
-                }
+                'data': psalm_data
             })
         else:
             return jsonify({
                 'success': False,
-                'error': 'Psalm not found'
+                'error': 'Psalm not found or API error'
             }), 404
             
     except Exception as e:
@@ -163,16 +175,116 @@ def api_get_psalm(number):
             'error': str(e)
         }), 500
 
+@main_bp.route('/api/psalms/<int:number>/multiple-translations')
+def api_get_psalm_multiple_translations(number):
+    """API endpoint to get psalm in multiple translations"""
+    try:
+        # Validate psalm number
+        if not (1 <= number <= 150):
+            return jsonify({
+                'success': False,
+                'error': 'Invalid psalm number. Must be between 1 and 150.'
+            }), 400
+        
+        # Get requested translations from query param (default: ESV, NIV, NLT)
+        translations_param = request.args.get('translations', 'ESV,NIV,NLT')
+        translations = [t.strip().upper() for t in translations_param.split(',')]
+        
+        # Fetch psalm in multiple translations
+        psalm_data = bible_api.get_psalm_multiple_translations(number, translations)
+        
+        if psalm_data:
+            return jsonify({
+                'success': True,
+                'data': psalm_data,
+                'psalm_number': number,
+                'translations_count': len(psalm_data)
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'No psalm data found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/translations')
+def api_get_translations():
+    """API endpoint to get available Bible translations"""
+    try:
+        translations = get_available_translations()
+        return jsonify({
+            'success': True,
+            'data': translations,
+            'count': len(translations)
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/search/psalms')
+def api_search_psalms():
+    """API endpoint to search psalms"""
+    try:
+        query = request.args.get('q', '').strip()
+        limit = request.args.get('limit', 10, type=int)
+        
+        if not query:
+            return jsonify({
+                'success': False,
+                'error': 'Search query is required'
+            }), 400
+        
+        results = bible_api.search_psalms(query, limit)
+        
+        return jsonify({
+            'success': True,
+            'data': results,
+            'query': query,
+            'count': len(results)
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/bible-api-demo')
+def bible_api_demo():
+    """Demo page to showcase Bible API integration"""
+    return render_template('bible_api_demo.html',
+                         available_translations=get_available_translations())
+
 @main_bp.route('/psalm/<int:psalm_number>')
 @login_required
 def psalm(psalm_number):
+    # Validate psalm number
+    if not (1 <= psalm_number <= 150):
+        flash('Invalid psalm number. Please choose a psalm between 1 and 150.', 'error')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get user's preferred translation
+    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'ESV'
+    
+    # Fetch psalm from Bible API
+    psalm_api_data = get_psalm(psalm_number, user_translation)
+    
+    # Get local psalm data for backward compatibility
     psalm = Psalm.get_by_number(psalm_number)
-    if not psalm:
+    
+    if not psalm_api_data and not psalm:
         flash('Psalm not found.', 'error')
         return redirect(url_for('main.dashboard'))
     
     # Get user's journal entries for this psalm
-    journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id)
+    journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id if psalm else psalm_number)
     
     # Pass the entries directly since they now contain all prompts in one entry
     entries_dict = {entry.id: entry for entry in journal_entries} if journal_entries else {}
@@ -180,8 +292,15 @@ def psalm(psalm_number):
     # Get user's markups for this psalm (placeholder for now)
     markups = []
     
+    # Get available translations for the translation selector
+    available_translations = get_available_translations()
+    
     return render_template('psalm.html', 
-                         psalm=psalm, 
+                         psalm=psalm,
+                         psalm_api_data=psalm_api_data,
+                         psalm_number=psalm_number,
+                         user_translation=user_translation,
+                         available_translations=available_translations,
                          entries_dict=entries_dict,
                          markups=markups)
 
