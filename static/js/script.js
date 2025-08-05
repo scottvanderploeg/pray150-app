@@ -71,7 +71,7 @@ function updatePsalmText(psalm) {
     
     for (const [key, text] of Object.entries(translations)) {
         const isVisible = key === defaultTranslation;
-        const formattedText = text ? formatPsalmText(text) : '<p class="text-muted fst-italic">Translation not available</p>';
+        const formattedText = text ? formatPsalmText(text) : '<p class="text-muted fst-italic">Please use the translation selector above to load this translation</p>';
         
         html += `<div id="text-${key}" class="translation-text" style="${isVisible ? '' : 'display: none;'}">${formattedText}</div>`;
     }

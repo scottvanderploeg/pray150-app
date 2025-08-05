@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const selectedText = document.getElementById(`text-${selectedTranslation}`);
             if (selectedText) {
                 selectedText.style.display = 'block';
+            } else {
+                // If translation text doesn't exist, this means we're using the new Bible API
+                // The changeTranslation() function in the psalm template will handle this
+                console.log('Using Bible API for translation switching');
             }
             
             // Update user preference (could be saved via AJAX)
