@@ -225,7 +225,7 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form id="journalForm" data-psalm-id="{{ psalm.number }}">
+                    <form id="journalForm" data-psalm-id="{{ psalm.id if psalm else psalm_number }}">
                         <!-- Prompt 1 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>

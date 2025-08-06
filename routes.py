@@ -349,6 +349,7 @@ def save_journal():
         # Handle JSON requests for auto-save
         if request.is_json:
             data = request.get_json()
+            print(f"DEBUG: Received JSON data: {data}")
             psalm_id = data.get('psalm_id')
             prompt_responses = data.get('prompt_responses', {})
         else:
@@ -357,9 +358,20 @@ def save_journal():
             prompt_number = request.form.get('prompt_number')
             content = request.form.get('content')
             prompt_responses = {prompt_number: content} if prompt_number and content else {}
+            print(f"DEBUG: Received form data - psalm_id: {psalm_id}, prompt_number: {prompt_number}")
+        
+        print(f"DEBUG: Final parsed - psalm_id: {psalm_id}, prompt_responses: {prompt_responses}")
         
         if not psalm_id:
+            print(f"DEBUG: Missing psalm_id! Request data: {data if request.is_json else dict(request.form)}")
             return jsonify({'success': False, 'error': 'Invalid journal entry data'}), 400
+        
+        # Ensure psalm_id is an integer
+        try:
+            psalm_id = int(psalm_id)
+        except (ValueError, TypeError):
+            print(f"DEBUG: Invalid psalm_id format: {psalm_id}")
+            return jsonify({'success': False, 'error': 'Invalid psalm ID format'}), 400
         
         print(f"DEBUG: Saving journal - user_id={current_user.id}, psalm_id={psalm_id}")
         print(f"DEBUG: Prompt responses: {prompt_responses}")
