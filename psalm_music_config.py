@@ -13,63 +13,63 @@ PSALM_MUSIC_VIDEOS = {
     
     # Psalms 1-10
     1: 'Gxj7B-cyOXo',   # Psalm 1 - "Blessed is the man"
-    2: '',   # Psalm 2
-    3: '',   # Psalm 3
-    4: '',   # Psalm 4
-    5: '',   # Psalm 5
-    6: '',   # Psalm 6
-    7: '',   # Psalm 7
-    8: '',   # Psalm 8
-    9: '',   # Psalm 9
-    10: '',  # Psalm 10
+    2: '7HAQnp-DDek',   # Psalm 2
+    3: 'YyknwMjH12o',   # Psalm 3
+    4: 'qUREqVjJZCE',   # Psalm 4
+    5: 'cIga-H1w7OA',   # Psalm 5
+    6: 'HfcWa1ztp6Y',   # Psalm 6
+    7: 'FPqvRwf9V0A',   # Psalm 7
+    8: 'k50ZqJg69RA',   # Psalm 8
+    9: 'G-uQ3ax-moU',   # Psalm 9
+    10: 'RemzHw0Gzag',  # Psalm 10
     
     # Psalms 11-20
-    11: '',  # Psalm 11
-    12: '',  # Psalm 12
-    13: '',  # Psalm 13
-    14: '',  # Psalm 14
-    15: '',  # Psalm 15
-    16: '',  # Psalm 16
-    17: '',  # Psalm 17
-    18: '',  # Psalm 18
-    19: '',  # Psalm 19
-    20: '',  # Psalm 20
+    11: 'QP0_Rq86vPI',  # Psalm 11
+    12: 'XkXaXIPyeqc',  # Psalm 12
+    13: 'ava_cf7eIH4',  # Psalm 13
+    14: '7gfrY0hIDOM',  # Psalm 14
+    15: '11BP2CixiiQ',  # Psalm 15
+    16: 'bOngNdwOJEI',  # Psalm 16
+    17: 'X7Sh2XOLAeA',  # Psalm 17
+    18: 'Arvo3F-JD10',  # Psalm 18
+    19: '5v5FnVDRkXQ',  # Psalm 19
+    20: 'Qi8QvKJlTQM',  # Psalm 20
     
     # Psalms 21-30
-    21: '',  # Psalm 21
-    22: '',  # Psalm 22
-    23: '',  # Psalm 23 - "The Lord is my shepherd"
-    24: '',  # Psalm 24
-    25: '',  # Psalm 25
-    26: '',  # Psalm 26
-    27: '',  # Psalm 27
-    28: '',  # Psalm 28
-    29: '',  # Psalm 29
-    30: '',  # Psalm 30
+    21: '7OE4f3g9vz4',  # Psalm 21
+    22: '5Ii4tAt-00w',  # Psalm 22
+    23: 'yLDqj_SBzPk',  # Psalm 23 - "The Lord is my shepherd"
+    24: 'm6POkIiXLa0',  # Psalm 24
+    25: 'N3V0baFdcjE',  # Psalm 25
+    26: 'mzouM7AFd8M',  # Psalm 26
+    27: 'bQPi9IF4Gq8',  # Psalm 27
+    28: 'LkuCs4US1Dk',  # Psalm 28
+    29: 'uzESJ52qzSc',  # Psalm 29
+    30: 'PLwhZKWI0QM',  # Psalm 30
     
     # Psalms 31-40
-    31: '',  # Psalm 31
-    32: '',  # Psalm 32
-    33: '',  # Psalm 33
-    34: '',  # Psalm 34
-    35: '',  # Psalm 35
-    36: '',  # Psalm 36
-    37: '',  # Psalm 37
-    38: '',  # Psalm 38
-    39: '',  # Psalm 39
-    40: '',  # Psalm 40
+    31: '6iVOPJeG_Bo',  # Psalm 31
+    32: 'mxtvZYGlYzU',  # Psalm 32
+    33: 'Z-KztMTU_jQ',  # Psalm 33
+    34: '5gpZn3TvQT8',  # Psalm 34
+    35: 'NUNI31w_nwM',  # Psalm 35
+    36: '_1eyD3g6Yzw',  # Psalm 36
+    37: 'GsQkccU3nAA',  # Psalm 37
+    38: 'UKuQW5euQRI',  # Psalm 38
+    39: 'XBsSPsFW6eU',  # Psalm 39
+    40: 'bZGGXlWKi4Q',  # Psalm 40
     
     # Psalms 41-50
-    41: '',  # Psalm 41
-    42: '',  # Psalm 42
-    43: '',  # Psalm 43
-    44: '',  # Psalm 44
-    45: '',  # Psalm 45
-    46: '',  # Psalm 46
-    47: '',  # Psalm 47
-    48: '',  # Psalm 48
-    49: '',  # Psalm 49
-    50: '',  # Psalm 50
+    41: 'Mc_FeVuk4tk',  # Psalm 41
+    42: '0FJCEMfWgT8',  # Psalm 42
+    43: 'GM1KuG8NRZI',  # Psalm 43
+    44: 'Ektwwe2kt8Q',  # Psalm 44
+    45: 'Tyzh8ol-y_U',  # Psalm 45
+    46: 'RqHlmr4Z9Ok',  # Psalm 46
+    47: 'c_aJP6_KQ8o',  # Psalm 47
+    48: 'MhF2Iak54eo',  # Psalm 48
+    49: 'ZHJqqExWHJ4',  # Psalm 49
+    50: '-oV0etTr7go',  # Psalm 50
     
     # Psalms 51-60
     51: '',  # Psalm 51
