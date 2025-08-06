@@ -12,7 +12,7 @@ PSALM_MUSIC_VIDEOS = {
     # 1: 'VIDEO_ID_HERE',  # "Song Title" by Artist
     
     # Psalms 1-10
-    1: '',   # Psalm 1 - "Blessed is the man"
+    1: 'Gxj7B-cyOXo',   # Psalm 1 - "Blessed is the man"
     2: '',   # Psalm 2
     3: '',   # Psalm 3
     4: '',   # Psalm 4
