@@ -177,7 +177,7 @@
                         Worship Along
                     </h5>
                     <div id="youtube-container" class="ratio ratio-16x9" style="max-width: 800px; margin: 0 auto;">
-                        <div class="d-flex justify-content-center align-items-center bg-light rounded" style="height: 100%;">
+                        <div class="d-flex justify-content-center align-items-center bg-light rounded" style="height: 100%;" id="youtube-placeholder">
                             <div class="text-muted">Loading worship music...</div>
                         </div>
                     </div>
@@ -468,5 +468,52 @@
             }
         }
     });
+    
+    // Load YouTube video for worship music
+    function loadYouTubeVideo() {
+        const psalmNumber = {{ psalm_number }};
+        const youtubeContainer = document.getElementById('youtube-container');
+        const placeholder = document.getElementById('youtube-placeholder');
+        
+        if (!youtubeContainer || !placeholder) return;
+        
+        // YouTube video IDs for specific psalms
+        const psalmVideos = {
+            1: 'j9phNEaPrv8',
+            23: 'e5dVeR4fv54',
+            91: 'k-ImCpNqbJw',
+            139: 'W_VnlCWczV8',
+            150: 'BJ0yFbCQIds'
+        };
+        
+        const videoId = psalmVideos[psalmNumber];
+        
+        if (videoId) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            iframe.style.borderRadius = '8px';
+            
+            // Replace placeholder with iframe
+            youtubeContainer.removeChild(placeholder);
+            youtubeContainer.appendChild(iframe);
+        } else {
+            // Show message if no video is available
+            placeholder.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-music text-muted mb-2" style="font-size: 2rem;"></i>
+                    <div class="text-muted">Worship music not yet available for Psalm ${psalmNumber}</div>
+                    <small class="text-muted">Use your favorite worship playlist while reading!</small>
+                </div>
+            `;
+        }
+    }
+    
+    // Call loadYouTubeVideo when page loads
+    document.addEventListener('DOMContentLoaded', loadYouTubeVideo);
 </script>
 {% endblock %}
