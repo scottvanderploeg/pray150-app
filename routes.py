@@ -357,69 +357,6 @@ def save_journal():
     except Exception as e:
         print(f"Error saving journal entry: {e}")
         return jsonify({'success': False, 'error': 'Error saving journal entry. Please try again.'}), 500
-        
-        # Since we store all prompts in one entry, get the first (and should be only) entry
-        if existing_entries:
-            entry = existing_entries[0]
-            print(f"DEBUG: Updating existing entry ID {entry.id}")
-            # Update the specific prompt response
-            entry.prompt_responses[str(prompt_number)] = content or ""
-            print(f"DEBUG: Updated prompt_responses: {entry.prompt_responses}")
-        else:
-            # Create new entry with this prompt response
-            prompt_responses = {str(prompt_number): content or ""}
-            print(f"DEBUG: Creating new entry with prompt_responses: {prompt_responses}")
-            entry = JournalEntry(
-                user_id=current_user.id,
-                psalm_id=int(psalm_id),
-                prompt_responses=prompt_responses
-            )
-        
-        # Save the entry
-        print(f"DEBUG: Attempting to save entry...")
-        save_result = entry.save()
-        print(f"DEBUG: Save result: {save_result}")
-        
-        if save_result:
-            print(f"DEBUG: Save successful, entry ID: {entry.id}")
-            # For AJAX requests, return JSON response
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-               'application/json' in request.headers.get('Accept', ''):
-                return jsonify({'success': True, 'message': 'Journal entry saved successfully'})
-            
-            flash('Journal entry saved successfully!', 'success')
-        else:
-            print(f"DEBUG: Save failed")
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-               'application/json' in request.headers.get('Accept', ''):
-                return jsonify({'success': False, 'error': 'Error saving journal entry'}), 500
-            
-            flash('Error saving journal entry. Please try again.', 'error')
-    
-    except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        print(f"Error in save_journal: {e}")
-        print(f"Full traceback: {error_details}")
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-           'application/json' in request.headers.get('Accept', ''):
-            return jsonify({'success': False, 'error': str(e), 'details': error_details}), 500
-        
-        flash('Error saving journal entry. Please try again.', 'error')
-    
-    # For regular form submissions, redirect back to psalm
-    try:
-        from database import get_supabase_client
-        supabase = get_supabase_client()
-        result = supabase.table('psalms').select('psalm_number').eq('id', psalm_id).execute()
-        if result.data:
-            psalm_number = result.data[0]['psalm_number']
-            return redirect(url_for('main.psalm', psalm_number=psalm_number))
-    except Exception as e:
-        print(f"Error getting psalm number: {e}")
-    
-    return redirect(url_for('main.dashboard'))
 
 @main_bp.route('/complete_psalm', methods=['POST'])
 @login_required
