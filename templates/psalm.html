@@ -477,49 +477,86 @@
         
         if (!youtubeContainer || !placeholder) return;
         
-        // YouTube video IDs for specific psalms (from your curated playlist)
-        // To add more videos: find the video ID in the YouTube URL after "v=" or "embed/"
-        const psalmVideos = {
-            1: 'wnOCLLg5Wfg',   // Replace with video ID from your playlist for Psalm 1
-            23: 'e5dVeR4fv54',  // Replace with video ID from your playlist for Psalm 23
-            91: 'k-ImCpNqbJw',  // Replace with video ID from your playlist for Psalm 91
-            139: 'W_VnlCWczV8', // Replace with video ID from your playlist for Psalm 139
-            150: 'BJ0yFbCQIds'  // Replace with video ID from your playlist for Psalm 150
-        };
+        // Load psalm music configuration from server
+        fetch(`/api/psalm-music/${psalmNumber}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.video_id) {
+                    loadPsalmVideo(data.video_id, data.alternates || []);
+                } else {
+                    showPlaylistFallback();
+                }
+            })
+            .catch(error => {
+                console.log('No specific music configured, showing playlist fallback');
+                showPlaylistFallback();
+            });
+    }
+    
+    function loadPsalmVideo(primaryVideoId, alternateVideoIds = []) {
+        const youtubeContainer = document.getElementById('youtube-container');
+        const placeholder = document.getElementById('youtube-placeholder');
         
-        const videoId = psalmVideos[psalmNumber];
+        if (!youtubeContainer || !placeholder) return;
         
-        if (videoId) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-            iframe.allowFullscreen = true;
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.border = 'none';
-            iframe.style.borderRadius = '8px';
-            
-            // Replace placeholder with iframe
-            youtubeContainer.removeChild(placeholder);
-            youtubeContainer.appendChild(iframe);
-        } else {
-            // Show link to the full playlist when no specific video is configured
-            placeholder.innerHTML = `
+        // Create iframe for primary video
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${primaryVideoId}?rel=0&modestbranding=1`;
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        
+        // Replace placeholder with iframe
+        youtubeContainer.removeChild(placeholder);
+        youtubeContainer.appendChild(iframe);
+        
+        // If there are alternate videos, show them below
+        if (alternateVideoIds.length > 0) {
+            const alternatesContainer = document.createElement('div');
+            alternatesContainer.className = 'mt-3';
+            alternatesContainer.innerHTML = `
                 <div class="text-center">
-                    <i class="fas fa-music text-muted mb-3" style="font-size: 2rem;"></i>
-                    <div class="text-muted mb-3">No specific worship music configured for Psalm ${psalmNumber}</div>
-                    <a href="https://youtube.com/playlist?list=PLlAZONCUO1iQr2m19nFmRLyTWdey-iXuh" 
-                       target="_blank" 
-                       class="btn btn-outline-primary btn-sm">
-                        <i class="fab fa-youtube me-2"></i>
-                        Open Full Psalm Playlist
-                    </a>
+                    <small class="text-muted">Additional worship songs for this psalm:</small>
                     <div class="mt-2">
-                        <small class="text-muted">Browse the complete collection and worship along!</small>
+                        ${alternateVideoIds.map((videoId, index) => 
+                            `<a href="https://www.youtube.com/watch?v=${videoId}" target="_blank" class="btn btn-outline-secondary btn-sm me-2 mb-1">
+                                <i class="fab fa-youtube me-1"></i>Song ${index + 2}
+                            </a>`
+                        ).join('')}
                     </div>
                 </div>
             `;
+            youtubeContainer.parentNode.appendChild(alternatesContainer);
         }
+    }
+    
+    function showPlaylistFallback() {
+        const placeholder = document.getElementById('youtube-placeholder');
+        if (!placeholder) return;
+        
+        const psalmNumber = {{ psalm_number }};
+        
+        // Show link to the full playlist when no specific video is configured
+        placeholder.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-music text-muted mb-3" style="font-size: 2rem;"></i>
+                <div class="text-muted mb-3">No specific worship music configured for Psalm ${psalmNumber}</div>
+                <a href="https://youtube.com/playlist?list=PLlAZONCUO1iQr2m19nFmRLyTWdey-iXuh" 
+                   target="_blank" 
+                   class="btn btn-outline-primary btn-sm">
+                    <i class="fab fa-youtube me-2"></i>
+                    Open Full Psalm Playlist
+                </a>
+                <div class="mt-2">
+                    <small class="text-muted">Browse the complete collection and worship along!</small>
+                </div>
+            </div>
+        `;
+        
+
     }
     
     // Call loadYouTubeVideo when page loads

@@ -262,6 +262,44 @@ def bible_api_demo():
     return render_template('bible_api_demo.html',
                          available_translations=get_available_translations())
 
+@main_bp.route('/api/psalm-music/<int:psalm_number>')
+def api_psalm_music(psalm_number):
+    """API endpoint to get music for a specific psalm"""
+    try:
+        # Import the music configuration
+        from psalm_music_config import get_psalm_video_id, get_psalm_alternate_videos, has_psalm_music
+        
+        if not (1 <= psalm_number <= 150):
+            return jsonify({
+                'success': False,
+                'error': 'Invalid psalm number'
+            }), 400
+        
+        video_id = get_psalm_video_id(psalm_number)
+        alternates = get_psalm_alternate_videos(psalm_number)
+        
+        if video_id or alternates:
+            return jsonify({
+                'success': True,
+                'psalm_number': psalm_number,
+                'video_id': video_id,
+                'alternates': alternates,
+                'has_music': True
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'psalm_number': psalm_number,
+                'has_music': False,
+                'message': 'No music configured for this psalm'
+            })
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @main_bp.route('/psalm/<int:psalm_number>')
 @login_required
 def psalm(psalm_number):
