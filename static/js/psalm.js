@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create new indicator
             const indicator = document.createElement('div');
             indicator.className = 'emotion-indicator alert alert-info d-flex align-items-center justify-content-between mb-2';
-            indicator.style.cssText = 'position: sticky; top: 10px; z-index: 1000; margin-bottom: 1rem;';
+            indicator.style.cssText = 'position: sticky; top: 0px; z-index: 100; margin-bottom: 1rem; background: rgba(217, 237, 247, 0.95); backdrop-filter: blur(5px);';
             
             const emotionEmojis = {
                 'terrible': '😞',
@@ -101,10 +101,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <small class="text-muted">Being saved with your journal</small>
             `;
             
-            // Insert at the top of the journal form
-            const journalCard = document.querySelector('.card-body');
-            if (journalCard) {
-                journalCard.insertBefore(indicator, journalCard.firstChild);
+            // Insert at the top of the journal form, right after the form element
+            const journalForm = document.getElementById('journalForm');
+            if (journalForm) {
+                journalForm.insertBefore(indicator, journalForm.firstChild);
             }
         }
         
