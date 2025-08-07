@@ -28,78 +28,78 @@
 
                     <!-- Emoji Selection -->
                     <form id="reflectionForm" method="GET" action="{{ url_for('main.pre_reflection_journal', psalm_number=psalm_number) }}">
-                        <div class="row g-3 justify-content-center">
+                        <div class="row g-4 justify-content-center">
                             <!-- Terrible -->
-                            <div class="col-6 col-md-2">
+                            <div class="col-4 col-md-2">
                                 <div class="emotion-option text-center">
                                     <input type="radio" name="emotion" value="terrible" id="terrible" class="d-none">
-                                    <label for="terrible" class="emotion-label d-block p-3 rounded border cursor-pointer">
-                                        <div class="emoji-placeholder mb-2">
+                                    <label for="terrible" class="emotion-label d-block p-4 rounded cursor-pointer hover-scale" style="background: #f8f9fa; transition: all 0.2s ease;">
+                                        <div class="emoji-placeholder mb-3">
                                             <img src="{{ url_for('static', filename='images/emoji-terrible.svg') }}" 
                                                  alt="Terrible" 
-                                                 style="width: 60px; height: 60px;">
+                                                 style="width: 80px; height: 80px;">
                                         </div>
-                                        <small class="fw-medium" style="color: #333E4D;">Terrible</small>
+                                        <div class="fw-medium" style="color: #333E4D; font-size: 0.9rem;">Awful</div>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Bad -->
-                            <div class="col-6 col-md-2">
+                            <div class="col-4 col-md-2">
                                 <div class="emotion-option text-center">
                                     <input type="radio" name="emotion" value="bad" id="bad" class="d-none">
-                                    <label for="bad" class="emotion-label d-block p-3 rounded border cursor-pointer">
-                                        <div class="emoji-placeholder mb-2">
+                                    <label for="bad" class="emotion-label d-block p-4 rounded cursor-pointer hover-scale" style="background: #f8f9fa; transition: all 0.2s ease;">
+                                        <div class="emoji-placeholder mb-3">
                                             <img src="{{ url_for('static', filename='images/emoji-bad.svg') }}" 
                                                  alt="Bad" 
-                                                 style="width: 60px; height: 60px;">
+                                                 style="width: 80px; height: 80px;">
                                         </div>
-                                        <small class="fw-medium" style="color: #333E4D;">Bad</small>
+                                        <div class="fw-medium" style="color: #333E4D; font-size: 0.9rem;">Bad</div>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Okay -->
-                            <div class="col-6 col-md-2">
+                            <div class="col-4 col-md-2">
                                 <div class="emotion-option text-center">
                                     <input type="radio" name="emotion" value="okay" id="okay" class="d-none">
-                                    <label for="okay" class="emotion-label d-block p-3 rounded border cursor-pointer">
-                                        <div class="emoji-placeholder mb-2">
+                                    <label for="okay" class="emotion-label d-block p-4 rounded cursor-pointer hover-scale" style="background: #f8f9fa; transition: all 0.2s ease;">
+                                        <div class="emoji-placeholder mb-3">
                                             <img src="{{ url_for('static', filename='images/emoji-okay.svg') }}" 
                                                  alt="Okay" 
-                                                 style="width: 60px; height: 60px;">
+                                                 style="width: 80px; height: 80px;">
                                         </div>
-                                        <small class="fw-medium" style="color: #333E4D;">Okay</small>
+                                        <div class="fw-medium" style="color: #333E4D; font-size: 0.9rem;">Okay</div>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Good -->
-                            <div class="col-6 col-md-2">
+                            <div class="col-4 col-md-2">
                                 <div class="emotion-option text-center">
                                     <input type="radio" name="emotion" value="good" id="good" class="d-none">
-                                    <label for="good" class="emotion-label d-block p-3 rounded border cursor-pointer">
-                                        <div class="emoji-placeholder mb-2">
+                                    <label for="good" class="emotion-label d-block p-4 rounded cursor-pointer hover-scale" style="background: #f8f9fa; transition: all 0.2s ease;">
+                                        <div class="emoji-placeholder mb-3">
                                             <img src="{{ url_for('static', filename='images/emoji-good.svg') }}" 
                                                  alt="Good" 
-                                                 style="width: 60px; height: 60px;">
+                                                 style="width: 80px; height: 80px;">
                                         </div>
-                                        <small class="fw-medium" style="color: #333E4D;">Good</small>
+                                        <div class="fw-medium" style="color: #333E4D; font-size: 0.9rem;">Good</div>
                                     </label>
                                 </div>
                             </div>
 
                             <!-- Great -->
-                            <div class="col-6 col-md-2">
+                            <div class="col-4 col-md-2">
                                 <div class="emotion-option text-center">
                                     <input type="radio" name="emotion" value="great" id="great" class="d-none">
-                                    <label for="great" class="emotion-label d-block p-3 rounded border cursor-pointer">
-                                        <div class="emoji-placeholder mb-2">
+                                    <label for="great" class="emotion-label d-block p-4 rounded cursor-pointer hover-scale" style="background: #f8f9fa; transition: all 0.2s ease;">
+                                        <div class="emoji-placeholder mb-3">
                                             <img src="{{ url_for('static', filename='images/emoji-great.svg') }}" 
                                                  alt="Great" 
-                                                 style="width: 60px; height: 60px;">
+                                                 style="width: 80px; height: 80px;">
                                         </div>
-                                        <small class="fw-medium" style="color: #333E4D;">Great</small>
+                                        <div class="fw-medium" style="color: #333E4D; font-size: 0.9rem;">Great</div>
                                     </label>
                                 </div>
                             </div>
@@ -135,24 +135,32 @@
 
 .emotion-label {
     transition: all 0.2s ease;
-    border-color: #dee2e6 !important;
-    background-color: #fff;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .emotion-label:hover {
-    border-color: #E93C02 !important;
-    background-color: #fef7f6;
+    background-color: #e9ecef !important;
     transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-input[type="radio"]:checked + .emotion-label {
-    border-color: #E93C02 !important;
-    background-color: #E93C02;
+.emotion-option input:checked + .emotion-label {
+    background-color: #E93C02 !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(233,60,2,0.3);
+}
+
+.emotion-option input:checked + .emotion-label div {
     color: white !important;
 }
 
-input[type="radio"]:checked + .emotion-label small {
-    color: white !important;
+.hover-scale:hover {
+    transform: translateY(-2px) scale(1.02);
 }
 
 .emoji-placeholder {
@@ -160,7 +168,7 @@ input[type="radio"]:checked + .emotion-label small {
 }
 
 .emotion-label:hover .emoji-placeholder {
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 </style>
 

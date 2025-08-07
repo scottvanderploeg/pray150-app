@@ -234,10 +234,10 @@
                                 <div class="alert alert-info p-3 mb-2">
                                     <small class="text-muted">
                                         <i class="fas fa-heart me-1"></i>
-                                        Your reflection: <strong class="text-capitalize">{{ pre_reflection_data.emotion }}</strong>
+                                        Your reflection: <strong class="text-capitalize">{{ pre_reflection_data.emotion if pre_reflection_data.emotion != 'terrible' else 'awful' }}</strong>
                                         <img src="{{ url_for('static', filename='images/emoji-' + pre_reflection_data.emotion + '.svg') }}" 
                                              alt="{{ pre_reflection_data.emotion|title }}" 
-                                             style="width: 24px; height: 24px; margin-left: 6px; vertical-align: middle;">
+                                             style="width: 32px; height: 32px; margin-left: 6px; vertical-align: middle;">
                                     </small>
                                 </div>
                             {% endif %}
