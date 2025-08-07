@@ -65,25 +65,42 @@ document.addEventListener('DOMContentLoaded', function() {
         function initializeEmotion() {
             if (currentEmotion) return; // Already initialized
             
-            const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
-            if (emotionAlert) {
-                const emotionSrc = emotionAlert.getAttribute('src');
-                const emotionMatch = emotionSrc.match(/emoji-([^.]+)\.png/);
-                if (emotionMatch) {
-                    currentEmotion = emotionMatch[1];
-                    console.log('Initialized emotion:', currentEmotion);
+            try {
+                const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
+                if (emotionAlert) {
+                    const emotionSrc = emotionAlert.getAttribute('src');
+                    const emotionMatch = emotionSrc.match(/emoji-([^.]+)\.png/);
+                    if (emotionMatch) {
+                        currentEmotion = emotionMatch[1];
+                        console.log('Initialized emotion from image:', currentEmotion);
+                        // Store in localStorage for persistence
+                        localStorage.setItem('currentEmotion_' + journalForm.dataset.psalmId, currentEmotion);
+                        return;
+                    }
                 }
-            }
-            
-            // Also check for emotion text in the DOM
-            const emotionText = document.querySelector('.alert-info strong');
-            if (emotionText && !currentEmotion) {
-                const emotionValue = emotionText.textContent.toLowerCase().trim();
-                if (emotionValue === 'awful') currentEmotion = 'terrible';
-                else if (['bad', 'okay', 'good', 'great'].includes(emotionValue)) {
-                    currentEmotion = emotionValue;
+                
+                // Also check for emotion text in the DOM
+                const emotionText = document.querySelector('.alert-info strong');
+                if (emotionText && !currentEmotion) {
+                    const emotionValue = emotionText.textContent.toLowerCase().trim();
+                    if (emotionValue === 'awful') currentEmotion = 'terrible';
+                    else if (['bad', 'okay', 'good', 'great'].includes(emotionValue)) {
+                        currentEmotion = emotionValue;
+                        console.log('Initialized emotion from text:', currentEmotion);
+                        // Store in localStorage for persistence
+                        localStorage.setItem('currentEmotion_' + journalForm.dataset.psalmId, currentEmotion);
+                        return;
+                    }
                 }
-                console.log('Initialized emotion from text:', currentEmotion);
+                
+                // Try to load from localStorage if DOM methods failed
+                const storedEmotion = localStorage.getItem('currentEmotion_' + journalForm.dataset.psalmId);
+                if (storedEmotion) {
+                    currentEmotion = storedEmotion;
+                    console.log('Loaded emotion from localStorage:', currentEmotion);
+                }
+            } catch (error) {
+                console.error('Error initializing emotion:', error);
             }
         }
         
@@ -174,6 +191,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Initialize emotion data from DOM
         initializeEmotion();
+        
+        // Periodic emotion re-initialization to handle DOM changes
+        setInterval(function() {
+            if (!currentEmotion) {
+                initializeEmotion();
+            }
+        }, 3000);
         
         // Add event listeners for auto-save
         journalTextareas.forEach(textarea => {
