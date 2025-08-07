@@ -61,9 +61,59 @@ document.addEventListener('DOMContentLoaded', function() {
             saveStatus.className = 'text-muted';
         }
 
+        // Create persistent emotion indicator
+        function createEmotionIndicator() {
+            if (!currentEmotion) return;
+            
+            // Remove any existing indicator
+            const existingIndicator = document.querySelector('.emotion-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
+            // Create new indicator
+            const indicator = document.createElement('div');
+            indicator.className = 'emotion-indicator alert alert-info d-flex align-items-center justify-content-between mb-2';
+            indicator.style.cssText = 'position: sticky; top: 10px; z-index: 1000; margin-bottom: 1rem;';
+            
+            const emotionEmojis = {
+                'terrible': '😞',
+                'bad': '😟', 
+                'okay': '😐',
+                'good': '😊',
+                'great': '😄'
+            };
+            
+            const emotionLabels = {
+                'terrible': 'Awful',
+                'bad': 'Bad',
+                'okay': 'Okay', 
+                'good': 'Good',
+                'great': 'Great'
+            };
+            
+            indicator.innerHTML = `
+                <div>
+                    <i class="fas fa-heart text-primary me-2"></i>
+                    <strong>Your heart today: ${emotionLabels[currentEmotion] || currentEmotion}</strong>
+                    <span style="font-size: 1.2em; margin-left: 8px;">${emotionEmojis[currentEmotion] || '❤️'}</span>
+                </div>
+                <small class="text-muted">Being saved with your journal</small>
+            `;
+            
+            // Insert at the top of the journal form
+            const journalCard = document.querySelector('.card-body');
+            if (journalCard) {
+                journalCard.insertBefore(indicator, journalCard.firstChild);
+            }
+        }
+        
         // Initialize emotion data from DOM on page load
         function initializeEmotion() {
-            if (currentEmotion) return; // Already initialized
+            if (currentEmotion) {
+                createEmotionIndicator();
+                return; // Already initialized
+            }
             
             try {
                 const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
@@ -75,6 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Initialized emotion from image:', currentEmotion);
                         // Store in localStorage for persistence
                         localStorage.setItem('currentEmotion_' + journalForm.dataset.psalmId, currentEmotion);
+                        createEmotionIndicator();
                         return;
                     }
                 }
@@ -89,6 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Initialized emotion from text:', currentEmotion);
                         // Store in localStorage for persistence
                         localStorage.setItem('currentEmotion_' + journalForm.dataset.psalmId, currentEmotion);
+                        createEmotionIndicator();
                         return;
                     }
                 }
@@ -98,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (storedEmotion) {
                     currentEmotion = storedEmotion;
                     console.log('Loaded emotion from localStorage:', currentEmotion);
+                    createEmotionIndicator();
                 }
             } catch (error) {
                 console.error('Error initializing emotion:', error);
@@ -196,6 +249,12 @@ document.addEventListener('DOMContentLoaded', function() {
         setInterval(function() {
             if (!currentEmotion) {
                 initializeEmotion();
+            } else {
+                // Ensure the indicator is still visible
+                const indicator = document.querySelector('.emotion-indicator');
+                if (!indicator) {
+                    createEmotionIndicator();
+                }
             }
         }, 3000);
         
