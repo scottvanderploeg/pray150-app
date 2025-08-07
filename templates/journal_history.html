@@ -104,6 +104,19 @@
                             <!-- Entry Body -->
                             <div class="card-body bg-light">
                                 {% if entry.prompt_responses %}
+                                    <!-- Show emotion data if available -->
+                                    {% if entry.prompt_responses.get('emotion') %}
+                                        <div class="alert alert-info p-3 mb-3">
+                                            <small class="text-muted">
+                                                <i class="fas fa-heart me-1"></i>
+                                                Pre-reflection emotion: <strong class="text-capitalize">{{ entry.prompt_responses.emotion if entry.prompt_responses.emotion != 'terrible' else 'awful' }}</strong>
+                                                <img src="{{ url_for('static', filename='images/emoji-' + entry.prompt_responses.emotion + '.png') }}" 
+                                                     alt="{{ entry.prompt_responses.emotion|title }}" 
+                                                     style="width: 32px; height: 32px; margin-left: 6px; vertical-align: middle;">
+                                            </small>
+                                        </div>
+                                    {% endif %}
+                                    
                                     {% set prompt_titles = {
                                         '1': 'Lord, where is my heart/soul today?',
                                         '2': 'LOOK! Lord, help me discover new truth from your Word today.',

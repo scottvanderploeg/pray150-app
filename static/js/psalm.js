@@ -73,6 +73,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
+            // Check if we have emotion data from the pre-reflection context in the DOM
+            const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
+            if (emotionAlert) {
+                const emotionSrc = emotionAlert.getAttribute('src');
+                const emotionMatch = emotionSrc.match(/emoji-([^.]+)\.png/);
+                if (emotionMatch) {
+                    promptResponses['emotion'] = emotionMatch[1];
+                }
+            }
+            
             return {
                 psalm_id: psalmId,
                 prompt_responses: promptResponses
