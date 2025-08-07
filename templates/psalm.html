@@ -229,14 +229,15 @@
                         <!-- Prompt 1 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
-                            {% if pre_reflection_data %}
-                                <!-- Show pre-reflection context -->
+                            {% set emotion_data = pre_reflection_data.emotion if pre_reflection_data else (entries_dict.values() | list | first).prompt_responses.get('emotion') if entries_dict and (entries_dict.values() | list | first).prompt_responses else None %}
+                            {% if emotion_data %}
+                                <!-- Show emotion context -->
                                 <div class="alert alert-info p-3 mb-2">
                                     <small class="text-muted">
                                         <i class="fas fa-heart me-1"></i>
-                                        Your reflection: <strong class="text-capitalize">{{ pre_reflection_data.emotion if pre_reflection_data.emotion != 'terrible' else 'awful' }}</strong>
-                                        <img src="{{ url_for('static', filename='images/emoji-' + pre_reflection_data.emotion + '.png') }}" 
-                                             alt="{{ pre_reflection_data.emotion|title }}" 
+                                        Your reflection: <strong class="text-capitalize">{{ emotion_data if emotion_data != 'terrible' else 'awful' }}</strong>
+                                        <img src="{{ url_for('static', filename='images/emoji-' + emotion_data + '.png') }}" 
+                                             alt="{{ emotion_data|title }}" 
                                              style="width: 32px; height: 32px; margin-left: 6px; vertical-align: middle;">
                                     </small>
                                 </div>

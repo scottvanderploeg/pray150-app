@@ -420,8 +420,24 @@ def save_journal():
         if today_entry:
             # Update existing entry with consolidated responses
             today_entry.prompt_responses.update(prompt_responses)
+            
+            # Preserve emotion data if not already present and we have it from session
+            if 'emotion' not in today_entry.prompt_responses:
+                from flask import session
+                pre_reflection_data = session.get('pre_reflection', None)
+                if pre_reflection_data and pre_reflection_data.get('emotion'):
+                    today_entry.prompt_responses['emotion'] = pre_reflection_data['emotion']
+            
             today_entry.save()
         else:
+            # Check if we have pre-reflection emotion data stored separately
+            from flask import session
+            pre_reflection_data = session.get('pre_reflection', None)
+            
+            # Include emotion data in prompt responses if available
+            if pre_reflection_data and pre_reflection_data.get('emotion'):
+                prompt_responses['emotion'] = pre_reflection_data['emotion']
+            
             # Create new consolidated entry
             entry = JournalEntry(
                 user_id=current_user.id,
