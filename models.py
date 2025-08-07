@@ -51,12 +51,19 @@ class User(UserMixin):
             from database import get_supabase_client
             supabase = get_supabase_client()
             
+            # Debug logging
+            print(f"DEBUG: Looking for user profile with ID: {user_id}")
+            
             # Try to get user profile data
             result = supabase.table('user_profiles').select('*')\
                 .eq('user_id', str(user_id)).execute()
             
-            if result.data:
+            print(f"DEBUG: Profile query result: {result.data}")
+            
+            if result.data and len(result.data) > 0:
                 profile = result.data[0]
+                print(f"DEBUG: Found profile data: first_name={profile.get('first_name')}, last_name={profile.get('last_name')}")
+                
                 return User(
                     id=str(user_id),
                     username=profile.get('username'),
@@ -71,6 +78,7 @@ class User(UserMixin):
                     created_at=profile.get('created_at')
                 )
             else:
+                print(f"DEBUG: No profile found for user {user_id}, using fallback")
                 # Fallback for users without profiles
                 return User(
                     id=str(user_id),
@@ -79,7 +87,7 @@ class User(UserMixin):
                     preferred_translation='NIV'
                 )
         except Exception as e:
-            print(f"Error getting user by ID: {e}")
+            print(f"ERROR: Error getting user by ID {user_id}: {e}")
             # Fallback user object
             return User(
                 id=str(user_id),
