@@ -104,9 +104,7 @@
                             </div>
                         </div>
                         <div class="col-md-4 text-end">
-                            <a href="/bible-api-demo" class="btn" style="background-color: #766659; color: white;">
-                                <i class="fas fa-flask me-1"></i> Bible API Demo
-                            </a>
+                            <!-- Removed Bible API Demo button - link now in footer -->
                         </div>
                     </div>
                 </div>
@@ -133,7 +131,7 @@
                     <div class="stat-icon mb-2">
                         <i class="fas fa-fire fa-2x text-warning"></i>
                     </div>
-                    <h4 class="fw-bold mb-1">{{ psalms_this_week }}</h4>
+                    <h4 class="fw-bold mb-1">{{ journal_entries_this_week }}</h4>
                     <p class="text-muted mb-0">This Week</p>
                 </div>
             </div>
@@ -150,6 +148,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Heart Tracker Section -->
+    {% if emotion_trends_week or emotion_trends_month %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent border-0 pt-4">
+                    <h5 class="fw-bold mb-0">
+                        <i class="fas fa-heart text-danger me-2"></i>
+                        Heart Tracker
+                    </h5>
+                    <small class="text-muted">Track your emotional journey through prayer and reflection</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- This Week Chart -->
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h6 class="fw-bold mb-3">This Week</h6>
+                                <canvas id="weekChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                        <!-- This Month Chart -->
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <h6 class="fw-bold mb-3">This Month</h6>
+                                <canvas id="monthChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Emotion Legend -->
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-terrible.png') }}" style="width: 16px; height: 16px;"> Awful</span>
+                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-bad.png') }}" style="width: 16px; height: 16px;"> Bad</span>
+                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-okay.png') }}" style="width: 16px; height: 16px;"> Okay</span>
+                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-good.png') }}" style="width: 16px; height: 16px;"> Good</span>
+                            <span><img src="{{ url_for('static', filename='images/emoji-great.png') }}" style="width: 16px; height: 16px;"> Great</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Main Content Row -->
     <div class="row">
@@ -253,7 +296,13 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Chart.js for Heart Tracker -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Heart Tracker emotion data
+const emotionTrendsWeek = {{ emotion_trends_week | tojson }};
+const emotionTrendsMonth = {{ emotion_trends_month | tojson }};
+
 // Psalm navigation functionality
 function navigateToPsalm() {
     const selector = document.getElementById('psalmSelector');
@@ -262,6 +311,83 @@ function navigateToPsalm() {
     if (psalmNumber) {
         window.location.href = `/psalm/${psalmNumber}`;
     }
+}
+
+// Function to create emotion line chart
+function createEmotionChart(canvasId, data, title) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    
+    // Process data for chart
+    const chartData = {
+        labels: data.map(item => new Date(item.date).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric' 
+        })),
+        datasets: [{
+            label: 'Heart Condition',
+            data: data.map(item => item.value),
+            borderColor: '#E93C02',
+            backgroundColor: 'rgba(233, 60, 2, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#E93C02',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+        }]
+    };
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
+                            return `${emotions[context.raw]}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 1,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1,
+                        callback: function(value) {
+                            const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
+                            return emotions[value];
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: '#E93C02'
+                }
+            }
+        }
+    });
 }
 
 // Add some interactive elements to the dashboard
@@ -274,6 +400,14 @@ document.addEventListener('DOMContentLoaded', function() {
             card.style.opacity = '1';
         }, index * 100);
     });
+    
+    // Initialize Heart Tracker charts if data exists
+    if (emotionTrendsWeek && emotionTrendsWeek.length > 0) {
+        createEmotionChart('weekChart', emotionTrendsWeek, 'This Week');
+    }
+    if (emotionTrendsMonth && emotionTrendsMonth.length > 0) {
+        createEmotionChart('monthChart', emotionTrendsMonth, 'This Month');
+    }
 });
 </script>
 {% endblock %}

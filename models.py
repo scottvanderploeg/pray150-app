@@ -250,21 +250,65 @@ class JournalEntry:
         try:
             from database import get_supabase_client
             supabase = get_supabase_client()
-            print(f"DEBUG: Getting count for user_id {user_id}")
             
             # Use a simple query to get all entries and count them
             result = supabase.table('journal_entries').select('id')\
                 .eq('user_id', str(user_id)).execute()
             
-            print(f"DEBUG: Count query result data: {result.data}")
             count = len(result.data) if result.data else 0
-            print(f"DEBUG: Count query for user {user_id} found {count} entries")
             return count
         except Exception as e:
             print(f"Error getting journal entry count: {e}")
-            import traceback
-            traceback.print_exc()
             return 0
+            
+    @staticmethod
+    def get_week_count_by_user(user_id, days_back=7):
+        """Get count of journal entries in the last week"""
+        try:
+            from datetime import timedelta
+            from database import get_supabase_client
+            week_ago = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
+            
+            supabase = get_supabase_client()
+            result = supabase.table('journal_entries').select('id')\
+                .eq('user_id', str(user_id))\
+                .gte('created_at', week_ago).execute()
+            return len(result.data) if result.data else 0
+        except Exception as e:
+            print(f"Error getting week journal entry count: {e}")
+            return 0
+            
+    @staticmethod
+    def get_emotion_trends(user_id, days_back=30):
+        """Get emotion data over time for heart tracker"""
+        try:
+            from datetime import timedelta
+            from database import get_supabase_client
+            from_date = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
+            
+            supabase = get_supabase_client()
+            result = supabase.table('journal_entries').select('created_at,prompt_responses')\
+                .eq('user_id', str(user_id))\
+                .gte('created_at', from_date)\
+                .order('created_at', desc=False).execute()
+                
+            emotion_data = []
+            emotion_values = {'terrible': 1, 'bad': 2, 'okay': 3, 'good': 4, 'great': 5}
+            
+            for entry in result.data:
+                if entry.get('prompt_responses', {}).get('emotion'):
+                    emotion = entry['prompt_responses']['emotion']
+                    if emotion in emotion_values:
+                        emotion_data.append({
+                            'date': entry['created_at'][:10],  # Extract date part
+                            'emotion': emotion,
+                            'value': emotion_values[emotion]
+                        })
+            
+            return emotion_data
+        except Exception as e:
+            print(f"Error getting emotion trends: {e}")
+            return []
 
     @staticmethod
     def get_all_by_user(user_id):

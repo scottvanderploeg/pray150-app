@@ -43,9 +43,12 @@ def dashboard():
     
     # Get progress summary
     total_psalms_read = PsalmProgress.get_count_by_user(current_user.id)
-    psalms_this_week = PsalmProgress.get_week_count_by_user(current_user.id)
+    journal_entries_this_week = JournalEntry.get_week_count_by_user(current_user.id)
     total_journal_entries = JournalEntry.get_count_by_user(current_user.id)
-    print(f"DEBUG: Dashboard - total_journal_entries = {total_journal_entries}")
+    
+    # Get emotion trends for heart tracker
+    emotion_trends_week = JournalEntry.get_emotion_trends(current_user.id, days_back=7)
+    emotion_trends_month = JournalEntry.get_emotion_trends(current_user.id, days_back=30)
     
     # Get dates with journal entries for calendar highlighting
     journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
@@ -58,8 +61,10 @@ def dashboard():
                          recent_entries=recent_entries,
                          active_prayers=active_prayers,
                          total_psalms_read=total_psalms_read,
-                         psalms_this_week=psalms_this_week,
+                         journal_entries_this_week=journal_entries_this_week,
                          total_journal_entries=total_journal_entries,
+                         emotion_trends_week=emotion_trends_week,
+                         emotion_trends_month=emotion_trends_month,
                          journal_dates=journal_dates)
 
 @main_bp.route('/reflect/<int:psalm_number>')
