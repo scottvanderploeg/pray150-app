@@ -235,14 +235,9 @@
                                     <small class="text-muted">
                                         <i class="fas fa-heart me-1"></i>
                                         Your reflection: <strong class="text-capitalize">{{ pre_reflection_data.emotion }}</strong>
-                                        {% set emotion_emojis = {
-                                            'terrible': '😞',
-                                            'bad': '😔', 
-                                            'okay': '😐',
-                                            'good': '😊',
-                                            'great': '😄'
-                                        } %}
-                                        <span style="font-size: 1.2rem;">{{ emotion_emojis[pre_reflection_data.emotion] }}</span>
+                                        <img src="{{ url_for('static', filename='images/emoji-' + pre_reflection_data.emotion + '.svg') }}" 
+                                             alt="{{ pre_reflection_data.emotion|title }}" 
+                                             style="width: 24px; height: 24px; margin-left: 6px; vertical-align: middle;">
                                     </small>
                                 </div>
                             {% endif %}

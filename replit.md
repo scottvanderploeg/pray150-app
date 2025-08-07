@@ -89,6 +89,7 @@ Preferred communication style: Simple, everyday language.
 - **Psalm Selector**: Dashboard includes "Explore Psalms" selector allowing users to choose any of the 150 psalms for reading
 - **Live Translation Switching**: Real-time translation switching on psalm pages using Bible API with proper error handling
 - **Unified Template System**: Updated psalm.html template to display live Bible API data with fallback to static content
+- **Pre-Reflection Workflow**: Complete emotional check-in system before scripture reading with custom emoji selection, journaling, and automatic pre-fill of first journal prompt
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)
