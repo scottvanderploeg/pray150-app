@@ -12,6 +12,47 @@ main_bp = Blueprint('main', __name__)
 def index():
     return render_template('index.html')
 
+@main_bp.route('/fix-profile')
+@login_required
+def fix_profile():
+    """Temporary route to fix missing user profile"""
+    try:
+        supabase = get_supabase_client()
+        
+        # Check if profile already exists
+        existing = supabase.table('user_profiles').select('*')\
+            .eq('user_id', str(current_user.id)).execute()
+        
+        if not existing.data:
+            # Create a default profile - user can update this later
+            profile_data = {
+                'user_id': str(current_user.id),
+                'username': f"user_{str(current_user.id)[:8]}",
+                'email': 'user@example.com',  # This should be updated
+                'first_name': 'Your Name',  # This should be updated
+                'last_name': 'Here',
+                'country': None,
+                'zip_code': None,
+                'preferred_translation': 'NIV',
+                'font_preference': 'Georgia',
+                'theme_preference': 'default'
+            }
+            
+            result = supabase.table('user_profiles').insert(profile_data).execute()
+            
+            if result.data:
+                flash('Profile created! Please update your name in the profile section.', 'success')
+            else:
+                flash('Failed to create profile.', 'error')
+        else:
+            flash('Profile already exists.', 'info')
+            
+    except Exception as e:
+        print(f"Profile fix error: {e}")
+        flash('Error fixing profile.', 'error')
+    
+    return redirect(url_for('main.dashboard'))
+
 @main_bp.route('/dashboard')
 @login_required
 def dashboard():
