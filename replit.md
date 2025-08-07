@@ -90,6 +90,9 @@ Preferred communication style: Simple, everyday language.
 - **Live Translation Switching**: Real-time translation switching on psalm pages using Bible API with proper error handling
 - **Unified Template System**: Updated psalm.html template to display live Bible API data with fallback to static content
 - **Pre-Reflection Workflow**: Complete emotional check-in system before scripture reading with custom emoji selection, journaling, and automatic pre-fill of first journal prompt
+- **Sequential Psalm Progression**: Users start at Psalm 1 and progress sequentially through all 150 Psalms, cycling back to Psalm 1 after completion
+- **Current Psalm Logic**: Dashboard shows "Next Psalm" instead of "Today's Psalm" - advances only after completing journal entry for current psalm
+- **Explore Psalms Feature**: Allows out-of-order psalm study with full journal process but doesn't affect sequential progression
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)

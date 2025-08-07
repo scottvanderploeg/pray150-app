@@ -62,19 +62,17 @@ def dashboard():
         initialize_psalms()
         psalm_count = Psalm.get_count()
     
-    # Calculate today's psalm based on day of year (cycles through all 150 Psalms)
-    today = datetime.now()
-    day_of_year = today.timetuple().tm_yday
-    todays_psalm_number = ((day_of_year - 1) % 150) + 1
+    # Get user's current psalm number in their sequential progression
+    current_psalm_number = current_user.get_current_psalm_number()
     
     # Get user's preferred translation
     user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'ESV'
     
-    # Fetch today's psalm from Bible API
-    todays_psalm_api = get_daily_psalm(day_of_year, user_translation)
+    # Fetch current psalm from Bible API
+    current_psalm_api = get_psalm(current_psalm_number, user_translation)
     
     # Get local psalm data for backward compatibility
-    todays_psalm = Psalm.get_by_number(todays_psalm_number)
+    current_psalm = Psalm.get_by_number(current_psalm_number)
     
     # Get recent journal entries
     recent_entries = JournalEntry.get_recent_by_user(current_user.id, limit=3)
@@ -95,9 +93,9 @@ def dashboard():
     journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
     
     return render_template('dashboard.html',
-                         todays_psalm=todays_psalm,
-                         todays_psalm_api=todays_psalm_api,
-                         todays_psalm_number=todays_psalm_number,
+                         current_psalm=current_psalm,
+                         current_psalm_api=current_psalm_api,
+                         current_psalm_number=current_psalm_number,
                          user_translation=user_translation,
                          recent_entries=recent_entries,
                          active_prayers=active_prayers,

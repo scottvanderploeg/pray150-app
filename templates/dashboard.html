@@ -14,8 +14,8 @@
         </div>
     </div>
 
-    <!-- Today's Psalm Card -->
-    {% if todays_psalm_api or todays_psalm %}
+    <!-- Next Psalm Card -->
+    {% if current_psalm_api or current_psalm %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm today-psalm-card">
@@ -23,37 +23,37 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <div class="d-flex align-items-center mb-2">
-                                <i class="fas fa-calendar-day" style="color: #E93C02;" me-2></i>
-                                <small class="text-muted">Today's Psalm</small>
+                                <i class="fas fa-arrow-right" style="color: #E93C02;" me-2></i>
+                                <small class="text-muted">Next Psalm</small>
                             </div>
                             
-                            {% if todays_psalm_api %}
+                            {% if current_psalm_api %}
                                 <h3 class="h4 fw-bold mb-2" style="color: #333E4D;">
-                                    Psalm {{ todays_psalm_api.psalm_number }}
-                                    <span class="badge ms-2" style="background-color: #D1AEA9; color: #333E4D;">{{ todays_psalm_api.translation }}</span>
+                                    Psalm {{ current_psalm_api.psalm_number }}
+                                    <span class="badge ms-2" style="background-color: #D1AEA9; color: #333E4D;">{{ current_psalm_api.translation }}</span>
                                 </h3>
                                 <p class="text-muted mb-3">
-                                    {% if todays_psalm_api.verses and todays_psalm_api.verses|length > 0 %}
-                                        {{ todays_psalm_api.verses[0].text[:150] }}...
+                                    {% if current_psalm_api.verses and current_psalm_api.verses|length > 0 %}
+                                        {{ current_psalm_api.verses[0].text[:150] }}...
                                     {% endif %}
                                 </p>
                                 <div class="d-flex gap-2">
-                                    <a href="{{ url_for('main.pre_reflection', psalm_number=todays_psalm_api.psalm_number) }}" 
+                                    <a href="{{ url_for('main.pre_reflection', psalm_number=current_psalm_api.psalm_number) }}" 
                                        class="btn btn-primary" style="background-color: #E93C02; border-color: #E93C02;">
                                         <i class="fas fa-book-open me-2"></i>Read & Pray
                                     </a>
                                     <span class="small text-muted align-self-center">
-                                        {{ todays_psalm_api.verse_count }} verses • Live Bible API
+                                        {{ current_psalm_api.verse_count }} verses • Live Bible API
                                     </span>
                                 </div>
-                            {% elif todays_psalm %}
-                                <h3 class="h4 fw-bold mb-2" style="color: #333E4D;">Psalm {{ todays_psalm.number }}: {{ todays_psalm.title }}</h3>
+                            {% elif current_psalm %}
+                                <h3 class="h4 fw-bold mb-2" style="color: #333E4D;">Psalm {{ current_psalm.number }}: {{ current_psalm.title }}</h3>
                                 <p class="text-muted mb-3">
-                                    {% if todays_psalm.text_niv %}
-                                        {{ todays_psalm.text_niv[:150] }}...
+                                    {% if current_psalm.text_niv %}
+                                        {{ current_psalm.text_niv[:150] }}...
                                     {% endif %}
                                 </p>
-                                <a href="{{ url_for('main.pre_reflection', psalm_number=todays_psalm.number) }}" 
+                                <a href="{{ url_for('main.pre_reflection', psalm_number=current_psalm.number) }}" 
                                    class="btn btn-primary" style="background-color: #E93C02; border-color: #E93C02;">
                                     <i class="fas fa-book-open me-2"></i>Read & Pray
                                 </a>
@@ -62,7 +62,7 @@
                         <div class="col-md-4 text-center">
                             <div class="psalm-number-display">
                                 <div class="psalm-number" style="color: #333E4D; font-size: 3rem; font-weight: bold;">
-                                    {{ todays_psalm_api.psalm_number if todays_psalm_api else todays_psalm.number }}
+                                    {{ current_psalm_api.psalm_number if current_psalm_api else current_psalm.number }}
                                 </div>
                                 <small class="text-muted">of 150</small>
                             </div>
@@ -93,8 +93,8 @@
                                 <select class="form-select" id="psalmSelector" onchange="navigateToPsalm()">
                                     <option value="">Choose a Psalm to read...</option>
                                     {% for i in range(1, 151) %}
-                                    <option value="{{ i }}" {% if todays_psalm_api and i == todays_psalm_api.psalm_number %}selected{% endif %}>
-                                        Psalm {{ i }}{% if i == (todays_psalm_api.psalm_number if todays_psalm_api else todays_psalm_number) %} (Today's Psalm){% endif %}
+                                    <option value="{{ i }}" {% if current_psalm_api and i == current_psalm_api.psalm_number %}selected{% endif %}>
+                                        Psalm {{ i }}{% if i == (current_psalm_api.psalm_number if current_psalm_api else current_psalm_number) %} (Next Psalm){% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>

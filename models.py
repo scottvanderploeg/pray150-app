@@ -51,19 +51,12 @@ class User(UserMixin):
             from database import get_supabase_client
             supabase = get_supabase_client()
             
-            # Debug logging
-            print(f"DEBUG: Looking for user profile with ID: {user_id}")
-            
             # Try to get user profile data
             result = supabase.table('user_profiles').select('*')\
                 .eq('user_id', str(user_id)).execute()
             
-            print(f"DEBUG: Profile query result: {result.data}")
-            
             if result.data and len(result.data) > 0:
                 profile = result.data[0]
-                print(f"DEBUG: Found profile data: first_name={profile.get('first_name')}, last_name={profile.get('last_name')}")
-                
                 return User(
                     id=str(user_id),
                     username=profile.get('username'),
@@ -78,7 +71,6 @@ class User(UserMixin):
                     created_at=profile.get('created_at')
                 )
             else:
-                print(f"DEBUG: No profile found for user {user_id}, using fallback")
                 # Fallback for users without profiles
                 return User(
                     id=str(user_id),
@@ -87,7 +79,7 @@ class User(UserMixin):
                     preferred_translation='NIV'
                 )
         except Exception as e:
-            print(f"ERROR: Error getting user by ID {user_id}: {e}")
+            print(f"Error getting user by ID {user_id}: {e}")
             # Fallback user object
             return User(
                 id=str(user_id),
@@ -115,6 +107,50 @@ class User(UserMixin):
         if theme:
             self.theme_preference = theme
         return True
+    
+    def get_current_psalm_number(self):
+        """Get the user's current psalm number in their sequential progression"""
+        try:
+            supabase = get_supabase_client()
+            
+            # Get all journal entries for this user, ordered by creation date
+            result = supabase.table('journal_entries').select('psalm_number')\
+                .eq('user_id', str(self.id))\
+                .order('created_at', desc=False).execute()
+            
+            if not result.data:
+                # New user - start with Psalm 1
+                return 1
+            
+            # Get the highest sequential psalm number that has been completed
+            completed_psalms = set()
+            for entry in result.data:
+                psalm_num = entry.get('psalm_number')
+                if psalm_num:
+                    completed_psalms.add(int(psalm_num))
+            
+            # Find the next psalm in sequence starting from 1
+            current_psalm = 1
+            while current_psalm in completed_psalms and current_psalm <= 150:
+                current_psalm += 1
+            
+            # If we've completed all 150, start over at 1
+            if current_psalm > 150:
+                return 1
+                
+            return current_psalm
+            
+        except Exception as e:
+            print(f"Error getting current psalm: {e}")
+            return 1  # Default to Psalm 1
+    
+    def advance_to_next_psalm(self):
+        """Advance user to next psalm after completing current one"""
+        current = self.get_current_psalm_number()
+        next_psalm = current + 1
+        if next_psalm > 150:
+            next_psalm = 1  # Cycle back to Psalm 1
+        return next_psalm
 
 class Psalm:
     def __init__(self, id=None, psalm_number=None, text_niv=None, text_esv=None,
