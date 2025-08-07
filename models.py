@@ -685,28 +685,41 @@ class PsalmProgress:
 
     @staticmethod
     def get_count_by_user(user_id):
-        """Get total count of completed psalms for a user"""
+        """Get total count of completed psalms for a user based on journal entries"""
         try:
+            from database import get_supabase_client
             supabase = get_supabase_client()
-            result = supabase.table('progress').select('id', count='exact')\
-                .eq('user_id', str(user_id)).eq('completed', True).execute()
-            return result.count or 0
+            # Count unique psalms that have been journaled about
+            result = supabase.table('journal_entries').select('psalm_id')\
+                .eq('user_id', str(user_id)).execute()
+            
+            if result.data:
+                # Get unique psalm IDs
+                unique_psalms = set(entry['psalm_id'] for entry in result.data if entry.get('psalm_id'))
+                return len(unique_psalms)
+            return 0
         except Exception as e:
             print(f"Error getting progress count: {e}")
             return 0
 
     @staticmethod
     def get_week_count_by_user(user_id, days_back=7):
-        """Get count of psalms completed in the last week"""
+        """Get count of unique psalms completed in the last week based on journal entries"""
         try:
             from datetime import timedelta
+            from database import get_supabase_client
             week_ago = (datetime.utcnow() - timedelta(days=days_back)).isoformat()
             
             supabase = get_supabase_client()
-            result = supabase.table('progress').select('id', count='exact')\
-                .eq('user_id', str(user_id)).eq('completed', True)\
+            result = supabase.table('journal_entries').select('psalm_id')\
+                .eq('user_id', str(user_id))\
                 .gte('created_at', week_ago).execute()
-            return result.count or 0
+                
+            if result.data:
+                # Get unique psalm IDs from this week
+                unique_psalms = set(entry['psalm_id'] for entry in result.data if entry.get('psalm_id'))
+                return len(unique_psalms)
+            return 0
         except Exception as e:
             print(f"Error getting week progress count: {e}")
             return 0

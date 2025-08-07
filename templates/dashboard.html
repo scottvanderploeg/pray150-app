@@ -131,7 +131,7 @@
                     <div class="stat-icon mb-2">
                         <i class="fas fa-fire fa-2x text-warning"></i>
                     </div>
-                    <h4 class="fw-bold mb-1">{{ journal_entries_this_week }}</h4>
+                    <h4 class="fw-bold mb-1">{{ psalms_this_week }}</h4>
                     <p class="text-muted mb-0">This Week</p>
                 </div>
             </div>
@@ -150,7 +150,6 @@
     </div>
 
     <!-- Heart Tracker Section -->
-    {% if emotion_trends_week or emotion_trends_month %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card border-0 shadow-sm">
@@ -162,37 +161,44 @@
                     <small class="text-muted">Track your emotional journey through prayer and reflection</small>
                 </div>
                 <div class="card-body">
+                    {% if emotion_trends_week or emotion_trends_month %}
                     <div class="row">
                         <!-- This Week Chart -->
                         <div class="col-lg-6">
-                            <div class="chart-container">
+                            <div class="chart-container" style="height: 300px;">
                                 <h6 class="fw-bold mb-3">This Week</h6>
-                                <canvas id="weekChart" width="400" height="200"></canvas>
+                                <canvas id="weekChart"></canvas>
                             </div>
                         </div>
                         <!-- This Month Chart -->
                         <div class="col-lg-6">
-                            <div class="chart-container">
+                            <div class="chart-container" style="height: 300px;">
                                 <h6 class="fw-bold mb-3">This Month</h6>
-                                <canvas id="monthChart" width="400" height="200"></canvas>
+                                <canvas id="monthChart"></canvas>
                             </div>
                         </div>
                     </div>
                     <!-- Emotion Legend -->
                     <div class="text-center mt-3">
                         <small class="text-muted">
-                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-terrible.png') }}" style="width: 16px; height: 16px;"> Awful</span>
-                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-bad.png') }}" style="width: 16px; height: 16px;"> Bad</span>
-                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-okay.png') }}" style="width: 16px; height: 16px;"> Okay</span>
-                            <span class="me-3"><img src="{{ url_for('static', filename='images/emoji-good.png') }}" style="width: 16px; height: 16px;"> Good</span>
-                            <span><img src="{{ url_for('static', filename='images/emoji-great.png') }}" style="width: 16px; height: 16px;"> Great</span>
+                            <span class="me-3">😢 Awful</span>
+                            <span class="me-3">😔 Bad</span>
+                            <span class="me-3">😐 Okay</span>
+                            <span class="me-3">😊 Good</span>
+                            <span>😃 Great</span>
                         </small>
                     </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-heart fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-3">No emotion data yet.</p>
+                        <p class="small text-muted">Complete journal entries with emotion check-ins to see your heart journey.</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-    {% endif %}
 
     <!-- Main Content Row -->
     <div class="row">
@@ -316,14 +322,27 @@ function navigateToPsalm() {
 // Function to create emotion line chart
 function createEmotionChart(canvasId, data, title) {
     const ctx = document.getElementById(canvasId);
-    if (!ctx) return;
+    if (!ctx) {
+        console.log(`Canvas ${canvasId} not found`);
+        return;
+    }
+    
+    console.log(`Creating chart for ${canvasId} with data:`, data);
+    
+    if (!data || data.length === 0) {
+        console.log(`No data available for ${canvasId}`);
+        return;
+    }
     
     // Process data for chart
     const chartData = {
-        labels: data.map(item => new Date(item.date).toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric' 
-        })),
+        labels: data.map(item => {
+            const date = new Date(item.date);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }),
         datasets: [{
             label: 'Heart Condition',
             data: data.map(item => item.value),
@@ -340,54 +359,59 @@ function createEmotionChart(canvasId, data, title) {
         }]
     };
     
-    new Chart(ctx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
-                            return `${emotions[context.raw]}`;
+    try {
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
+                                return `${emotions[context.raw]}`;
+                            }
                         }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    min: 1,
-                    max: 5,
-                    ticks: {
-                        stepSize: 1,
-                        callback: function(value) {
-                            const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
-                            return emotions[value];
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 0.5,
+                        max: 5.5,
+                        ticks: {
+                            stepSize: 1,
+                            callback: function(value) {
+                                const emotions = ['', 'Awful', 'Bad', 'Okay', 'Good', 'Great'];
+                                return emotions[Math.round(value)] || '';
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
                         }
                     },
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
+                    x: {
+                        grid: {
+                            color: 'rgba(0,0,0,0.1)'
+                        }
                     }
                 },
-                x: {
-                    grid: {
-                        color: 'rgba(0,0,0,0.1)'
+                elements: {
+                    point: {
+                        hoverBackgroundColor: '#E93C02'
                     }
                 }
-            },
-            elements: {
-                point: {
-                    hoverBackgroundColor: '#E93C02'
-                }
             }
-        }
-    });
+        });
+        console.log(`Successfully created chart for ${canvasId}`);
+    } catch (error) {
+        console.error(`Error creating chart for ${canvasId}:`, error);
+    }
 }
 
 // Add some interactive elements to the dashboard
@@ -402,11 +426,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Initialize Heart Tracker charts if data exists
+    console.log('Emotion trends week:', emotionTrendsWeek);
+    console.log('Emotion trends month:', emotionTrendsMonth);
+    
     if (emotionTrendsWeek && emotionTrendsWeek.length > 0) {
-        createEmotionChart('weekChart', emotionTrendsWeek, 'This Week');
+        setTimeout(() => createEmotionChart('weekChart', emotionTrendsWeek, 'This Week'), 100);
+    } else {
+        console.log('No week emotion data available');
     }
+    
     if (emotionTrendsMonth && emotionTrendsMonth.length > 0) {
-        createEmotionChart('monthChart', emotionTrendsMonth, 'This Month');
+        setTimeout(() => createEmotionChart('monthChart', emotionTrendsMonth, 'This Month'), 200);
+    } else {
+        console.log('No month emotion data available');
     }
 });
 </script>

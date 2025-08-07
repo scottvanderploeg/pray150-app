@@ -43,7 +43,7 @@ def dashboard():
     
     # Get progress summary
     total_psalms_read = PsalmProgress.get_count_by_user(current_user.id)
-    journal_entries_this_week = JournalEntry.get_week_count_by_user(current_user.id)
+    psalms_this_week = PsalmProgress.get_week_count_by_user(current_user.id)
     total_journal_entries = JournalEntry.get_count_by_user(current_user.id)
     
     # Get emotion trends for heart tracker
@@ -61,7 +61,7 @@ def dashboard():
                          recent_entries=recent_entries,
                          active_prayers=active_prayers,
                          total_psalms_read=total_psalms_read,
-                         journal_entries_this_week=journal_entries_this_week,
+                         psalms_this_week=psalms_this_week,
                          total_journal_entries=total_journal_entries,
                          emotion_trends_week=emotion_trends_week,
                          emotion_trends_month=emotion_trends_month,
