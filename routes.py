@@ -62,6 +62,40 @@ def dashboard():
                          total_journal_entries=total_journal_entries,
                          journal_dates=journal_dates)
 
+@main_bp.route('/reflect/<int:psalm_number>')
+@login_required
+def pre_reflection(psalm_number):
+    """Pre-reflection page with emoji selection for heart/soul state"""
+    return render_template('pre_reflection.html', psalm_number=psalm_number)
+
+@main_bp.route('/reflect/<int:psalm_number>/journal', methods=['GET', 'POST'])
+@login_required
+def pre_reflection_journal(psalm_number):
+    """Pre-reflection journal page where user writes their response"""
+    if request.method == 'POST':
+        emotion = request.form.get('emotion')
+        journal_text = request.form.get('journal_text', '').strip()
+        
+        # Store the reflection data in session to pass to psalm page
+        from flask import session
+        session['pre_reflection'] = {
+            'emotion': emotion,
+            'journal_text': journal_text,
+            'psalm_number': psalm_number
+        }
+        
+        # Redirect to psalm page with pre-filled reflection
+        return redirect(url_for('main.psalm', psalm_number=psalm_number))
+    
+    # GET request - show journal entry form
+    emotion = request.args.get('emotion')
+    if not emotion:
+        return redirect(url_for('main.pre_reflection', psalm_number=psalm_number))
+    
+    return render_template('pre_reflection_journal.html', 
+                         psalm_number=psalm_number, 
+                         emotion=emotion)
+
 @main_bp.route('/journal-history')
 @login_required
 def journal_history():
@@ -321,6 +355,10 @@ def psalm(psalm_number):
         flash('Psalm not found.', 'error')
         return redirect(url_for('main.dashboard'))
     
+    # Check for pre-reflection data from session
+    from flask import session
+    pre_reflection_data = session.pop('pre_reflection', None) if 'pre_reflection' in session else None
+    
     # Get user's journal entries for this psalm
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id if psalm else psalm_number)
     
@@ -340,7 +378,8 @@ def psalm(psalm_number):
                          user_translation=user_translation,
                          available_translations=available_translations,
                          entries_dict=entries_dict,
-                         markups=markups)
+                         markups=markups,
+                         pre_reflection_data=pre_reflection_data)
 
 @main_bp.route('/save_journal', methods=['POST'])
 @login_required

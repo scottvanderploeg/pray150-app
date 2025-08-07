@@ -229,8 +229,25 @@
                         <!-- Prompt 1 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">1. Lord, where is my heart/soul today?</h6>
+                            {% if pre_reflection_data %}
+                                <!-- Show pre-reflection context -->
+                                <div class="alert alert-info p-3 mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-heart me-1"></i>
+                                        Your reflection: <strong class="text-capitalize">{{ pre_reflection_data.emotion }}</strong>
+                                        {% set emotion_emojis = {
+                                            'terrible': '😞',
+                                            'bad': '😔', 
+                                            'okay': '😐',
+                                            'good': '😊',
+                                            'great': '😄'
+                                        } %}
+                                        <span style="font-size: 1.2rem;">{{ emotion_emojis[pre_reflection_data.emotion] }}</span>
+                                    </small>
+                                </div>
+                            {% endif %}
                             <textarea class="form-control journal-textarea" data-prompt="1" rows="3" 
-                                      placeholder="Reflect on where your heart and soul are today...">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('1', '') if entry and entry.prompt_responses else '' }}{% endif %}</textarea>
+                                      placeholder="Reflect on where your heart and soul are today...">{% if pre_reflection_data %}{{ pre_reflection_data.journal_text }}{% elif entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('1', '') if entry and entry.prompt_responses else '' }}{% endif %}</textarea>
                         </div>
 
                         <!-- Prompt 2 -->

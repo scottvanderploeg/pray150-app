@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Pre-Reflection - Psalm {{ psalm_number }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <h1 class="h2 fw-bold mb-3" style="color: #333E4D;">
+                    <i class="fas fa-heart me-2" style="color: #E93C02;"></i>
+                    Before We Begin
+                </h1>
+                <p class="text-muted">Let's take a moment to reflect on your heart before diving into Psalm {{ psalm_number }}</p>
+            </div>
+
+            <!-- Reflection Card -->
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <!-- Prompt -->
+                    <div class="text-center mb-5">
+                        <h3 class="h4 mb-4" style="color: #333E4D; line-height: 1.6;">
+                            "Lord, please help me discover—<br>
+                            <strong>where is my heart/soul today?</strong>"
+                        </h3>
+                    </div>
+
+                    <!-- Emoji Selection -->
+                    <form id="reflectionForm" method="GET" action="{{ url_for('main.pre_reflection_journal', psalm_number=psalm_number) }}">
+                        <div class="row g-3 justify-content-center">
+                            <!-- Terrible -->
+                            <div class="col-6 col-md-2">
+                                <div class="emotion-option text-center">
+                                    <input type="radio" name="emotion" value="terrible" id="terrible" class="d-none">
+                                    <label for="terrible" class="emotion-label d-block p-3 rounded border cursor-pointer">
+                                        <div class="emoji-placeholder mb-2" style="font-size: 3rem; color: #DC3545;">
+                                            😞
+                                        </div>
+                                        <small class="fw-medium" style="color: #333E4D;">Terrible</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Bad -->
+                            <div class="col-6 col-md-2">
+                                <div class="emotion-option text-center">
+                                    <input type="radio" name="emotion" value="bad" id="bad" class="d-none">
+                                    <label for="bad" class="emotion-label d-block p-3 rounded border cursor-pointer">
+                                        <div class="emoji-placeholder mb-2" style="font-size: 3rem; color: #FD7E14;">
+                                            😔
+                                        </div>
+                                        <small class="fw-medium" style="color: #333E4D;">Bad</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Okay -->
+                            <div class="col-6 col-md-2">
+                                <div class="emotion-option text-center">
+                                    <input type="radio" name="emotion" value="okay" id="okay" class="d-none">
+                                    <label for="okay" class="emotion-label d-block p-3 rounded border cursor-pointer">
+                                        <div class="emoji-placeholder mb-2" style="font-size: 3rem; color: #6C757D;">
+                                            😐
+                                        </div>
+                                        <small class="fw-medium" style="color: #333E4D;">Okay</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Good -->
+                            <div class="col-6 col-md-2">
+                                <div class="emotion-option text-center">
+                                    <input type="radio" name="emotion" value="good" id="good" class="d-none">
+                                    <label for="good" class="emotion-label d-block p-3 rounded border cursor-pointer">
+                                        <div class="emoji-placeholder mb-2" style="font-size: 3rem; color: #198754;">
+                                            😊
+                                        </div>
+                                        <small class="fw-medium" style="color: #333E4D;">Good</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Great -->
+                            <div class="col-6 col-md-2">
+                                <div class="emotion-option text-center">
+                                    <input type="radio" name="emotion" value="great" id="great" class="d-none">
+                                    <label for="great" class="emotion-label d-block p-3 rounded border cursor-pointer">
+                                        <div class="emoji-placeholder mb-2" style="font-size: 3rem; color: #E93C02;">
+                                            😄
+                                        </div>
+                                        <small class="fw-medium" style="color: #333E4D;">Great</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Continue Button -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg px-4" 
+                                    style="background-color: #E93C02; border-color: #E93C02;"
+                                    disabled id="continueBtn">
+                                <i class="fas fa-arrow-right me-2"></i>Continue
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Skip Option -->
+                    <div class="text-center mt-4">
+                        <a href="{{ url_for('main.psalm', psalm_number=psalm_number) }}" 
+                           class="btn btn-link text-muted">
+                            Skip reflection and go directly to Psalm {{ psalm_number }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.emotion-label {
+    transition: all 0.2s ease;
+    border-color: #dee2e6 !important;
+    background-color: #fff;
+}
+
+.emotion-label:hover {
+    border-color: #E93C02 !important;
+    background-color: #fef7f6;
+    transform: translateY(-2px);
+}
+
+input[type="radio"]:checked + .emotion-label {
+    border-color: #E93C02 !important;
+    background-color: #E93C02;
+    color: white !important;
+}
+
+input[type="radio"]:checked + .emotion-label small {
+    color: white !important;
+}
+
+.emoji-placeholder {
+    transition: transform 0.2s ease;
+}
+
+.emotion-label:hover .emoji-placeholder {
+    transform: scale(1.1);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emotionInputs = document.querySelectorAll('input[name="emotion"]');
+    const continueBtn = document.getElementById('continueBtn');
+    
+    emotionInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.checked) {
+                continueBtn.disabled = false;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
