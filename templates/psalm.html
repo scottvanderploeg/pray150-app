@@ -184,35 +184,7 @@
                 </div>
             </div>
 
-            <!-- Progress Tracking -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        Mark as Complete
-                    </h5>
-                    <form method="POST" action="{{ url_for('main.complete_psalm') }}">
-                        <input type="hidden" name="psalm_id" value="{{ psalm.number }}">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="reading_time" class="form-label">Reading time (minutes)</label>
-                                <input type="number" class="form-control" id="reading_time" name="reading_time" min="1" max="120">
-                            </div>
-                            <div class="col-md-6 d-flex align-items-end">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="music_listened" name="music_listened" value="true">
-                                    <label class="form-check-label" for="music_listened">
-                                        Listened to worship music
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success mt-3">
-                            <i class="fas fa-check me-2"></i>Complete Psalm
-                        </button>
-                    </form>
-                </div>
-            </div>
+
         </div>
 
         <!-- Journal Prompts Sidebar -->
@@ -272,6 +244,16 @@
                             <small id="saveStatus" class="text-muted">Auto-saving...</small>
                         </div>
                     </form>
+                    
+                    <!-- Complete Psalm Button -->
+                    <div class="mt-4 text-center">
+                        <form method="POST" action="{{ url_for('main.complete_psalm') }}">
+                            <input type="hidden" name="psalm_number" value="{{ psalm_number }}">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check me-2"></i>Complete Psalm
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

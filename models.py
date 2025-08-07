@@ -113,21 +113,22 @@ class User(UserMixin):
         try:
             supabase = get_supabase_client()
             
-            # Get all journal entries for this user, ordered by creation date
-            result = supabase.table('journal_entries').select('psalm_number')\
+            # Get all completed psalm progress records for this user
+            progress_result = supabase.table('psalm_progress').select('psalm_id')\
                 .eq('user_id', str(self.id))\
+                .eq('completed', True)\
                 .order('created_at', desc=False).execute()
             
-            if not result.data:
+            if not progress_result.data:
                 # New user - start with Psalm 1
                 return 1
             
             # Get the highest sequential psalm number that has been completed
             completed_psalms = set()
-            for entry in result.data:
-                psalm_num = entry.get('psalm_number')
-                if psalm_num:
-                    completed_psalms.add(int(psalm_num))
+            for progress in progress_result.data:
+                psalm_id = progress.get('psalm_id')
+                if psalm_id:
+                    completed_psalms.add(int(psalm_id))
             
             # Find the next psalm in sequence starting from 1
             current_psalm = 1

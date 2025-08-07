@@ -498,43 +498,38 @@ def save_journal():
 @main_bp.route('/complete_psalm', methods=['POST'])
 @login_required
 def complete_psalm():
-    psalm_id = request.form.get('psalm_id')
-    reading_time = request.form.get('reading_time', 0)
-    music_listened = request.form.get('music_listened') == 'true'
+    psalm_number = request.form.get('psalm_number')
     
-    if not psalm_id:
+    if not psalm_number:
         flash('Invalid psalm data.', 'error')
         return redirect(url_for('main.dashboard'))
     
     try:
-        # Check if journal is completed (at least one entry)
-        journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
-        journal_completed = len(journal_entries) > 0
+        # Check if journal is completed for this psalm (at least one entry)
+        supabase = get_supabase_client()
+        journal_result = supabase.table('journal_entries').select('*')\
+            .eq('user_id', current_user.id)\
+            .eq('psalm_number', int(psalm_number)).execute()
         
+        if not journal_result.data:
+            flash('Please complete the journal prompts before marking this psalm as complete.', 'warning')
+            return redirect(url_for('main.psalm', psalm_number=psalm_number))
+        
+        # Record psalm progress (this will advance user to next psalm)
         progress = PsalmProgress(
             user_id=current_user.id,
-            psalm_id=int(psalm_id),
+            psalm_id=int(psalm_number),
             completed=True
         )
         
         if progress.save():
-            flash('Psalm completion recorded!', 'success')
+            flash('Psalm completed! Moving to your next psalm in the journey.', 'success')
         else:
             flash('Error recording progress. Please try again.', 'error')
+            
     except Exception as e:
-        print(f"Error saving progress: {e}")
-        flash('Error recording progress. Please try again.', 'error')
-    
-    # Get psalm number for redirect
-    try:
-        from database import get_supabase_client
-        supabase = get_supabase_client()
-        result = supabase.table('psalms').select('psalm_number').eq('id', psalm_id).execute()
-        if result.data:
-            psalm_number = result.data[0]['psalm_number']
-            return redirect(url_for('main.psalm', psalm_number=psalm_number))
-    except:
-        pass
+        print(f"Error completing psalm: {e}")
+        flash('Error completing psalm. Please try again.', 'error')
     
     return redirect(url_for('main.dashboard'))
 
