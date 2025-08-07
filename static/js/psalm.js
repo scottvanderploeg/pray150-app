@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let markupsVisible = true;
     let saveTimeout = null;
     let lastSaveData = {};
+    let currentEmotion = null;
 
     // Translation switching
     if (translationSelect) {
@@ -60,6 +61,32 @@ document.addEventListener('DOMContentLoaded', function() {
             saveStatus.className = 'text-muted';
         }
 
+        // Initialize emotion data from DOM on page load
+        function initializeEmotion() {
+            if (currentEmotion) return; // Already initialized
+            
+            const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
+            if (emotionAlert) {
+                const emotionSrc = emotionAlert.getAttribute('src');
+                const emotionMatch = emotionSrc.match(/emoji-([^.]+)\.png/);
+                if (emotionMatch) {
+                    currentEmotion = emotionMatch[1];
+                    console.log('Initialized emotion:', currentEmotion);
+                }
+            }
+            
+            // Also check for emotion text in the DOM
+            const emotionText = document.querySelector('.alert-info strong');
+            if (emotionText && !currentEmotion) {
+                const emotionValue = emotionText.textContent.toLowerCase().trim();
+                if (emotionValue === 'awful') currentEmotion = 'terrible';
+                else if (['bad', 'okay', 'good', 'great'].includes(emotionValue)) {
+                    currentEmotion = emotionValue;
+                }
+                console.log('Initialized emotion from text:', currentEmotion);
+            }
+        }
+        
         // Function to collect all journal data
         function getJournalData() {
             const psalmId = journalForm.dataset.psalmId;
@@ -73,14 +100,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Check if we have emotion data from the pre-reflection context in the DOM
-            const emotionAlert = document.querySelector('.alert-info img[src*="emoji-"]');
-            if (emotionAlert) {
-                const emotionSrc = emotionAlert.getAttribute('src');
-                const emotionMatch = emotionSrc.match(/emoji-([^.]+)\.png/);
-                if (emotionMatch) {
-                    promptResponses['emotion'] = emotionMatch[1];
-                }
+            // Always include emotion data if we have it
+            if (currentEmotion) {
+                promptResponses['emotion'] = currentEmotion;
+                console.log('Including emotion in journal data:', currentEmotion);
             }
             
             return {
@@ -149,6 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        // Initialize emotion data from DOM
+        initializeEmotion();
+        
         // Add event listeners for auto-save
         journalTextareas.forEach(textarea => {
             textarea.addEventListener('input', function() {
