@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <radialGradient id="faceGradient" cx="0.5" cy="0.3" r="0.7">
+    <radialGradient id="faceGradient" cx="0.5" cy="0.3" r="0.8">
       <stop offset="0%" stop-color="#FFE55C"/>
       <stop offset="100%" stop-color="#FFCC02"/>
     </radialGradient>
   </defs>
-  <circle cx="100" cy="100" r="95" fill="url(#faceGradient)" stroke="#E6B800" stroke-width="2"/>
-  <!-- Eyes -->
-  <path d="M 60 65 Q 70 75 80 65" stroke="#8B4513" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M 120 65 Q 130 75 140 65" stroke="#8B4513" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <!-- Mouth -->
-  <path d="M 70 150 Q 100 130 130 150" stroke="#8B4513" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <ellipse cx="100" cy="140" rx="15" ry="10" fill="#FF6B6B"/>
+  <circle cx="100" cy="100" r="95" fill="url(#faceGradient)"/>
+  <!-- Eyes (sad/droopy) -->
+  <path d="M 58 70 Q 70 85 82 70" stroke="#8B4513" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 118 70 Q 130 85 142 70" stroke="#8B4513" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Mouth with open crying -->
+  <path d="M 70 150 Q 100 130 130 150" fill="#8B4513"/>
+  <ellipse cx="100" cy="140" rx="18" ry="12" fill="#FF4444"/>
 </svg>
