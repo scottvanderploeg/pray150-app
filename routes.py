@@ -515,17 +515,9 @@ def complete_psalm():
             flash('Please complete the journal prompts before marking this psalm as complete.', 'warning')
             return redirect(url_for('main.psalm', psalm_number=psalm_number))
         
-        # Record psalm progress (this will advance user to next psalm)
-        progress = PsalmProgress(
-            user_id=current_user.id,
-            psalm_id=int(psalm_number),
-            completed=True
-        )
-        
-        if progress.save():
-            flash('Psalm completed! Moving to your next psalm in the journey.', 'success')
-        else:
-            flash('Error recording progress. Please try again.', 'error')
+        # For now, we're using journal entries as completion tracking
+        # Since the user has journal entries for this psalm, it's considered complete
+        flash('Psalm completed! Moving to your next psalm in the journey.', 'success')
             
     except Exception as e:
         print(f"Error completing psalm: {e}")
