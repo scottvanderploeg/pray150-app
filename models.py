@@ -113,9 +113,9 @@ class User(UserMixin):
         try:
             supabase = get_supabase_client()
             
-            # For now, use journal entries to track progression since psalm_progress might not exist
             # Get all journal entries for this user to see which psalms have been completed
-            journal_result = supabase.table('journal_entries').select('psalm_number')\
+            # Note: psalm_number field contains the actual psalm number (1-150)
+            journal_result = supabase.table('journal_entries').select('psalm_number, psalm_id')\
                 .eq('user_id', str(self.id))\
                 .order('created_at', desc=False).execute()
             
@@ -126,9 +126,12 @@ class User(UserMixin):
             # Get all psalms that have journal entries (completed psalms)
             completed_psalms = set()
             for entry in journal_result.data:
-                psalm_num = entry.get('psalm_number')
+                # Check both psalm_number and psalm_id fields
+                psalm_num = entry.get('psalm_number') or entry.get('psalm_id')
                 if psalm_num:
                     completed_psalms.add(int(psalm_num))
+            
+            print(f"DEBUG: User {self.id} completed psalms: {sorted(completed_psalms)}")
             
             # Find the next psalm in sequence starting from 1
             current_psalm = 1
@@ -139,6 +142,7 @@ class User(UserMixin):
             if current_psalm > 150:
                 return 1
                 
+            print(f"DEBUG: Next psalm for user {self.id}: {current_psalm}")
             return current_psalm
             
         except Exception as e:

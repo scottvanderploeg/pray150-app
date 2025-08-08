@@ -16,6 +16,7 @@ def debug_psalm_progress():
         print(f"Found {len(journal_result.data)} journal entries:")
         for entry in journal_result.data:
             print(f"  - Psalm {entry.get('psalm_number', entry.get('psalm_id'))}: {entry.get('created_at')}")
+            print(f"    Full entry data: {entry}")
         
         # Check psalm progress records
         print("\n=== Psalm Progress Records ===")
