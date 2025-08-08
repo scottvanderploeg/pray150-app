@@ -131,8 +131,6 @@ class User(UserMixin):
                 if psalm_num:
                     completed_psalms.add(int(psalm_num))
             
-            print(f"DEBUG: User {self.id} completed psalms: {sorted(completed_psalms)}")
-            
             # Find the next psalm in sequence starting from 1
             current_psalm = 1
             while current_psalm in completed_psalms and current_psalm <= 150:
@@ -142,7 +140,6 @@ class User(UserMixin):
             if current_psalm > 150:
                 return 1
                 
-            print(f"DEBUG: Next psalm for user {self.id}: {current_psalm}")
             return current_psalm
             
         except Exception as e:
