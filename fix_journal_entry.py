@@ -16,12 +16,9 @@ def fix_journal_entry():
             entry = result.data[0]
             print(f"Found journal entry with ID {entry['id']} for Psalm 19")
             
-            # Update it to be for Psalm 1
+            # Update it to be for Psalm 1 (only psalm_id field exists)
             update_result = supabase.table('journal_entries')\
-                .update({
-                    'psalm_id': 1,
-                    'psalm_number': 1
-                })\
+                .update({'psalm_id': 1})\
                 .eq('id', entry['id']).execute()
             
             print(f"Updated journal entry to Psalm 1: {update_result}")

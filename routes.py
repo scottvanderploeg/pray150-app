@@ -509,7 +509,7 @@ def complete_psalm():
         supabase = get_supabase_client()
         journal_result = supabase.table('journal_entries').select('*')\
             .eq('user_id', current_user.id)\
-            .eq('psalm_number', int(psalm_number)).execute()
+            .eq('psalm_id', int(psalm_number)).execute()
         
         if not journal_result.data:
             flash('Please complete the journal prompts before marking this psalm as complete.', 'warning')
