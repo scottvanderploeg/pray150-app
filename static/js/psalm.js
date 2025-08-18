@@ -20,8 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentEmotion = null;
     let currentHighlightColor = 'yellow';
     let pendingNoteSelection = null;
-    let currentHighlightColor = 'yellow';
-    let pendingNoteSelection = null;
 
     // Translation switching
     if (translationSelect) {
@@ -502,6 +500,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Add color picker functionality
+    document.querySelectorAll('.highlight-color-option').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const color = this.dataset.color;
+            currentHighlightColor = color;
+            
+            // Update the main highlight button
+            if (highlightBtn) {
+                highlightBtn.dataset.color = color;
+            }
+            
+            // Update dropdown selection visual feedback
+            const dropdownItems = document.querySelectorAll('.highlight-color-option');
+            dropdownItems.forEach(item => item.classList.remove('active'));
+            this.classList.add('active');
+            
+            // If highlight mode is active, show feedback
+            if (isHighlightMode) {
+                window.Pray150.showNotification(`Highlight color set to ${color}`, 'info');
+            }
+        });
+    });
+
     // Save markup to server (placeholder function)
     function saveMarkup(type, text, color, noteText = null) {
         const psalmId = psalmText.getAttribute('data-psalm-id');
@@ -649,27 +671,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // This data could be sent to the server for analytics
     });
 });
-
-// Global function to set highlight color
-function setHighlightColor(color, element) {
-    currentHighlightColor = color;
-    
-    // Update the main highlight button
-    const highlightBtn = document.getElementById('highlightBtn');
-    if (highlightBtn) {
-        highlightBtn.dataset.color = color;
-    }
-    
-    // Update dropdown selection visual feedback
-    const dropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
-    dropdownItems.forEach(item => item.classList.remove('active'));
-    element.classList.add('active');
-    
-    // If highlight mode is active, show feedback
-    if (isHighlightMode) {
-        window.Pray150.showNotification(`Highlight color set to ${color}`, 'info');
-    }
-}
 
 // Keyboard shortcuts for psalm reading
 document.addEventListener('keydown', function(e) {
