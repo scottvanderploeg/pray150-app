@@ -83,6 +83,7 @@ Preferred communication style: Simple, everyday language.
 - Service role key authentication for bypassing RLS on journal queries
 - **Rob Keplin's Bible API**: Complete integration providing access to all 150 Psalms in 9 English translations (ESV, NIV 1984, NLT, KJV, ASV, BBE, DARBY, WEB, YLT) with no rate limits
 - **Bolls Bible API**: Integration for original biblical languages providing Hebrew (Westminster Leningrad Codex) and Greek (Septuagint) texts for all 150 Psalms
+- **API.Bible Integration**: Added support for premium Bible translations including NIV 2011, CSB, and NASB through proper licensing
 - **Bible API Service Layer**: Comprehensive `bible_api.py` module with psalm fetching, translation switching, daily psalm calculation, and search capabilities
 - **Live API Endpoints**: RESTful API endpoints for psalm data including single psalm fetch, multiple translations comparison, and search functionality
 - **Bible API Demo Page**: Interactive demonstration page at `/bible-api-demo` showcasing all Bible API features and translations
@@ -93,6 +94,7 @@ Preferred communication style: Simple, everyday language.
 - **Sequential Psalm Progression**: Users start at Psalm 1 and progress sequentially through all 150 Psalms, cycling back to Psalm 1 after completion
 - **Current Psalm Logic**: Dashboard shows "Next Psalm" instead of "Today's Psalm" - advances only after completing journal entry for current psalm
 - **Explore Psalms Feature**: Allows out-of-order psalm study with full journal process but doesn't affect sequential progression
+- **NIV 2011 Support**: Complete integration for NIV 2011 and other premium translations with proper copyright compliance and API.Bible licensing
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)

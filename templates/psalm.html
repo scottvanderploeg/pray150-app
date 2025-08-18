@@ -87,7 +87,7 @@
                                 <select class="form-select form-select-sm" id="translationSelect" onchange="changeTranslation()">
                                     {% for code, name in available_translations.items() %}
                                     <option value="{{ code }}" {% if code == user_translation %}selected{% endif %}>
-                                        {{ code }} - {{ name }}
+                                        {{ code }}{% if code == 'NIV2011' %} *{% endif %} - {{ name }}{% if code == 'NIV2011' %} (Requires API Key){% endif %}
                                     </option>
                                     {% endfor %}
                                 </select>

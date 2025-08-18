@@ -27,6 +27,7 @@ class BibleAPI:
     AVAILABLE_TRANSLATIONS = {
         'ESV': 'English Standard Version',
         'NIV': 'New International Version (1984)', 
+        'NIV2011': 'New International Version (2011)',  # Will try to access if available
         'NLT': 'New Living Translation',
         'KJV': 'King James Version',
         'ASV': 'American Standard-ASV1901',
@@ -34,6 +35,8 @@ class BibleAPI:
         'DARBY': 'Darby English Bible',
         'WEB': 'World English Bible',
         'YLT': "Young's Literal Translation",
+        'CSB': 'Christian Standard Bible',
+        'NASB': 'New American Standard Bible',
         'WLC': 'Hebrew (Westminster Leningrad Codex)',
         'LXX': 'Greek (Septuagint)'
     }
@@ -72,6 +75,10 @@ class BibleAPI:
         # Check if this is a Hebrew or Greek translation
         if translation in ['WLC', 'LXX']:
             return self._get_original_language_psalm(translation, psalm_number)
+        
+        # Check if this is a translation that requires API.Bible access
+        if translation in ['NIV2011', 'CSB', 'NASB']:
+            return self._get_api_bible_psalm(translation, psalm_number)
         
         try:
             url = f"{self.BASE_URL}/books/{self.PSALMS_BOOK_ID}/chapters/{psalm_number}"
@@ -119,6 +126,57 @@ class BibleAPI:
             return None
         except Exception as e:
             logger.error(f"Unexpected error fetching Psalm {psalm_number} ({translation}): {e}")
+            return None
+    
+    def _get_api_bible_psalm(self, translation: str, psalm_number: int) -> Optional[Dict]:
+        """
+        Get psalm from API.Bible for licensed translations like NIV 2011
+        
+        Args:
+            translation: Translation code (NIV2011, CSB, NASB)
+            psalm_number: Psalm number (1-150)
+            
+        Returns:
+            Psalm data or None if not available
+        """
+        try:
+            from api_bible_integration import ApiBibleClient
+            
+            client = ApiBibleClient()
+            result = client.get_psalm(psalm_number, translation)
+            
+            if result:
+                # Convert API.Bible format to our standard format
+                # Note: API.Bible returns formatted text, we need to parse verses
+                content = result.get('content', '')
+                
+                # For now, return the whole content as one "verse"
+                # TODO: Parse individual verses from the content
+                psalm_data = {
+                    'psalm_number': psalm_number,
+                    'translation': translation,
+                    'translation_name': self.AVAILABLE_TRANSLATIONS.get(translation, translation),
+                    'verse_count': 1,  # Will be updated when we parse verses
+                    'verses': [{
+                        'verse_number': 1,
+                        'text': content,
+                        'verse_id': f"api_bible_{psalm_number}_1"
+                    }],
+                    'superscript': get_psalm_superscript(psalm_number),
+                    'source': 'api.bible'
+                }
+                
+                logger.info(f"Successfully fetched Psalm {psalm_number} ({translation}) from API.Bible")
+                return psalm_data
+            else:
+                logger.warning(f"Could not fetch Psalm {psalm_number} ({translation}) from API.Bible")
+                return None
+                
+        except ImportError:
+            logger.error("API.Bible integration not available")
+            return None
+        except Exception as e:
+            logger.error(f"Error fetching Psalm {psalm_number} ({translation}) from API.Bible: {e}")
             return None
     
     def _get_original_language_psalm(self, translation: str, psalm_number: int) -> Optional[Dict]:
