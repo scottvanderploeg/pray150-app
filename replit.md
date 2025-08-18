@@ -94,7 +94,7 @@ Preferred communication style: Simple, everyday language.
 - **Sequential Psalm Progression**: Users start at Psalm 1 and progress sequentially through all 150 Psalms, cycling back to Psalm 1 after completion
 - **Current Psalm Logic**: Dashboard shows "Next Psalm" instead of "Today's Psalm" - advances only after completing journal entry for current psalm
 - **Explore Psalms Feature**: Allows out-of-order psalm study with full journal process but doesn't affect sequential progression
-- **NIV 2011 Support**: Complete integration for NIV 2011 and other premium translations with proper copyright compliance and API.Bible licensing
+- **Premium Translation Research**: Investigated NIV 2011 integration - determined not available in free API.Bible tier due to copyright restrictions from Biblica Inc.
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)
