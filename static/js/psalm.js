@@ -341,7 +341,26 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const highlights = psalmText.querySelectorAll('.highlight, .note-marker');
             highlights.forEach(element => {
-                element.style.display = markupsVisible ? 'inline' : 'none';
+                if (markupsVisible) {
+                    // Show markups with their styling
+                    element.style.display = 'inline';
+                    element.style.backgroundColor = element.classList.contains('highlight') ? 'yellow' : '';
+                    element.style.textDecoration = element.classList.contains('note-marker') ? 'underline dotted' : '';
+                    element.style.cursor = element.classList.contains('note-marker') ? 'help' : 'default';
+                } else {
+                    // Hide markup styling but keep the text visible
+                    element.style.display = 'inline';
+                    element.style.backgroundColor = 'transparent';
+                    element.style.textDecoration = 'none';
+                    element.style.cursor = 'default';
+                    // Hide tooltips when markups are hidden
+                    if (element.hasAttribute('data-bs-toggle')) {
+                        const tooltip = bootstrap.Tooltip.getInstance(element);
+                        if (tooltip) {
+                            tooltip.hide();
+                        }
+                    }
+                }
             });
             
             this.innerHTML = markupsVisible 
@@ -375,6 +394,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 range.surroundContents(span);
                 selection.removeAllRanges();
                 
+                // Apply highlight styling
+                span.style.backgroundColor = 'yellow';
+                span.style.padding = '1px 2px';
+                
                 // Save highlight (would typically be sent to server)
                 saveMarkup('highlight', span.textContent, 'yellow');
                 
@@ -394,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add note to selected text
     function addNoteToSelection(selection, selectedText) {
-        const noteText = prompt('Add your note:', '');
+        const noteText = prompt('Add your note about "' + selectedText.substring(0, 30) + (selectedText.length > 30 ? '...' : '') + '":', '');
         
         if (noteText && noteText.trim() !== '') {
             if (selection.rangeCount > 0) {
@@ -408,6 +431,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 try {
                     range.surroundContents(span);
                     selection.removeAllRanges();
+                    
+                    // Apply note styling
+                    span.style.textDecoration = 'underline dotted';
+                    span.style.textDecorationColor = '#007bff';
+                    span.style.cursor = 'help';
                     
                     // Initialize tooltip for the new note
                     new bootstrap.Tooltip(span);
