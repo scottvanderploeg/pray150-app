@@ -626,12 +626,86 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Save markup to server (placeholder function)
+    // Load existing markups on page load
+    function loadExistingMarkups() {
+        const markupsData = psalmText.getAttribute('data-markups');
+        if (!markupsData) return;
+        
+        try {
+            const markups = JSON.parse(markupsData);
+            markups.forEach(markup => {
+                const data = markup.markup_data;
+                if (!data) return;
+                
+                // Find text in the psalm content
+                const textContent = psalmText.textContent || psalmText.innerText;
+                if (textContent.includes(data.text)) {
+                    applyMarkup(data);
+                }
+            });
+        } catch (error) {
+            console.error('Error loading existing markups:', error);
+        }
+    }
+    
+    // Apply a markup to the psalm text
+    function applyMarkup(markupData) {
+        const textToFind = markupData.text;
+        const walker = document.createTreeWalker(
+            psalmText,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+            const text = node.textContent;
+            const index = text.indexOf(textToFind);
+            
+            if (index !== -1) {
+                const range = document.createRange();
+                range.setStart(node, index);
+                range.setEnd(node, index + textToFind.length);
+                
+                const span = document.createElement('span');
+                
+                if (markupData.markup_type === 'highlight') {
+                    span.style.backgroundColor = markupData.color || 'yellow';
+                    span.style.padding = '1px 2px';
+                    span.dataset.highlightColor = markupData.color || 'yellow';
+                } else if (markupData.markup_type === 'note') {
+                    span.style.textDecoration = 'underline dotted';
+                    span.style.textDecorationColor = '#007bff';
+                    span.style.cursor = 'help';
+                    span.title = markupData.note_text || '';
+                    span.classList.add('note-marker');
+                    
+                    // Add click handler for editing notes
+                    span.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        editNote(this);
+                    });
+                    
+                    // Initialize tooltip
+                    new bootstrap.Tooltip(span);
+                }
+                
+                try {
+                    range.surroundContents(span);
+                    break; // Found and applied, stop searching
+                } catch (error) {
+                    console.warn('Could not apply markup to text:', textToFind, error);
+                }
+            }
+        }
+    }
+
+    // Save markup to server
     function saveMarkup(type, text, color, noteText = null) {
         const psalmId = psalmText.getAttribute('data-psalm-id');
-        const translation = translationSelect.value;
+        const translation = translationSelect ? translationSelect.value : 'NIV';
         
-        // In a real implementation, this would send data to the server
         const markupData = {
             psalm_id: psalmId,
             translation: translation,
@@ -643,12 +717,28 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Saving markup:', markupData);
         
-        // This would typically be an AJAX call to save the markup
-        // fetch('/save_markup', {
-        //     method: 'POST',
-        //     headers: {'Content-Type': 'application/json'},
-        //     body: JSON.stringify(markupData)
-        // });
+        // Send markup data to server
+        fetch('/save_markup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(markupData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Markup saved successfully');
+            } else {
+                console.error('Failed to save markup:', data.error);
+                window.Pray150.showNotification('Failed to save markup. Please try again.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving markup:', error);
+            window.Pray150.showNotification('Error saving markup. Please try again.', 'error');
+        });
     }
 
     // Update user preference
@@ -772,6 +862,9 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`Reading time: ${readingTime} minutes`);
         // This data could be sent to the server for analytics
     });
+
+    // Load existing markups after DOM is ready
+    setTimeout(loadExistingMarkups, 100);
 });
 
 // Keyboard shortcuts for psalm reading

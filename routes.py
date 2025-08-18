@@ -409,8 +409,15 @@ def psalm(psalm_number):
     # Pass the entries directly since they now contain all prompts in one entry
     entries_dict = {entry.id: entry for entry in journal_entries} if journal_entries else {}
     
-    # Get user's markups for this psalm (placeholder for now)
+    # Get user's markups for this psalm from database
     markups = []
+    try:
+        supabase = get_supabase_client()
+        response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_number).execute()
+        markups = response.data if response.data else []
+    except Exception as e:
+        print(f"Error fetching markups: {e}")
+        markups = []
     
     # Get available translations for the translation selector
     available_translations = get_available_translations()
@@ -643,6 +650,45 @@ def answer_prayer():
 @login_required
 def profile():
     return render_template('profile.html')
+
+@main_bp.route('/save_markup', methods=['POST'])
+@login_required
+def save_markup():
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['psalm_id', 'markup_type', 'text']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Create markup data structure
+        markup_data = {
+            'markup_type': data['markup_type'],
+            'text': data['text'],
+            'translation': data.get('translation', 'NIV')
+        }
+        
+        # Add type-specific data
+        if data['markup_type'] == 'highlight':
+            markup_data['color'] = data.get('color', 'yellow')
+        elif data['markup_type'] == 'note':
+            markup_data['note_text'] = data.get('note_text', '')
+        
+        # Save to database
+        supabase = get_supabase_client()
+        response = supabase.table('markups').insert({
+            'user_id': current_user.id,
+            'psalm_id': int(data['psalm_id']),
+            'markup_data': markup_data
+        }).execute()
+        
+        return jsonify({'success': True, 'message': 'Markup saved successfully'})
+        
+    except Exception as e:
+        print(f"Error saving markup: {e}")
+        return jsonify({'error': 'Failed to save markup'}), 500
 
 @main_bp.route('/update_preferences', methods=['POST'])
 @login_required

@@ -127,7 +127,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}" data-base-font-size="16" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
+                    <div class="psalm-text" id="psalmText" data-psalm-number="{{ psalm_api_data.psalm_number if psalm_api_data else psalm.number }}" data-psalm-id="{{ psalm.id if psalm else psalm_number }}" data-markups="{{ markups | tojson | safe }}" data-base-font-size="16" style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; max-width: 800px; margin: 0 auto;">
                         {% if psalm_api_data %}
                             <!-- Live Bible API Content -->
                             {% for verse in psalm_api_data.verses %}
