@@ -27,7 +27,7 @@ class BibleAPI:
     AVAILABLE_TRANSLATIONS = {
         'ESV': 'English Standard Version',
         'NIV': 'New International Version (1984)', 
-        'NIV2011': 'New International Version (2011)',  # Will try to access if available
+        # 'NIV2011': 'New International Version (2011)',  # Not available in free API.Bible tier
         'NLT': 'New Living Translation',
         'KJV': 'King James Version',
         'ASV': 'American Standard-ASV1901',
@@ -77,7 +77,7 @@ class BibleAPI:
             return self._get_original_language_psalm(translation, psalm_number)
         
         # Check if this is a translation that requires API.Bible access
-        if translation in ['NIV2011', 'CSB', 'NASB']:
+        if translation in ['CSB', 'NASB']:
             return self._get_api_bible_psalm(translation, psalm_number)
         
         try:

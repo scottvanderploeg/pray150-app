@@ -15,13 +15,14 @@ class ApiBibleClient:
     
     BASE_URL = "https://api.scripture.api.bible/v1"
     
-    # Bible IDs for API.Bible (these need to be obtained from their service)
+    # Bible IDs for API.Bible - NIV 2011 is not available in free tier
+    # de4e12af7f28f599-02 is actually KJV, not NIV 2011
     BIBLE_IDS = {
-        'NIV2011': 'de4e12af7f28f599-02',  # NIV 2011 (requires licensing)
         'ESV': 'f421fe261da7624f-01',        # English Standard Version
         'NLT': 'fd37d8a28e95d3be-01',       # New Living Translation  
         'CSB': 'c315fa9f71d4af3a-01',       # Christian Standard Bible
-        'NASB': '1588f89b43ad0f51-01'       # New American Standard Bible
+        'NASB': '1588f89b43ad0f51-01',      # New American Standard Bible
+        'KJV': 'de4e12af7f28f599-02'        # King James Version (what we were calling NIV2011)
     }
     
     def __init__(self, api_key: str = None):
@@ -106,10 +107,37 @@ class ApiBibleClient:
                 verse_reference = verse_content.get('reference', '')
                 verse_num = verse_reference.split('.')[-1] if '.' in verse_reference else len(verses) + 1
                 
-                # Clean up the verse text (remove HTML tags and extra formatting)
+                # Clean up the verse text (remove HTML tags, verse numbers, and superscriptions)
                 import re
                 verse_text = re.sub(r'<[^>]+>', '', verse_text)  # Remove HTML tags
+                verse_text = re.sub(r'^\s*\[\d+\]\s*', '', verse_text)  # Remove verse numbers like [1]
                 verse_text = re.sub(r'\s+', ' ', verse_text).strip()  # Normalize whitespace
+                
+                # Skip verses that are superscriptions or contain psalm titles
+                verse_reference = verse_content.get('reference', '')
+                
+                # Skip verse 0 or very short verses (likely superscriptions)
+                if '.0' in verse_reference or len(verse_text) < 10:
+                    continue
+                
+                # Remove superscription text that appears at the beginning of verse 1
+                if verse_num == '1' and ('psalm of' in verse_text.lower() or 'a song of' in verse_text.lower()):
+                    # Find where the actual verse starts (usually after the title and verse number)
+                    import re
+                    # Look for patterns like "A Psalm of David..." followed by actual verse
+                    superscript_match = re.search(r'^[^\.]+\.\s*', verse_text)
+                    if superscript_match:
+                        verse_text = verse_text[superscript_match.end():].strip()
+                    
+                    # If still starts with title-like text, try to find the verse content
+                    if any(phrase in verse_text.lower() for phrase in ['psalm of', 'song of', 'prayer of', 'maskil of']):
+                        # Try to find where verse actually starts (after title and verse marker)
+                        parts = verse_text.split('. ')
+                        if len(parts) > 1:
+                            verse_text = '. '.join(parts[1:])
+                
+                # Final cleanup - remove any remaining verse numbers in square brackets
+                verse_text = re.sub(r'^\s*\[\d+\]\s*', '', verse_text)
                 
                 verses.append({
                     'verse_number': int(verse_num) if str(verse_num).isdigit() else len(verses) + 1,

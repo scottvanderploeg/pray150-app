@@ -20,28 +20,23 @@ Pray150 now supports NIV 2011 and other premium Bible translations through API.B
 - ✅ **LXX** - Greek (Septuagint)
 
 ### Premium Translations (API.Bible - Requires API Key)
-- 🔑 **NIV2011** - New International Version (2011)
 - 🔑 **CSB** - Christian Standard Bible
-- 🔑 **NASB** - New American Standard Bible
+- 🔑 **NASB** - New American Standard Bible (may require higher tier)
+- ❌ **NIV 2011** - Not available in free API.Bible tier (requires commercial license)
 
-## How to Enable NIV 2011
+## About NIV 2011 Access
 
-### Step 1: Get API.Bible Account
-1. Visit https://scripture.api.bible/
-2. Sign up for a free account
-3. Get your API key from the dashboard
+**Important**: NIV 2011 is **NOT available** through API.Bible's free tier. The free tier includes various translations but excludes premium copyrighted versions like NIV 2011.
 
-### Step 2: Add API Key to Your Project
-Add your API key as an environment variable:
-```bash
-API_BIBLE_KEY=your_api_key_here
-```
+### What You CAN Access
+- **CSB** (Christian Standard Bible) - Available with your API key
+- **ESV** (English Standard Version) - Similar quality to NIV 2011
+- All the free translations via Rob Keplin's API
 
-### Step 3: Test the Integration
-Run the test script to verify everything works:
-```bash
-python test_niv2011_api.py
-```
+### To Get NIV 2011 (Advanced Users Only)
+1. Contact Biblica directly for licensing
+2. Upgrade to API.Bible commercial tier (expensive)
+3. Alternative: Use ESV which has similar scholarship and readability
 
 ## Copyright and Licensing
 
