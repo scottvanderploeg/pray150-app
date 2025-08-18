@@ -154,15 +154,36 @@
                     
                     <!-- Markup Tools -->
                     <div class="markup-tools mt-3 pt-3 border-top">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-warning" id="highlightBtn">
-                                <i class="fas fa-highlighter me-1"></i>Highlight
-                            </button>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <!-- Highlighter Options -->
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-warning" id="highlightBtn" data-color="yellow">
+                                    <i class="fas fa-highlighter me-1"></i>Highlight
+                                </button>
+                                <button type="button" class="btn btn-sm dropdown-toggle dropdown-toggle-split btn-outline-warning" data-bs-toggle="dropdown">
+                                    <span class="visually-hidden">Highlighter Colors</span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" data-color="yellow" onclick="setHighlightColor('yellow', this)">
+                                        <span class="d-inline-block me-2 rounded" style="width: 16px; height: 16px; background-color: yellow; border: 1px solid #ccc;"></span>Yellow
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" data-color="lightgreen" onclick="setHighlightColor('lightgreen', this)">
+                                        <span class="d-inline-block me-2 rounded" style="width: 16px; height: 16px; background-color: lightgreen; border: 1px solid #ccc;"></span>Green
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" data-color="lightblue" onclick="setHighlightColor('lightblue', this)">
+                                        <span class="d-inline-block me-2 rounded" style="width: 16px; height: 16px; background-color: lightblue; border: 1px solid #ccc;"></span>Blue
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" data-color="lightpink" onclick="setHighlightColor('lightpink', this)">
+                                        <span class="d-inline-block me-2 rounded" style="width: 16px; height: 16px; background-color: lightpink; border: 1px solid #ccc;"></span>Pink
+                                    </a></li>
+                                </ul>
+                            </div>
+                            
                             <button type="button" class="btn btn-sm btn-outline-info" id="noteBtn">
                                 <i class="fas fa-sticky-note me-1"></i>Add Note
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-secondary" id="toggleMarkupsBtn">
-                                <i class="fas fa-eye me-1"></i>Toggle Markups
+                                <i class="fas fa-eye-slash me-1"></i>Hide Markups
                             </button>
                         </div>
                     </div>
@@ -255,6 +276,29 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noteModalLabel">Add Your Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Adding note to: <strong id="selectedTextPreview"></strong></p>
+                <div class="mb-3">
+                    <label for="noteTextInput" class="form-label">Your thoughts and insights:</label>
+                    <textarea class="form-control" id="noteTextInput" rows="4" placeholder="What is God speaking to you through this text? What insights or memories come to mind?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveNoteBtn">Save Note</button>
             </div>
         </div>
     </div>

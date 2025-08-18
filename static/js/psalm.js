@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let saveTimeout = null;
     let lastSaveData = {};
     let currentEmotion = null;
+    let currentHighlightColor = 'yellow';
+    let pendingNoteSelection = null;
+    let currentHighlightColor = 'yellow';
+    let pendingNoteSelection = null;
 
     // Translation switching
     if (translationSelect) {
@@ -344,15 +348,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (markupsVisible) {
                     // Show markups with their styling
                     element.style.display = 'inline';
-                    element.style.backgroundColor = element.classList.contains('highlight') ? 'yellow' : '';
-                    element.style.textDecoration = element.classList.contains('note-marker') ? 'underline dotted' : '';
-                    element.style.cursor = element.classList.contains('note-marker') ? 'help' : 'default';
+                    if (element.classList.contains('highlight')) {
+                        const savedColor = element.dataset.highlightColor || 'yellow';
+                        element.style.backgroundColor = savedColor;
+                        element.style.border = 'none';
+                        element.style.textDecoration = 'none';
+                    }
+                    if (element.classList.contains('note-marker')) {
+                        element.style.backgroundColor = 'transparent';
+                        element.style.textDecoration = 'underline dotted';
+                        element.style.textDecorationColor = '#007bff';
+                        element.style.cursor = 'help';
+                        element.style.border = 'none';
+                    }
                 } else {
-                    // Hide markup styling but keep the text visible
+                    // Hide markup styling completely but keep the text visible
                     element.style.display = 'inline';
                     element.style.backgroundColor = 'transparent';
                     element.style.textDecoration = 'none';
                     element.style.cursor = 'default';
+                    element.style.border = 'none';
+                    element.style.textDecorationColor = 'transparent';
                     // Hide tooltips when markups are hidden
                     if (element.hasAttribute('data-bs-toggle')) {
                         const tooltip = bootstrap.Tooltip.getInstance(element);
@@ -395,11 +411,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 selection.removeAllRanges();
                 
                 // Apply highlight styling
-                span.style.backgroundColor = 'yellow';
+                span.style.backgroundColor = currentHighlightColor;
                 span.style.padding = '1px 2px';
+                span.dataset.highlightColor = currentHighlightColor;
                 
                 // Save highlight (would typically be sent to server)
-                saveMarkup('highlight', span.textContent, 'yellow');
+                saveMarkup('highlight', span.textContent, currentHighlightColor);
                 
                 // Reset highlight mode
                 isHighlightMode = false;
@@ -417,45 +434,72 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add note to selected text
     function addNoteToSelection(selection, selectedText) {
-        const noteText = prompt('Add your note about "' + selectedText.substring(0, 30) + (selectedText.length > 30 ? '...' : '') + '":', '');
+        // Store selection for later use
+        pendingNoteSelection = {
+            selection: selection,
+            selectedText: selectedText,
+            range: selection.getRangeAt(0).cloneRange()
+        };
         
-        if (noteText && noteText.trim() !== '') {
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                const span = document.createElement('span');
-                span.className = 'note-marker';
-                span.title = noteText;
-                span.setAttribute('data-bs-toggle', 'tooltip');
-                span.setAttribute('data-bs-placement', 'top');
+        // Update modal content
+        document.getElementById('selectedTextPreview').textContent = selectedText.length > 50 ? selectedText.substring(0, 50) + '...' : selectedText;
+        document.getElementById('noteTextInput').value = '';
+        
+        // Show modal
+        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        noteModal.show();
+    }
+    
+    // Handle note saving from modal
+    const saveNoteBtn = document.getElementById('saveNoteBtn');
+    if (saveNoteBtn) {
+            saveNoteBtn.addEventListener('click', function() {
+                const noteText = document.getElementById('noteTextInput').value.trim();
                 
-                try {
-                    range.surroundContents(span);
-                    selection.removeAllRanges();
+                if (noteText && pendingNoteSelection) {
+                    const span = document.createElement('span');
+                    span.className = 'note-marker';
+                    span.title = noteText;
+                    span.setAttribute('data-bs-toggle', 'tooltip');
+                    span.setAttribute('data-bs-placement', 'top');
                     
-                    // Apply note styling
-                    span.style.textDecoration = 'underline dotted';
-                    span.style.textDecorationColor = '#007bff';
-                    span.style.cursor = 'help';
+                    try {
+                        // Clear current selection and restore the saved range
+                        window.getSelection().removeAllRanges();
+                        window.getSelection().addRange(pendingNoteSelection.range);
+                        
+                        pendingNoteSelection.range.surroundContents(span);
+                        window.getSelection().removeAllRanges();
+                        
+                        // Apply note styling
+                        span.style.textDecoration = 'underline dotted';
+                        span.style.textDecorationColor = '#007bff';
+                        span.style.cursor = 'help';
+                        
+                        // Initialize tooltip for the new note
+                        new bootstrap.Tooltip(span);
+                        
+                        // Save note (would typically be sent to server)
+                        saveMarkup('note', pendingNoteSelection.selectedText, null, noteText);
+                        
+                        // Reset note mode
+                        isNoteMode = false;
+                        noteBtn.classList.remove('active');
+                        noteBtn.innerHTML = '<i class="fas fa-sticky-note me-1"></i>Add Note';
+                        psalmText.style.cursor = 'default';
+                        
+                        // Close modal
+                        bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                        
+                        window.Pray150.showNotification('Note added successfully!', 'success');
+                    } catch (error) {
+                        console.error('Note addition failed:', error);
+                        window.Pray150.showNotification('Could not add note to selected text', 'warning');
+                    }
                     
-                    // Initialize tooltip for the new note
-                    new bootstrap.Tooltip(span);
-                    
-                    // Save note (would typically be sent to server)
-                    saveMarkup('note', selectedText, null, noteText);
-                    
-                    // Reset note mode
-                    isNoteMode = false;
-                    noteBtn.classList.remove('active');
-                    noteBtn.innerHTML = '<i class="fas fa-sticky-note me-1"></i>Add Note';
-                    psalmText.style.cursor = 'default';
-                    
-                    window.Pray150.showNotification('Note added successfully!', 'success');
-                } catch (error) {
-                    console.error('Note addition failed:', error);
-                    window.Pray150.showNotification('Could not add note to selected text', 'warning');
+                    pendingNoteSelection = null;
                 }
-            }
-        }
+            });
     }
 
     // Save markup to server (placeholder function)
@@ -605,6 +649,27 @@ document.addEventListener('DOMContentLoaded', function() {
         // This data could be sent to the server for analytics
     });
 });
+
+// Global function to set highlight color
+function setHighlightColor(color, element) {
+    currentHighlightColor = color;
+    
+    // Update the main highlight button
+    const highlightBtn = document.getElementById('highlightBtn');
+    if (highlightBtn) {
+        highlightBtn.dataset.color = color;
+    }
+    
+    // Update dropdown selection visual feedback
+    const dropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
+    dropdownItems.forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+    
+    // If highlight mode is active, show feedback
+    if (isHighlightMode) {
+        window.Pray150.showNotification(`Highlight color set to ${color}`, 'info');
+    }
+}
 
 // Keyboard shortcuts for psalm reading
 document.addEventListener('keydown', function(e) {
