@@ -676,13 +676,42 @@ def save_markup():
         elif data['markup_type'] == 'note':
             markup_data['note_text'] = data.get('note_text', '')
         
-        # Save to database
+        # Save to database - try different approaches
         supabase = get_supabase_client()
-        response = supabase.table('markups').insert({
+        
+        # Try with different column names that might exist
+        insert_data = {
             'user_id': current_user.id,
             'psalm_id': int(data['psalm_id']),
-            'markup_data': markup_data
-        }).execute()
+        }
+        
+        # Try different possible column names for the data
+        for data_column in ['markup_data', 'data', 'content', 'markup_content']:
+            try:
+                insert_data[data_column] = markup_data
+                response = supabase.table('markups').insert(insert_data).execute()
+                print(f"Successfully saved with column: {data_column}")
+                break
+            except Exception as e:
+                print(f"Failed with column {data_column}: {e}")
+                if data_column in insert_data:
+                    del insert_data[data_column]
+        else:
+            # If all attempts failed, try a simple structure
+            try:
+                simple_data = {
+                    'user_id': current_user.id,
+                    'psalm_id': int(data['psalm_id']),
+                    'markup_type': data['markup_type'],
+                    'text_content': data['text'],
+                    'color': data.get('color', ''),
+                    'note_text': data.get('note_text', '')
+                }
+                response = supabase.table('markups').insert(simple_data).execute()
+                print("Saved with simple structure")
+            except Exception as e:
+                print(f"All save attempts failed: {e}")
+                return jsonify({'error': 'Database schema mismatch - table structure needs to be updated'}), 500
         
         return jsonify({'success': True, 'message': 'Markup saved successfully'})
         

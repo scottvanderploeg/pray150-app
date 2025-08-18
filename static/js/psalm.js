@@ -445,8 +445,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('noteTextInput').value = '';
         
         // Hide delete button and edit help for new notes
-        document.getElementById('deleteNoteBtn').style.display = 'none';
-        document.getElementById('editNoteHelp').style.display = 'none';
+        const deleteBtn = document.getElementById('deleteNoteBtn');
+        const editHelp = document.getElementById('editNoteHelp');
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        if (editHelp) editHelp.style.display = 'none';
         
         // Show modal
         const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
@@ -604,8 +606,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('noteTextInput').value = currentNoteText;
         
         // Show delete button and edit help for editing mode
-        document.getElementById('deleteNoteBtn').style.display = 'inline-block';
-        document.getElementById('editNoteHelp').style.display = 'block';
+        const deleteBtn = document.getElementById('deleteNoteBtn');
+        const editHelp = document.getElementById('editNoteHelp');
+        if (deleteBtn) deleteBtn.style.display = 'inline-block';
+        if (editHelp) editHelp.style.display = 'block';
         
         // Store reference to the note element being edited
         const saveNoteBtn = document.getElementById('saveNoteBtn');
