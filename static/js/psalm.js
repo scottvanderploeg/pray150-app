@@ -483,8 +483,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.tempSelectedText = null;
                         document.getElementById('noteModalLabel').textContent = 'Add Your Note';
                         
-                        // Close modal
-                        bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                        // Close modal and ensure screen responsiveness
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                        
+                        // Force remove modal backdrop and restore document interaction
+                        setTimeout(() => {
+                            const backdrop = document.querySelector('.modal-backdrop');
+                            if (backdrop) {
+                                backdrop.remove();
+                            }
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }, 300);
                         
                         window.Pray150.showNotification('Note updated successfully!', 'success');
                     }
@@ -527,8 +541,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         noteBtn.innerHTML = '<i class="fas fa-sticky-note me-1"></i>Add Note';
                         psalmText.style.cursor = 'default';
                         
-                        // Close modal
-                        bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                        // Close modal and ensure screen responsiveness
+                        const modalInstance = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        }
+                        
+                        // Force remove modal backdrop and restore document interaction
+                        setTimeout(() => {
+                            const backdrop = document.querySelector('.modal-backdrop');
+                            if (backdrop) {
+                                backdrop.remove();
+                            }
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.paddingRight = '';
+                        }, 300);
                         
                         window.Pray150.showNotification('Note added successfully!', 'success');
                     } catch (error) {
@@ -562,8 +590,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     saveNoteBtn.tempSelectedText = null;
                     document.getElementById('noteModalLabel').textContent = 'Add Your Note';
                     
-                    // Close modal
-                    bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                    // Close modal and ensure screen responsiveness
+                    const modalInstance = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                    
+                    // Force remove modal backdrop and restore document interaction
+                    setTimeout(() => {
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) {
+                            backdrop.remove();
+                        }
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                    }, 300);
                     
                     window.Pray150.showNotification('Note deleted successfully!', 'success');
                 }
