@@ -57,7 +57,7 @@ class ApiBibleClient:
     
     def get_psalm(self, psalm_number: int, translation: str = 'ESV') -> Optional[Dict]:
         """
-        Fetch psalm from API.Bible
+        Fetch psalm from API.Bible with proper verse parsing
         
         Args:
             psalm_number: Psalm number (1-150)
@@ -80,20 +80,49 @@ class ApiBibleClient:
         chapter_id = f"PSA.{psalm_number}"
         
         try:
-            url = f"{self.BASE_URL}/bibles/{bible_id}/chapters/{chapter_id}"
-            response = self.session.get(url, params={'content-type': 'text'})
+            # First get the verses for this chapter
+            url = f"{self.BASE_URL}/bibles/{bible_id}/chapters/{chapter_id}/verses"
+            response = self.session.get(url)
             response.raise_for_status()
             
-            data = response.json().get('data', {})
+            verses_data = response.json().get('data', [])
             
-            # Parse the content to extract verses
-            content = data.get('content', '')
+            if not verses_data:
+                logger.warning(f"No verses found for Psalm {psalm_number} in {translation}")
+                return None
+            
+            # Now get the content for each verse
+            verses = []
+            for verse_data in verses_data:
+                verse_id = verse_data.get('id', '')
+                verse_url = f"{self.BASE_URL}/bibles/{bible_id}/verses/{verse_id}"
+                verse_response = self.session.get(verse_url, params={'content-type': 'text'})
+                verse_response.raise_for_status()
+                
+                verse_content = verse_response.json().get('data', {})
+                verse_text = verse_content.get('content', '').strip()
+                
+                # Extract verse number from the verse reference (e.g., "PSA.1.1" -> 1)
+                verse_reference = verse_content.get('reference', '')
+                verse_num = verse_reference.split('.')[-1] if '.' in verse_reference else len(verses) + 1
+                
+                # Clean up the verse text (remove HTML tags and extra formatting)
+                import re
+                verse_text = re.sub(r'<[^>]+>', '', verse_text)  # Remove HTML tags
+                verse_text = re.sub(r'\s+', ' ', verse_text).strip()  # Normalize whitespace
+                
+                verses.append({
+                    'verse_number': int(verse_num) if str(verse_num).isdigit() else len(verses) + 1,
+                    'text': verse_text,
+                    'verse_id': verse_id
+                })
             
             return {
                 'psalm_number': psalm_number,
                 'translation': translation,
                 'translation_name': f"{translation} (API.Bible)",
-                'content': content,
+                'verse_count': len(verses),
+                'verses': verses,
                 'source': 'api.bible'
             }
             

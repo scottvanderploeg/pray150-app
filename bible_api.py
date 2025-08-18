@@ -146,22 +146,13 @@ class BibleAPI:
             result = client.get_psalm(psalm_number, translation)
             
             if result:
-                # Convert API.Bible format to our standard format
-                # Note: API.Bible returns formatted text, we need to parse verses
-                content = result.get('content', '')
-                
-                # For now, return the whole content as one "verse"
-                # TODO: Parse individual verses from the content
+                # API.Bible already returns properly parsed verses
                 psalm_data = {
                     'psalm_number': psalm_number,
                     'translation': translation,
                     'translation_name': self.AVAILABLE_TRANSLATIONS.get(translation, translation),
-                    'verse_count': 1,  # Will be updated when we parse verses
-                    'verses': [{
-                        'verse_number': 1,
-                        'text': content,
-                        'verse_id': f"api_bible_{psalm_number}_1"
-                    }],
+                    'verse_count': result.get('verse_count', len(result.get('verses', []))),
+                    'verses': result.get('verses', []),
                     'superscript': get_psalm_superscript(psalm_number),
                     'source': 'api.bible'
                 }
