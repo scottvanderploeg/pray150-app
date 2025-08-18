@@ -415,6 +415,7 @@ def psalm(psalm_number):
         supabase = get_supabase_client()
         response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_number).execute()
         markups = response.data if response.data else []
+        print(f"Fetched {len(markups)} markups for psalm {psalm_number}: {markups}")
     except Exception as e:
         print(f"Error fetching markups: {e}")
         markups = []

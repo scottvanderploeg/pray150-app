@@ -675,18 +675,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load existing markups on page load
     function loadExistingMarkups() {
         const markupsData = psalmText.getAttribute('data-markups');
-        if (!markupsData) return;
+        console.log('Raw markups data:', markupsData);
+        
+        if (!markupsData || markupsData === '[]') {
+            console.log('No markups to load');
+            return;
+        }
         
         try {
             const markups = JSON.parse(markupsData);
-            markups.forEach(markup => {
-                const data = markup.markup_data;
-                if (!data) return;
+            console.log('Parsed markups:', markups);
+            
+            markups.forEach((markup, index) => {
+                console.log(`Processing markup ${index}:`, markup);
+                
+                // The database uses 'markup-data' column (with hyphen)
+                const data = markup['markup-data'] || markup.markup_data;
+                if (!data) {
+                    console.log('No markup data found for', markup);
+                    return;
+                }
+                
+                console.log('Markup data to apply:', data);
                 
                 // Find text in the psalm content
                 const textContent = psalmText.textContent || psalmText.innerText;
                 if (textContent.includes(data.text)) {
+                    console.log('Found text in psalm, applying markup for:', data.text);
                     applyMarkup(data);
+                } else {
+                    console.log('Text not found in psalm:', data.text);
                 }
             });
         } catch (error) {
