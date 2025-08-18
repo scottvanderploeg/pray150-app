@@ -440,8 +440,13 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         // Update modal content
+        document.getElementById('noteModalLabel').textContent = 'Add Your Note';
         document.getElementById('selectedTextPreview').textContent = selectedText.length > 50 ? selectedText.substring(0, 50) + '...' : selectedText;
         document.getElementById('noteTextInput').value = '';
+        
+        // Hide delete button and edit help for new notes
+        document.getElementById('deleteNoteBtn').style.display = 'none';
+        document.getElementById('editNoteHelp').style.display = 'none';
         
         // Show modal
         const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
@@ -454,7 +459,35 @@ document.addEventListener('DOMContentLoaded', function() {
             saveNoteBtn.addEventListener('click', function() {
                 const noteText = document.getElementById('noteTextInput').value.trim();
                 
-                if (noteText && pendingNoteSelection) {
+                // Check if we're editing an existing note
+                if (this.dataset.editingElement === 'true') {
+                    if (noteText && this.tempNoteElement) {
+                        // Update existing note
+                        this.tempNoteElement.title = noteText;
+                        
+                        // Destroy and recreate tooltip with new content
+                        const existingTooltip = bootstrap.Tooltip.getInstance(this.tempNoteElement);
+                        if (existingTooltip) {
+                            existingTooltip.dispose();
+                        }
+                        new bootstrap.Tooltip(this.tempNoteElement);
+                        
+                        // Save updated note
+                        saveMarkup('note', this.tempSelectedText, null, noteText);
+                        
+                        // Reset editing state
+                        this.dataset.editingElement = 'false';
+                        this.tempNoteElement = null;
+                        this.tempSelectedText = null;
+                        document.getElementById('noteModalLabel').textContent = 'Add Your Note';
+                        
+                        // Close modal
+                        bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                        
+                        window.Pray150.showNotification('Note updated successfully!', 'success');
+                    }
+                } else if (noteText && pendingNoteSelection) {
+                    // Create new note (existing functionality)
                     const span = document.createElement('span');
                     span.className = 'note-marker';
                     span.title = noteText;
@@ -473,6 +506,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         span.style.textDecoration = 'underline dotted';
                         span.style.textDecorationColor = '#007bff';
                         span.style.cursor = 'help';
+                        
+                        // Add click handler for editing notes
+                        span.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            editNote(this);
+                        });
                         
                         // Initialize tooltip for the new note
                         new bootstrap.Tooltip(span);
@@ -500,6 +539,36 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Handle note deletion
+    const deleteNoteBtn = document.getElementById('deleteNoteBtn');
+    if (deleteNoteBtn) {
+        deleteNoteBtn.addEventListener('click', function() {
+            const saveNoteBtn = document.getElementById('saveNoteBtn');
+            if (saveNoteBtn.dataset.editingElement === 'true' && saveNoteBtn.tempNoteElement) {
+                if (confirm('Are you sure you want to delete this note?')) {
+                    // Remove the note element
+                    const noteElement = saveNoteBtn.tempNoteElement;
+                    const textContent = noteElement.textContent;
+                    
+                    // Replace the note element with just the text
+                    const textNode = document.createTextNode(textContent);
+                    noteElement.parentNode.replaceChild(textNode, noteElement);
+                    
+                    // Reset editing state
+                    saveNoteBtn.dataset.editingElement = 'false';
+                    saveNoteBtn.tempNoteElement = null;
+                    saveNoteBtn.tempSelectedText = null;
+                    document.getElementById('noteModalLabel').textContent = 'Add Your Note';
+                    
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('noteModal')).hide();
+                    
+                    window.Pray150.showNotification('Note deleted successfully!', 'success');
+                }
+            }
+        });
+    }
+
     // Add color picker functionality
     document.querySelectorAll('.highlight-color-option').forEach(item => {
         item.addEventListener('click', function(e) {
@@ -522,6 +591,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.Pray150.showNotification(`Highlight color set to ${color}`, 'info');
             }
         });
+    });
+
+    // Function to edit existing notes
+    function editNote(noteElement) {
+        const currentNoteText = noteElement.title;
+        const selectedText = noteElement.textContent;
+        
+        // Update modal content for editing
+        document.getElementById('noteModalLabel').textContent = 'Edit Your Note';
+        document.getElementById('selectedTextPreview').textContent = selectedText.length > 50 ? selectedText.substring(0, 50) + '...' : selectedText;
+        document.getElementById('noteTextInput').value = currentNoteText;
+        
+        // Show delete button and edit help for editing mode
+        document.getElementById('deleteNoteBtn').style.display = 'inline-block';
+        document.getElementById('editNoteHelp').style.display = 'block';
+        
+        // Store reference to the note element being edited
+        const saveNoteBtn = document.getElementById('saveNoteBtn');
+        saveNoteBtn.dataset.editingElement = 'true';
+        saveNoteBtn.tempNoteElement = noteElement;
+        saveNoteBtn.tempSelectedText = selectedText;
+        
+        // Show modal
+        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        noteModal.show();
+    }
+
+    // Add event delegation for existing note markers
+    psalmText.addEventListener('click', function(e) {
+        if (e.target.classList.contains('note-marker')) {
+            e.preventDefault();
+            editNote(e.target);
+        }
     });
 
     // Save markup to server (placeholder function)

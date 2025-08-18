@@ -295,10 +295,14 @@
                     <label for="noteTextInput" class="form-label">Your thoughts and insights:</label>
                     <textarea class="form-control" id="noteTextInput" rows="4" placeholder="What is God speaking to you through this text? What insights or memories come to mind?"></textarea>
                 </div>
+                <div class="alert alert-info" id="editNoteHelp" style="display: none;">
+                    <small><i class="fas fa-info-circle me-1"></i>Click on any underlined note to edit it.</small>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" id="saveNoteBtn">Save Note</button>
+                <button type="button" class="btn btn-outline-danger" id="deleteNoteBtn" style="display: none;">Delete Note</button>
             </div>
         </div>
     </div>
