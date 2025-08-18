@@ -114,8 +114,7 @@ class User(UserMixin):
             supabase = get_supabase_client()
             
             # Get all journal entries for this user to see which psalms have been completed
-            # Note: psalm_number field contains the actual psalm number (1-150)
-            journal_result = supabase.table('journal_entries').select('psalm_number, psalm_id')\
+            journal_result = supabase.table('journal_entries').select('psalm_id, created_at')\
                 .eq('user_id', str(self.id))\
                 .order('created_at', desc=False).execute()
             
@@ -126,10 +125,11 @@ class User(UserMixin):
             # Get all psalms that have journal entries (completed psalms)
             completed_psalms = set()
             for entry in journal_result.data:
-                # Check both psalm_number and psalm_id fields
-                psalm_num = entry.get('psalm_number') or entry.get('psalm_id')
-                if psalm_num:
-                    completed_psalms.add(int(psalm_num))
+                psalm_id = entry.get('psalm_id')
+                if psalm_id:
+                    completed_psalms.add(int(psalm_id))
+            
+            print(f"DEBUG: User {self.id} completed psalms: {sorted(completed_psalms)}")
             
             # Find the next psalm in sequence starting from 1
             current_psalm = 1
@@ -140,6 +140,7 @@ class User(UserMixin):
             if current_psalm > 150:
                 return 1
                 
+            print(f"DEBUG: Next psalm for user {self.id}: {current_psalm}")
             return current_psalm
             
         except Exception as e:
