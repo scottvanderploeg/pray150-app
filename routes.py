@@ -681,11 +681,14 @@ def save_markup():
         supabase = get_supabase_client()
         
         try:
-            # Use the correct column name discovered: 'markup-data'
+            # Use the correct column name discovered: 'markup-data' and add required created_at
+            from datetime import datetime
+            
             insert_data = {
                 'user_id': current_user.id,
                 'psalm_id': int(data['psalm_id']),
-                'markup-data': markup_data  # Using the correct hyphenated column name
+                'markup-data': markup_data,  # Using the correct hyphenated column name
+                'created_at': datetime.now().isoformat()  # Add required timestamp
             }
             
             response = supabase.table('markups').insert(insert_data).execute()
