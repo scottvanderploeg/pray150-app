@@ -675,40 +675,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load existing markups on page load
     function loadExistingMarkups() {
         const markupsData = psalmText.getAttribute('data-markups');
-        console.log('Raw markups data:', markupsData);
+        console.log('Raw markups data length:', markupsData ? markupsData.length : 'null');
         
-        if (!markupsData || markupsData === '[]') {
+        if (!markupsData || markupsData === '[]' || markupsData.length === 0) {
             console.log('No markups to load');
             return;
         }
         
         try {
+            // The data might be large, so let's be more careful with parsing
             const markups = JSON.parse(markupsData);
-            console.log('Parsed markups:', markups);
+            console.log('Successfully parsed', markups.length, 'markups');
             
             markups.forEach((markup, index) => {
-                console.log(`Processing markup ${index}:`, markup);
+                console.log(`Processing markup ${index + 1}/${markups.length}`);
                 
                 // The database uses 'markup-data' column (with hyphen)
                 const data = markup['markup-data'] || markup.markup_data;
                 if (!data) {
-                    console.log('No markup data found for', markup);
+                    console.log('No markup data found for markup', index);
                     return;
                 }
                 
-                console.log('Markup data to apply:', data);
+                console.log('Applying markup:', data.markup_type, 'for text:', data.text.substring(0, 30) + '...');
                 
-                // Find text in the psalm content
+                // Find and apply the markup to the text
                 const textContent = psalmText.textContent || psalmText.innerText;
                 if (textContent.includes(data.text)) {
-                    console.log('Found text in psalm, applying markup for:', data.text);
                     applyMarkup(data);
+                    console.log('Successfully applied markup');
                 } else {
-                    console.log('Text not found in psalm:', data.text);
+                    console.log('Text not found in current psalm content');
                 }
             });
+            
+            console.log('Finished loading all markups');
         } catch (error) {
-            console.error('Error loading existing markups:', error);
+            console.error('JSON parsing error:', error);
+            console.log('First 200 chars of data:', markupsData ? markupsData.substring(0, 200) : 'null');
         }
     }
     
