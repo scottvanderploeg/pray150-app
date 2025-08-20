@@ -96,20 +96,17 @@ def users():
     try:
         supabase = get_supabase_client()
         
-        # Get all users with their profiles
-        users_response = supabase.table('users').select('*').execute()
+        # Get all user profiles (users are stored in user_profiles table)
         profiles_response = supabase.table('user_profiles').select('*').execute()
         
-        # Combine user data with profiles
-        users_data = users_response.data or []
-        profiles_data = {profile['user_id']: profile for profile in (profiles_response.data or [])}
+        # Process user profiles as the primary user data
+        users_data = profiles_response.data or []
         
-        # Enhance user data with profile information
+        # Enhance profile data for display
         for user in users_data:
-            profile = profiles_data.get(user['id'], {})
-            user['profile'] = profile
-            user['full_name'] = f"{profile.get('first_name', '')} {profile.get('last_name', '')}".strip() or 'Unknown'
-            user['location'] = f"{profile.get('country', '')}, {profile.get('zip_code', '')}".strip(' ,') or 'Unknown'
+            user['full_name'] = f"{user.get('first_name', '')} {user.get('last_name', '')}".strip() or 'Unknown'
+            user['location'] = f"{user.get('country', '')}, {user.get('zip_code', '')}".strip(' ,') or 'Unknown'
+            user['id'] = user.get('user_id')  # Map user_id to id for consistency
         
         return render_template('admin/users.html', users=users_data)
         
@@ -128,14 +125,14 @@ def analytics():
         # Get daily user registrations for the past 30 days
         thirty_days_ago = datetime.now() - timedelta(days=30)
         
-        daily_users = supabase.table('users')\
+        daily_users = supabase.table('user_profiles')\
             .select('created_at')\
             .gte('created_at', thirty_days_ago.isoformat())\
             .order('created_at')\
             .execute()
         
         # Get daily prayer requests for the past 30 days
-        daily_prayers = supabase.table('prayers')\
+        daily_prayers = supabase.table('prayer_lists')\
             .select('created_at')\
             .gte('created_at', thirty_days_ago.isoformat())\
             .order('created_at')\
