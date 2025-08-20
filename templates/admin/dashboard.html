@@ -1,0 +1,261 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Statistics Cards -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon users me-3">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.users.total }}</div>
+                    <div class="stat-label">Total Users</div>
+                    <small class="text-muted">
+                        +{{ stats.users.week }} this week, +{{ stats.users.month }} this month
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon prayers me-3">
+                    <i class="fas fa-praying-hands"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.prayers.total }}</div>
+                    <div class="stat-label">Prayer Requests</div>
+                    <small class="text-muted">
+                        {{ stats.prayers.answered }} answered, +{{ stats.prayers.week }} this week
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon journals me-3">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.journals.total }}</div>
+                    <div class="stat-label">Journal Entries</div>
+                    <small class="text-muted">
+                        +{{ stats.journals.week }} this week, +{{ stats.journals.month }} this month
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card card h-100">
+            <div class="card-body d-flex align-items-center">
+                <div class="stats-icon markups me-3">
+                    <i class="fas fa-highlighter"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.markups.total }}</div>
+                    <div class="stat-label">Highlights & Notes</div>
+                    <small class="text-muted">
+                        +{{ stats.markups.week }} this week, +{{ stats.markups.month }} this month
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fas fa-user-cog d-block mb-2" style="font-size: 2rem;"></i>
+                            Manage Users
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline-success btn-lg w-100">
+                            <i class="fas fa-chart-bar d-block mb-2" style="font-size: 2rem;"></i>
+                            View Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info btn-lg w-100" onclick="exportData('users')">
+                            <i class="fas fa-download d-block mb-2" style="font-size: 2rem;"></i>
+                            Export Data
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('admin.system_info') }}" class="btn btn-outline-warning btn-lg w-100">
+                            <i class="fas fa-server d-block mb-2" style="font-size: 2rem;"></i>
+                            System Status
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    System Health Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Database Status</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-database text-success me-2"></i>
+                            <span class="badge bg-success">Connected</span>
+                        </div>
+                        
+                        <h6>Prayer Answer Rate</h6>
+                        <div class="progress mb-3">
+                            {% set answer_rate = (stats.prayers.answered / stats.prayers.total * 100) if stats.prayers.total > 0 else 0 %}
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ answer_rate }}%" 
+                                 aria-valuenow="{{ answer_rate }}" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                {{ "%.1f"|format(answer_rate) }}%
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>User Engagement This Week</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-user-plus text-info me-2"></i>
+                                {{ stats.users.week }} new registrations
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-praying-hands text-success me-2"></i>
+                                {{ stats.prayers.week }} new prayers
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-book-open text-warning me-2"></i>
+                                {{ stats.journals.week }} journal entries
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-highlighter text-danger me-2"></i>
+                                {{ stats.markups.week }} highlights/notes
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Export Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Choose what data to export:</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" onclick="downloadExport('users')">
+                        <i class="fas fa-users me-2"></i>Export Users
+                    </button>
+                    <button class="btn btn-outline-success" onclick="downloadExport('prayers')">
+                        <i class="fas fa-praying-hands me-2"></i>Export Prayers
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="downloadExport('journals')">
+                        <i class="fas fa-book-open me-2"></i>Export Journal Entries
+                    </button>
+                    <button class="btn btn-outline-danger" onclick="downloadExport('markups')">
+                        <i class="fas fa-highlighter me-2"></i>Export Highlights & Notes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function exportData(type) {
+    const modal = new bootstrap.Modal(document.getElementById('exportModal'));
+    modal.show();
+}
+
+function downloadExport(dataType) {
+    fetch(`/admin/export_data/${dataType}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create downloadable JSON file
+                const blob = new Blob([JSON.stringify(data.data, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `pray150_${dataType}_export_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+                
+                // Show success message
+                showAlert(`Successfully exported ${data.count} ${dataType} records`, 'success');
+            } else {
+                showAlert(`Error exporting ${dataType}: ${data.error}`, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert(`Error exporting ${dataType}: ${error}`, 'danger');
+        });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.admin-content');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

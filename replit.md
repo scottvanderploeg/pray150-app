@@ -116,3 +116,15 @@ Preferred communication style: Simple, everyday language.
 ### Planned Integrations
 - Social sharing capabilities for prayer milestones and journal entries
 - Future iOS/Android mobile app development path
+
+## Admin Backend System (August 2025)
+- **Comprehensive Admin Dashboard**: Complete admin panel at `/admin` with authentication checks and responsive design
+- **User Management Interface**: View all registered users, their profiles, activity stats, and manual password reset functionality
+- **Real-time Analytics Dashboard**: Charts and graphs showing daily/weekly/monthly statistics for users, prayers, journal entries, and markups
+- **System Health Monitoring**: Database connection status, environment configuration checks, and live system information
+- **Data Export Functionality**: JSON export capabilities for users, prayers, journal entries, and highlights/notes for backup/analysis
+- **Admin Authorization**: Role-based access control using ADMIN_EMAILS environment variable for secure admin access
+- **Live Development Integration**: Direct Replit IDE access links for real-time code editing and debugging of live site
+- **Statistics Tracking**: Comprehensive metrics including prayer answer rates, user engagement trends, and activity distribution
+- **Password Reset Tools**: Admin ability to manually reset user passwords with proper validation and security
+- **Responsive Admin UI**: Mobile-friendly admin interface with Bootstrap 5 styling and interactive charts using Chart.js

@@ -1,0 +1,326 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title">User Management</h1>
+    <div>
+        <span class="badge bg-info fs-6">{{ users|length }} Total Users</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Registered Users
+                </h5>
+            </div>
+            <div class="col-auto">
+                <input type="text" id="userSearch" class="form-control form-control-sm" 
+                       placeholder="Search users..." style="min-width: 200px;">
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Location</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-circle bg-primary text-white me-3">
+                                    {{ user.full_name[0] if user.full_name and user.full_name != 'Unknown' else user.email[0]|upper }}
+                                </div>
+                                <div>
+                                    <strong>{{ user.full_name if user.full_name != 'Unknown' else 'Unknown User' }}</strong>
+                                    <br>
+                                    <small class="text-muted">ID: {{ user.id[:8] }}...</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="font-monospace">{{ user.email }}</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ user.location if user.location != 'Unknown' else 'Not provided' }}</small>
+                        </td>
+                        <td>
+                            <small>{{ user.created_at[:10] if user.created_at else 'Unknown' }}</small>
+                        </td>
+                        <td>
+                            {% if user.email_confirmed_at %}
+                                <span class="badge bg-success badge-status">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Active
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning badge-status">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-outline-primary" 
+                                        onclick="viewUserDetails('{{ user.id }}', '{{ user.email }}', '{{ user.full_name }}', '{{ user.location }}', '{{ user.created_at }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" 
+                                        onclick="resetUserPassword('{{ user.id }}', '{{ user.email }}')">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user me-2"></i>
+                    User Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div class="modal fade" id="passwordResetModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-key me-2"></i>
+                    Reset Password
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordResetForm">
+                    <div class="mb-3">
+                        <label class="form-label">User Email</label>
+                        <input type="text" id="resetUserEmail" class="form-control" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" 
+                               required minlength="8" placeholder="Enter new password (min 8 characters)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" 
+                               required placeholder="Confirm new password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" onclick="confirmPasswordReset()">
+                    <i class="fas fa-key me-1"></i>
+                    Reset Password
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.user-stat {
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+}
+
+.user-stat h4 {
+    color: var(--admin-primary);
+    margin-bottom: 5px;
+}
+
+.user-stat small {
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+</style>
+
+<script>
+let currentResetUserId = null;
+
+// Search functionality
+document.getElementById('userSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const tableRows = document.querySelectorAll('#usersTable tbody tr');
+    
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// View user details
+function viewUserDetails(userId, email, fullName, location, createdAt) {
+    const content = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Personal Information</h6>
+                <table class="table table-sm">
+                    <tr><th>Full Name:</th><td>${fullName || 'Not provided'}</td></tr>
+                    <tr><th>Email:</th><td><span class="font-monospace">${email}</span></td></tr>
+                    <tr><th>Location:</th><td>${location || 'Not provided'}</td></tr>
+                    <tr><th>User ID:</th><td><code>${userId}</code></td></tr>
+                    <tr><th>Joined:</th><td>${createdAt ? new Date(createdAt).toLocaleDateString() : 'Unknown'}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6>Activity Summary</h6>
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="user-stat">
+                            <h4 id="userPrayerCount">-</h4>
+                            <small>Prayers</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="user-stat">
+                            <h4 id="userJournalCount">-</h4>
+                            <small>Journal Entries</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="user-stat">
+                            <h4 id="userMarkupCount">-</h4>
+                            <small>Highlights/Notes</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="user-stat">
+                            <h4 id="userDaysActive">-</h4>
+                            <small>Days Active</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('userDetailsContent').innerHTML = content;
+    
+    // Load user activity data (you could add an API endpoint for this)
+    // For now, showing placeholders
+    
+    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    modal.show();
+}
+
+// Reset user password
+function resetUserPassword(userId, email) {
+    currentResetUserId = userId;
+    document.getElementById('resetUserEmail').value = email;
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('passwordResetModal'));
+    modal.show();
+}
+
+function confirmPasswordReset() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!newPassword || newPassword.length < 8) {
+        showAlert('Password must be at least 8 characters long', 'danger');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        showAlert('Passwords do not match', 'danger');
+        return;
+    }
+    
+    // Send reset request
+    fetch(`/admin/reset_password/${currentResetUserId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `new_password=${encodeURIComponent(newPassword)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('Password reset successfully', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('passwordResetModal')).hide();
+        } else {
+            showAlert(`Error: ${data.error}`, 'danger');
+        }
+    })
+    .catch(error => {
+        showAlert(`Error: ${error}`, 'danger');
+    });
+}
+
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    const container = document.querySelector('.admin-content');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

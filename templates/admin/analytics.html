@@ -1,0 +1,292 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Analytics Dashboard</h1>
+
+<div class="row">
+    <!-- Daily Users Chart -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Daily User Registrations
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyUsersChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Daily Prayers Chart -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-praying-hands me-2"></i>
+                    Daily Prayer Requests
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyPrayersChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Daily Journal Entries Chart -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-book-open me-2"></i>
+                    Daily Journal Entries
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyJournalsChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Analytics -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Comprehensive Activity Overview (Last 30 Days)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="combinedChart" style="height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Stats -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-week me-2"></i>
+                    Weekly Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border-end">
+                            <h4 class="text-info" id="weeklyUsers">{{ analytics.daily_users[-7:]|sum(attribute='count') }}</h4>
+                            <small class="text-muted">New Users</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h4 class="text-success" id="weeklyPrayers">{{ analytics.daily_prayers[-7:]|sum(attribute='count') }}</h4>
+                        <small class="text-muted">Prayer Requests</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h4 class="text-warning" id="weeklyJournals">{{ analytics.daily_journals[-7:]|sum(attribute='count') }}</h4>
+                            <small class="text-muted">Journal Entries</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-primary">
+                            {{ "%.1f"|format((analytics.daily_users[-7:]|sum(attribute='count') + analytics.daily_prayers[-7:]|sum(attribute='count') + analytics.daily_journals[-7:]|sum(attribute='count')) / 7) }}
+                        </h4>
+                        <small class="text-muted">Avg Daily Activity</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>
+                    Activity Distribution
+                </h6>
+            </div>
+            <div class="card-body">
+                <canvas id="activityPieChart" style="max-height: 250px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Parse analytics data from server
+const analyticsData = {
+    dailyUsers: {{ analytics.daily_users | tojson }},
+    dailyPrayers: {{ analytics.daily_prayers | tojson }},
+    dailyJournals: {{ analytics.daily_journals | tojson }}
+};
+
+// Extract dates and counts
+const dates = analyticsData.dailyUsers.map(item => item.date);
+const userCounts = analyticsData.dailyUsers.map(item => item.count);
+const prayerCounts = analyticsData.dailyPrayers.map(item => item.count);
+const journalCounts = analyticsData.dailyJournals.map(item => item.count);
+
+// Chart configurations
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+        y: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1
+            }
+        },
+        x: {
+            display: false // Hide x-axis labels for cleaner look in small charts
+        }
+    },
+    plugins: {
+        legend: {
+            display: false
+        }
+    }
+};
+
+// Daily Users Chart
+new Chart(document.getElementById('dailyUsersChart'), {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            data: userCounts,
+            borderColor: '#17a2b8',
+            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: chartOptions
+});
+
+// Daily Prayers Chart
+new Chart(document.getElementById('dailyPrayersChart'), {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            data: prayerCounts,
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: chartOptions
+});
+
+// Daily Journals Chart
+new Chart(document.getElementById('dailyJournalsChart'), {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            data: journalCounts,
+            borderColor: '#ffc107',
+            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+        }]
+    },
+    options: chartOptions
+});
+
+// Combined Chart
+new Chart(document.getElementById('combinedChart'), {
+    type: 'line',
+    data: {
+        labels: dates.map(date => new Date(date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})),
+        datasets: [
+            {
+                label: 'New Users',
+                data: userCounts,
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                borderWidth: 2,
+                tension: 0.4
+            },
+            {
+                label: 'Prayer Requests',
+                data: prayerCounts,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                tension: 0.4
+            },
+            {
+                label: 'Journal Entries',
+                data: journalCounts,
+                borderColor: '#ffc107',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                borderWidth: 2,
+                tension: 0.4
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        }
+    }
+});
+
+// Activity Distribution Pie Chart
+const totalUsers = userCounts.reduce((a, b) => a + b, 0);
+const totalPrayers = prayerCounts.reduce((a, b) => a + b, 0);
+const totalJournals = journalCounts.reduce((a, b) => a + b, 0);
+
+new Chart(document.getElementById('activityPieChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['New Users', 'Prayer Requests', 'Journal Entries'],
+        datasets: [{
+            data: [totalUsers, totalPrayers, totalJournals],
+            backgroundColor: ['#17a2b8', '#28a745', '#ffc107'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
