@@ -745,23 +745,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 const markups = data.markups || [];
                 console.log('Successfully loaded', markups.length, 'markups via AJAX');
                 
+                // Group markups by text for better handling
+                const markupsByText = {};
                 markups.forEach((markup, index) => {
-                    console.log(`Processing markup ${index + 1}/${markups.length}`);
-                    
-                    // The database uses 'markup-data' column (with hyphen)
                     const markupData = markup['markup-data'] || markup.markup_data;
-                    if (!markupData) {
-                        console.log('No markup data found for markup', index);
-                        return;
+                    if (markupData && markupData.text) {
+                        if (!markupsByText[markupData.text]) {
+                            markupsByText[markupData.text] = [];
+                        }
+                        markupsByText[markupData.text].push({...markupData, dbId: markup.id});
                     }
+                });
+                
+                // Apply markups grouped by text
+                Object.keys(markupsByText).forEach(text => {
+                    const textMarkups = markupsByText[text];
+                    console.log(`Processing ${textMarkups.length} markup(s) for text: "${text.substring(0, 30)}..."`);
                     
-                    console.log('Applying markup:', markupData.markup_type, 'for text:', markupData.text.substring(0, 30) + '...');
-                    
-                    // Find and apply the markup to the text
                     const textContent = psalmText.textContent || psalmText.innerText;
-                    if (textContent.includes(markupData.text)) {
-                        applyMarkup(markupData);
-                        console.log('Successfully applied markup');
+                    if (textContent.includes(text)) {
+                        applyMultipleMarkupsToText(text, textMarkups);
+                        console.log(`Successfully applied ${textMarkups.length} markup(s)`);
                     } else {
                         console.log('Text not found in current psalm content');
                     }
@@ -774,9 +778,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Apply a markup to the psalm text
-    function applyMarkup(markupData) {
-        const textToFind = markupData.text;
+    // Apply multiple markups to the same text
+    function applyMultipleMarkupsToText(textToFind, markupsArray) {
         const walker = document.createTreeWalker(
             psalmText,
             NodeFilter.SHOW_TEXT,
@@ -797,52 +800,80 @@ document.addEventListener('DOMContentLoaded', function() {
                     range.setStart(node, index);
                     range.setEnd(node, index + textToFind.length);
                     
-                    const span = document.createElement('span');
-                    span.dataset.markupId = `markup-${Date.now()}-${appliedCount}`;
+                    // Create wrapper span for multiple markups
+                    const wrapperSpan = document.createElement('span');
+                    wrapperSpan.dataset.markupGroup = `group-${Date.now()}`;
                     
-                    if (markupData.markup_type === 'highlight') {
-                        span.style.backgroundColor = markupData.color || 'yellow';
-                        span.style.padding = '1px 2px';
-                        span.style.borderRadius = '2px';
-                        span.dataset.highlightColor = markupData.color || 'yellow';
-                        span.classList.add('highlight-marker');
-                    } else if (markupData.markup_type === 'note') {
-                        span.style.textDecoration = 'underline dotted';
-                        span.style.textDecorationColor = '#007bff';
-                        span.style.cursor = 'help';
-                        span.title = markupData.note_text || '';
-                        span.classList.add('note-marker');
-                        span.dataset.noteText = markupData.note_text || '';
+                    // Collect all markup styles
+                    let hasHighlight = false;
+                    let highlightColor = 'yellow';
+                    const notes = [];
+                    
+                    markupsArray.forEach((markupData, idx) => {
+                        if (markupData.markup_type === 'highlight') {
+                            hasHighlight = true;
+                            highlightColor = markupData.color || 'yellow';
+                        } else if (markupData.markup_type === 'note') {
+                            notes.push(markupData);
+                        }
+                    });
+                    
+                    // Apply highlight if present
+                    if (hasHighlight) {
+                        wrapperSpan.style.backgroundColor = highlightColor;
+                        wrapperSpan.style.padding = '1px 2px';
+                        wrapperSpan.style.borderRadius = '2px';
+                        wrapperSpan.dataset.highlightColor = highlightColor;
+                        wrapperSpan.classList.add('highlight-marker');
+                    }
+                    
+                    // Apply notes if present
+                    if (notes.length > 0) {
+                        // Combine all note texts
+                        const combinedNotes = notes.map((note, idx) => 
+                            `Note ${idx + 1}: ${note.note_text || 'No text'}`
+                        ).join('\n\n');
                         
-                        // Add click handler for editing notes
-                        span.addEventListener('click', function(e) {
+                        wrapperSpan.style.textDecoration = hasHighlight ? 'underline dotted' : 'underline dotted';
+                        wrapperSpan.style.textDecorationColor = '#007bff';
+                        wrapperSpan.style.cursor = 'help';
+                        wrapperSpan.title = combinedNotes;
+                        wrapperSpan.classList.add('note-marker');
+                        wrapperSpan.dataset.noteText = combinedNotes;
+                        wrapperSpan.dataset.noteCount = notes.length;
+                        
+                        // Add visual indicator for multiple notes
+                        if (notes.length > 1) {
+                            wrapperSpan.style.borderLeft = '3px solid #007bff';
+                        }
+                        
+                        // Add click handler for editing (will edit the first note)
+                        wrapperSpan.addEventListener('click', function(e) {
                             e.preventDefault();
                             editNote(this);
                         });
                         
                         // Initialize tooltip
-                        new bootstrap.Tooltip(span, {
-                            title: markupData.note_text || 'Click to edit note',
-                            placement: 'top'
+                        new bootstrap.Tooltip(wrapperSpan, {
+                            title: combinedNotes,
+                            placement: 'top',
+                            html: true
                         });
                     }
                     
-                    // Attempt to apply the markup
-                    range.surroundContents(span);
+                    // Apply the wrapper span
+                    range.surroundContents(wrapperSpan);
                     appliedCount++;
                     break; // Successfully applied, stop searching
                     
                 } catch (error) {
-                    console.warn('Could not apply markup to text:', textToFind, 'at position', index, error);
-                    // Continue searching for other occurrences
+                    console.warn('Could not apply markups to text:', textToFind, 'at position', index, error);
                 }
             }
         }
         
         if (appliedCount === 0) {
-            console.log('Could not find or apply markup for text:', textToFind.substring(0, 50) + '...');
-        } else {
-            console.log(`Applied ${appliedCount} markup(s) for text:`, textToFind.substring(0, 30) + '...');
+            console.log('Could not find or apply markups for text:', textToFind.substring(0, 50) + '...');
         }
     }
 
