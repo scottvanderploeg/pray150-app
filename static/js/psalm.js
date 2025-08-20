@@ -450,8 +450,30 @@ document.addEventListener('DOMContentLoaded', function() {
         if (deleteBtn) deleteBtn.style.display = 'none';
         if (editHelp) editHelp.style.display = 'none';
         
-        // Show modal
-        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        // Show modal with proper cleanup for new notes  
+        const noteModalElement = document.getElementById('noteModal');
+        
+        // Clean up any existing modal instances
+        const existingModal = bootstrap.Modal.getInstance(noteModalElement);
+        if (existingModal) {
+            existingModal.dispose();
+        }
+        
+        // Remove any leftover backdrop elements
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+        });
+        
+        // Reset body classes
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        // Create fresh modal instance
+        const noteModal = new bootstrap.Modal(noteModalElement, {
+            backdrop: true,
+            keyboard: true
+        });
         noteModal.show();
     }
     
@@ -659,8 +681,30 @@ document.addEventListener('DOMContentLoaded', function() {
         saveNoteBtn.tempNoteElement = noteElement;
         saveNoteBtn.tempSelectedText = selectedText;
         
-        // Show modal
-        const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+        // Show modal with proper cleanup for editing existing notes
+        const noteModalElement = document.getElementById('noteModal');
+        
+        // Clean up any existing modal instances
+        const existingModal = bootstrap.Modal.getInstance(noteModalElement);
+        if (existingModal) {
+            existingModal.dispose();
+        }
+        
+        // Remove any leftover backdrop elements
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+        });
+        
+        // Reset body classes
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        
+        // Create fresh modal instance
+        const noteModal = new bootstrap.Modal(noteModalElement, {
+            backdrop: true,
+            keyboard: true
+        });
         noteModal.show();
     }
 
