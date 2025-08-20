@@ -17,6 +17,9 @@ def admin_required(f):
         if not hasattr(current_user, 'is_admin') or not current_user.is_admin:
             # For now, check if user email is in admin list
             admin_emails = os.environ.get('ADMIN_EMAILS', '').split(',')
+            admin_emails = [email.strip() for email in admin_emails]  # Remove whitespace
+            print(f"DEBUG: Admin emails: {admin_emails}")
+            print(f"DEBUG: Current user email: {current_user.email}")
             if current_user.email not in admin_emails:
                 flash('Access denied. Admin privileges required.', 'error')
                 return redirect(url_for('main.dashboard'))
@@ -36,16 +39,16 @@ def dashboard():
         month_ago = now - timedelta(days=30)
         year_ago = now - timedelta(days=365)
         
-        # User statistics
-        users_total = supabase.table('users').select('id').execute()
-        users_week = supabase.table('users').select('id').gte('created_at', week_ago.isoformat()).execute()
-        users_month = supabase.table('users').select('id').gte('created_at', month_ago.isoformat()).execute()
+        # User statistics (use user_profiles table instead of users)
+        users_total = supabase.table('user_profiles').select('id').execute()
+        users_week = supabase.table('user_profiles').select('id').gte('created_at', week_ago.isoformat()).execute()
+        users_month = supabase.table('user_profiles').select('id').gte('created_at', month_ago.isoformat()).execute()
         
-        # Prayer statistics
-        prayers_total = supabase.table('prayers').select('id').execute()
-        prayers_week = supabase.table('prayers').select('id').gte('created_at', week_ago.isoformat()).execute()
-        prayers_month = supabase.table('prayers').select('id').gte('created_at', month_ago.isoformat()).execute()
-        prayers_answered = supabase.table('prayers').select('id').eq('is_answered', True).execute()
+        # Prayer statistics (use prayer_lists table)
+        prayers_total = supabase.table('prayer_lists').select('id').execute()
+        prayers_week = supabase.table('prayer_lists').select('id').gte('created_at', week_ago.isoformat()).execute()
+        prayers_month = supabase.table('prayer_lists').select('id').gte('created_at', month_ago.isoformat()).execute()
+        prayers_answered = supabase.table('prayer_lists').select('id').eq('answered', True).execute()
         
         # Journal entries statistics
         journal_total = supabase.table('journal_entries').select('id').execute()

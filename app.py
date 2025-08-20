@@ -48,10 +48,12 @@ def load_user(user_id):
 from auth import auth_bp
 from auth_api import auth_api_bp
 from routes import main_bp
+from admin import admin_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(auth_api_bp)
 app.register_blueprint(main_bp)
+app.register_blueprint(admin_bp)
 
 # Initialize database tables and verify connection
 from database import initialize_database, verify_all_tables
