@@ -341,14 +341,19 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleMarkupsBtn.addEventListener('click', function() {
             markupsVisible = !markupsVisible;
             
-            const highlights = psalmText.querySelectorAll('.highlight, .note-marker');
+            // Target all markup elements including the new classes
+            const highlights = psalmText.querySelectorAll('.highlight, .note-marker, .highlight-marker');
+            console.log('Found', highlights.length, 'markup elements to toggle');
+            
             highlights.forEach(element => {
                 if (markupsVisible) {
                     // Show markups with their styling
                     element.style.display = 'inline';
-                    if (element.classList.contains('highlight')) {
+                    if (element.classList.contains('highlight') || element.classList.contains('highlight-marker')) {
                         const savedColor = element.dataset.highlightColor || 'yellow';
                         element.style.backgroundColor = savedColor;
+                        element.style.padding = '1px 2px';
+                        element.style.borderRadius = '2px';
                         element.style.border = 'none';
                         element.style.textDecoration = 'none';
                     }
@@ -358,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         element.style.textDecorationColor = '#007bff';
                         element.style.cursor = 'help';
                         element.style.border = 'none';
+                        element.style.padding = '';
                     }
                 } else {
                     // Hide markup styling completely but keep the text visible
@@ -366,6 +372,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     element.style.textDecoration = 'none';
                     element.style.cursor = 'default';
                     element.style.border = 'none';
+                    element.style.padding = '';
+                    element.style.borderRadius = '';
                     element.style.textDecorationColor = 'transparent';
                     // Hide tooltips when markups are hidden
                     if (element.hasAttribute('data-bs-toggle')) {
@@ -781,10 +789,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         while (node = walker.nextNode()) {
             const text = node.textContent;
-            let index = text.indexOf(textToFind);
+            const index = text.indexOf(textToFind);
             
-            // Handle multiple occurrences of the same text
-            while (index !== -1 && appliedCount < 3) { // Limit to prevent infinite loops
+            if (index !== -1) {
                 try {
                     const range = document.createRange();
                     range.setStart(node, index);
@@ -823,24 +830,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Attempt to apply the markup
                     range.surroundContents(span);
                     appliedCount++;
-                    
-                    // Update node reference and search position for next occurrence
-                    node = span.nextSibling;
-                    if (node && node.nodeType === Node.TEXT_NODE) {
-                        index = node.textContent.indexOf(textToFind);
-                    } else {
-                        break;
-                    }
+                    break; // Successfully applied, stop searching
                     
                 } catch (error) {
                     console.warn('Could not apply markup to text:', textToFind, 'at position', index, error);
-                    // Try to find next occurrence
-                    index = text.indexOf(textToFind, index + 1);
+                    // Continue searching for other occurrences
                 }
-            }
-            
-            if (appliedCount > 0) {
-                break; // Found and applied markups, move to next text
             }
         }
         
