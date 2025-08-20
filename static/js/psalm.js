@@ -672,48 +672,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Load existing markups on page load
+    // Load existing markups via AJAX to avoid HTML attribute truncation
     function loadExistingMarkups() {
-        const markupsData = psalmText.getAttribute('data-markups');
-        console.log('Raw markups data length:', markupsData ? markupsData.length : 'null');
-        
-        if (!markupsData || markupsData === '[]' || markupsData.length === 0) {
-            console.log('No markups to load');
+        const psalmId = psalmText.getAttribute('data-psalm-id');
+        if (!psalmId) {
+            console.log('No psalm ID found');
             return;
         }
         
-        try {
-            // The data might be large, so let's be more careful with parsing
-            const markups = JSON.parse(markupsData);
-            console.log('Successfully parsed', markups.length, 'markups');
-            
-            markups.forEach((markup, index) => {
-                console.log(`Processing markup ${index + 1}/${markups.length}`);
-                
-                // The database uses 'markup-data' column (with hyphen)
-                const data = markup['markup-data'] || markup.markup_data;
-                if (!data) {
-                    console.log('No markup data found for markup', index);
+        console.log('Loading markups via AJAX for psalm', psalmId);
+        
+        fetch(`/get_markups/${psalmId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('Error loading markups:', data.error);
                     return;
                 }
                 
-                console.log('Applying markup:', data.markup_type, 'for text:', data.text.substring(0, 30) + '...');
+                const markups = data.markups || [];
+                console.log('Successfully loaded', markups.length, 'markups via AJAX');
                 
-                // Find and apply the markup to the text
-                const textContent = psalmText.textContent || psalmText.innerText;
-                if (textContent.includes(data.text)) {
-                    applyMarkup(data);
-                    console.log('Successfully applied markup');
-                } else {
-                    console.log('Text not found in current psalm content');
-                }
+                markups.forEach((markup, index) => {
+                    console.log(`Processing markup ${index + 1}/${markups.length}`);
+                    
+                    // The database uses 'markup-data' column (with hyphen)
+                    const markupData = markup['markup-data'] || markup.markup_data;
+                    if (!markupData) {
+                        console.log('No markup data found for markup', index);
+                        return;
+                    }
+                    
+                    console.log('Applying markup:', markupData.markup_type, 'for text:', markupData.text.substring(0, 30) + '...');
+                    
+                    // Find and apply the markup to the text
+                    const textContent = psalmText.textContent || psalmText.innerText;
+                    if (textContent.includes(markupData.text)) {
+                        applyMarkup(markupData);
+                        console.log('Successfully applied markup');
+                    } else {
+                        console.log('Text not found in current psalm content');
+                    }
+                });
+                
+                console.log('Finished loading all markups');
+            })
+            .catch(error => {
+                console.error('Failed to load markups:', error);
             });
-            
-            console.log('Finished loading all markups');
-        } catch (error) {
-            console.error('JSON parsing error:', error);
-            console.log('First 200 chars of data:', markupsData ? markupsData.substring(0, 200) : 'null');
-        }
     }
     
     // Apply a markup to the psalm text

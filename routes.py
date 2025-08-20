@@ -704,6 +704,22 @@ def save_markup():
         print(f"Error saving markup: {e}")
         return jsonify({'error': 'Failed to save markup'}), 500
 
+@main_bp.route('/get_markups/<int:psalm_id>')
+@login_required
+def get_markups(psalm_id):
+    """AJAX endpoint to fetch markups for a specific psalm"""
+    try:
+        supabase = get_supabase_client()
+        response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_id).execute()
+        markups = response.data if response.data else []
+        
+        print(f"AJAX: Fetched {len(markups)} markups for psalm {psalm_id}")
+        return jsonify({'markups': markups})
+        
+    except Exception as e:
+        print(f"Error fetching markups via AJAX: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @main_bp.route('/update_preferences', methods=['POST'])
 @login_required
 def update_preferences():
