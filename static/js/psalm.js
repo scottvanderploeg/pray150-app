@@ -733,45 +733,77 @@ document.addEventListener('DOMContentLoaded', function() {
         );
         
         let node;
+        let appliedCount = 0;
+        
         while (node = walker.nextNode()) {
             const text = node.textContent;
-            const index = text.indexOf(textToFind);
+            let index = text.indexOf(textToFind);
             
-            if (index !== -1) {
-                const range = document.createRange();
-                range.setStart(node, index);
-                range.setEnd(node, index + textToFind.length);
-                
-                const span = document.createElement('span');
-                
-                if (markupData.markup_type === 'highlight') {
-                    span.style.backgroundColor = markupData.color || 'yellow';
-                    span.style.padding = '1px 2px';
-                    span.dataset.highlightColor = markupData.color || 'yellow';
-                } else if (markupData.markup_type === 'note') {
-                    span.style.textDecoration = 'underline dotted';
-                    span.style.textDecorationColor = '#007bff';
-                    span.style.cursor = 'help';
-                    span.title = markupData.note_text || '';
-                    span.classList.add('note-marker');
-                    
-                    // Add click handler for editing notes
-                    span.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        editNote(this);
-                    });
-                    
-                    // Initialize tooltip
-                    new bootstrap.Tooltip(span);
-                }
-                
+            // Handle multiple occurrences of the same text
+            while (index !== -1 && appliedCount < 3) { // Limit to prevent infinite loops
                 try {
+                    const range = document.createRange();
+                    range.setStart(node, index);
+                    range.setEnd(node, index + textToFind.length);
+                    
+                    const span = document.createElement('span');
+                    span.dataset.markupId = `markup-${Date.now()}-${appliedCount}`;
+                    
+                    if (markupData.markup_type === 'highlight') {
+                        span.style.backgroundColor = markupData.color || 'yellow';
+                        span.style.padding = '1px 2px';
+                        span.style.borderRadius = '2px';
+                        span.dataset.highlightColor = markupData.color || 'yellow';
+                        span.classList.add('highlight-marker');
+                    } else if (markupData.markup_type === 'note') {
+                        span.style.textDecoration = 'underline dotted';
+                        span.style.textDecorationColor = '#007bff';
+                        span.style.cursor = 'help';
+                        span.title = markupData.note_text || '';
+                        span.classList.add('note-marker');
+                        span.dataset.noteText = markupData.note_text || '';
+                        
+                        // Add click handler for editing notes
+                        span.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            editNote(this);
+                        });
+                        
+                        // Initialize tooltip
+                        new bootstrap.Tooltip(span, {
+                            title: markupData.note_text || 'Click to edit note',
+                            placement: 'top'
+                        });
+                    }
+                    
+                    // Attempt to apply the markup
                     range.surroundContents(span);
-                    break; // Found and applied, stop searching
+                    appliedCount++;
+                    
+                    // Update node reference and search position for next occurrence
+                    node = span.nextSibling;
+                    if (node && node.nodeType === Node.TEXT_NODE) {
+                        index = node.textContent.indexOf(textToFind);
+                    } else {
+                        break;
+                    }
+                    
                 } catch (error) {
-                    console.warn('Could not apply markup to text:', textToFind, error);
+                    console.warn('Could not apply markup to text:', textToFind, 'at position', index, error);
+                    // Try to find next occurrence
+                    index = text.indexOf(textToFind, index + 1);
                 }
             }
+            
+            if (appliedCount > 0) {
+                break; // Found and applied markups, move to next text
+            }
+        }
+        
+        if (appliedCount === 0) {
+            console.log('Could not find or apply markup for text:', textToFind.substring(0, 50) + '...');
+        } else {
+            console.log(`Applied ${appliedCount} markup(s) for text:`, textToFind.substring(0, 30) + '...');
         }
     }
 

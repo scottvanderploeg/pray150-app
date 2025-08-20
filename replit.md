@@ -95,6 +95,8 @@ Preferred communication style: Simple, everyday language.
 - **Current Psalm Logic**: Dashboard shows "Next Psalm" instead of "Today's Psalm" - advances only after completing journal entry for current psalm
 - **Explore Psalms Feature**: Allows out-of-order psalm study with full journal process but doesn't affect sequential progression
 - **Premium Translation Research**: Investigated NIV 2011 integration - determined not available in free API.Bible tier due to copyright restrictions from Biblica Inc.
+- **Complete Markup Persistence System**: Fully functional highlighting and note-taking with database persistence via AJAX loading system to handle large datasets without HTML attribute truncation
+- **Advanced Multiple Markup Support**: Enhanced markup application system supporting multiple highlights and notes on the same verse or text selection with improved conflict resolution
 
 ### Authentication API Endpoints (August 2025)
 - **POST /api/register**: User registration with Supabase Auth (requires email confirmation)
