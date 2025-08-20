@@ -707,14 +707,26 @@ def save_markup():
 @main_bp.route('/get_markups/<int:psalm_id>')
 @login_required
 def get_markups(psalm_id):
-    """AJAX endpoint to fetch markups for a specific psalm"""
+    """AJAX endpoint to fetch markups for a specific psalm and translation"""
     try:
+        translation = request.args.get('translation', 'NIV').upper()
         supabase = get_supabase_client()
         response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_id).execute()
         markups = response.data if response.data else []
         
-        print(f"AJAX: Fetched {len(markups)} markups for psalm {psalm_id}")
-        return jsonify({'markups': markups})
+        # Filter markups by translation since JSONB filtering is complex
+        filtered_markups = []
+        for markup in markups:
+            markup_data = markup.get('markup-data', {})
+            markup_translation = markup_data.get('translation', 'NIV').upper()
+            if markup_translation == translation:
+                filtered_markups.append(markup)
+        
+        print(f"AJAX: Fetched {len(filtered_markups)} markups for psalm {psalm_id} translation {translation} (total: {len(markups)})")
+        return jsonify({
+            'markups': filtered_markups,
+            'translation': translation
+        })
         
     except Exception as e:
         print(f"Error fetching markups via AJAX: {e}")

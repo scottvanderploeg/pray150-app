@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentEmotion = null;
     let currentHighlightColor = 'yellow';
     let pendingNoteSelection = null;
+    let currentTranslation = 'NIV'; // Track current translation for markups
 
     // Translation switching
     if (translationSelect) {
@@ -50,8 +51,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Using Bible API for translation switching');
             }
             
-            // Update user preference (could be saved via AJAX)
+            // Update user preference and current translation tracking
             updateUserPreference('translation', selectedTranslation);
+            currentTranslation = selectedTranslation.toUpperCase();
+            
+            // Clear existing markups when switching translations
+            clearAllMarkups();
+            
+            // Load markups for the new translation after a brief delay
+            setTimeout(() => {
+                loadExistingMarkups();
+            }, 500);
         });
     }
 
@@ -724,6 +734,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Clear all markups from the text
+    function clearAllMarkups() {
+        const allMarkups = psalmText.querySelectorAll('.highlight-marker, .note-marker, .highlight');
+        allMarkups.forEach(markup => {
+            // Replace markup span with just the text content
+            const textNode = document.createTextNode(markup.textContent);
+            markup.parentNode.replaceChild(textNode, markup);
+        });
+        
+        // Merge adjacent text nodes that were split by markups
+        psalmText.normalize();
+        
+        console.log('Cleared all existing markups');
+    }
+
     // Load existing markups via AJAX to avoid HTML attribute truncation
     function loadExistingMarkups() {
         const psalmId = psalmText.getAttribute('data-psalm-id');
@@ -732,9 +757,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        console.log('Loading markups via AJAX for psalm', psalmId);
+        console.log('Loading markups via AJAX for psalm', psalmId, 'translation:', currentTranslation);
         
-        fetch(`/get_markups/${psalmId}`)
+        fetch(`/get_markups/${psalmId}?translation=${currentTranslation}`)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -880,7 +905,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Save markup to server
     function saveMarkup(type, text, color, noteText = null) {
         const psalmId = psalmText.getAttribute('data-psalm-id');
-        const translation = translationSelect ? translationSelect.value : 'NIV';
+        const translation = currentTranslation || (translationSelect ? translationSelect.value : 'NIV');
         
         const markupData = {
             psalm_id: psalmId,
@@ -1039,6 +1064,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // This data could be sent to the server for analytics
     });
 
+    // Initialize translation tracking from the page
+    if (translationSelect && translationSelect.value) {
+        currentTranslation = translationSelect.value.toUpperCase();
+    }
+    
     // Load existing markups after DOM is ready
     setTimeout(loadExistingMarkups, 100);
 });
