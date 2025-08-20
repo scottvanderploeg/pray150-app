@@ -6,8 +6,17 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_login import LoginManager
 from supabase import create_client, Client
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
+# Configure logging - set app-level DEBUG but silence verbose HTTP libraries
+logging.basicConfig(level=logging.INFO)
+
+# Set app logger to DEBUG for your application logs
+app_logger = logging.getLogger(__name__)
+app_logger.setLevel(logging.DEBUG)
+
+# Silence verbose HTTP libraries
+logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger('httpcore').setLevel(logging.WARNING)
+logging.getLogger('hpack').setLevel(logging.WARNING)
 
 # Create the app
 app = Flask(__name__)
