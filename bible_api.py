@@ -6,6 +6,7 @@ Includes psalm superscripts/inscriptions for complete biblical context
 
 import requests
 import logging
+import os
 from typing import List, Dict, Optional
 from functools import lru_cache
 import time
@@ -27,7 +28,7 @@ class BibleAPI:
     AVAILABLE_TRANSLATIONS = {
         'ESV': 'English Standard Version',
         'NIV': 'New International Version (1984)', 
-        # 'NIV2011': 'New International Version (2011)',  # Not available in free API.Bible tier
+        'NIV2011': 'New International Version (2011)',  # Available via RapidAPI subscription
         'NLT': 'New Living Translation',
         'KJV': 'King James Version',
         'ASV': 'American Standard-ASV1901',
@@ -75,6 +76,10 @@ class BibleAPI:
         # Check if this is a Hebrew or Greek translation
         if translation in ['WLC', 'LXX']:
             return self._get_original_language_psalm(translation, psalm_number)
+        
+        # Check if this is NIV 2011 (requires RapidAPI)
+        if translation == 'NIV2011':
+            return self._get_rapidapi_niv_psalm(psalm_number)
         
         # Check if this is a translation that requires API.Bible access
         if translation in ['CSB', 'NASB']:
@@ -168,6 +173,93 @@ class BibleAPI:
             return None
         except Exception as e:
             logger.error(f"Error fetching Psalm {psalm_number} ({translation}) from API.Bible: {e}")
+            return None
+    
+    def _get_rapidapi_niv_psalm(self, psalm_number: int) -> Optional[Dict]:
+        """
+        Get psalm from RapidAPI NIV 2011 service
+        
+        Args:
+            psalm_number: Psalm number (1-150)
+            
+        Returns:
+            Psalm data or None if not available
+        """
+        try:
+            rapidapi_key = os.environ.get('RAPIDAPI_NIV_KEY')
+            if not rapidapi_key:
+                logger.error("RAPIDAPI_NIV_KEY not found in environment variables")
+                return None
+            
+            # RapidAPI NIV 2011 endpoint
+            url = "https://niv-bible.p.rapidapi.com/row"
+            headers = {
+                'x-rapidapi-host': 'niv-bible.p.rapidapi.com',
+                'x-rapidapi-key': rapidapi_key
+            }
+            
+            # Get the entire psalm chapter
+            # The API requires individual verse requests, so we'll fetch all verses for the psalm
+            verses = []
+            verse_number = 1
+            max_verses = 200  # Safety limit
+            
+            while verse_number <= max_verses:
+                params = {
+                    'Book': 'Psalms',
+                    'Chapter': str(psalm_number),
+                    'Verse': str(verse_number)
+                }
+                
+                response = self.session.get(url, params=params, headers=headers, timeout=self.TIMEOUT)
+                
+                if response.status_code == 404:
+                    # No more verses in this psalm
+                    break
+                elif response.status_code != 200:
+                    logger.error(f"RapidAPI error {response.status_code} for Psalm {psalm_number}:{verse_number}")
+                    break
+                
+                try:
+                    data = response.json()
+                    if data and 'verse' in data:
+                        verses.append({
+                            'verse_number': verse_number,
+                            'text': data['verse'].strip(),
+                            'verse_id': f"{psalm_number}:{verse_number}"
+                        })
+                        verse_number += 1
+                    else:
+                        break
+                except (ValueError, KeyError):
+                    break
+            
+            if not verses:
+                logger.warning(f"No verses found for Psalm {psalm_number} in NIV 2011")
+                return None
+            
+            # Format the response
+            psalm_data = {
+                'psalm_number': psalm_number,
+                'translation': 'NIV2011',
+                'translation_name': 'New International Version (2011)',
+                'verse_count': len(verses),
+                'verses': verses,
+                'superscript': get_psalm_superscript(psalm_number),
+                'source': 'rapidapi-niv'
+            }
+            
+            logger.info(f"Successfully fetched Psalm {psalm_number} (NIV 2011) with {len(verses)} verses from RapidAPI")
+            return psalm_data
+            
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout fetching Psalm {psalm_number} (NIV 2011) from RapidAPI")
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error fetching Psalm {psalm_number} (NIV 2011) from RapidAPI: {e}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error fetching Psalm {psalm_number} (NIV 2011) from RapidAPI: {e}")
             return None
     
     def _get_original_language_psalm(self, translation: str, psalm_number: int) -> Optional[Dict]:
@@ -283,7 +375,7 @@ class BibleAPI:
                     psalm_results.append({
                         'psalm_number': getattr(result, 'chapterId', result.get('chapterId')) if hasattr(result, 'chapterId') else result.get('chapterId'),
                         'verse_number': getattr(result, 'verseId', result.get('verseId')) if hasattr(result, 'verseId') else result.get('verseId'),
-                        'text': (getattr(result, 'verse', result.get('verse')) if hasattr(result, 'verse') else result.get('verse', '')).strip(),
+                        'text': ((getattr(result, 'verse', result.get('verse')) if hasattr(result, 'verse') else result.get('verse', '')) or '').strip(),
                         'verse_id': getattr(result, 'id', result.get('id')) if hasattr(result, 'id') else result.get('id')
                     })
             
