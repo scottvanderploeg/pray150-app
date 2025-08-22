@@ -289,13 +289,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Update play/pause button
                     if (event.data === YT.PlayerState.PLAYING) {
                         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                        // Start checking time to advance before endcards
-                        if (autoplay) {
-                            startTimeChecker();
-                        }
                     } else if (event.data === YT.PlayerState.PAUSED) {
                         playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
-                        stopTimeChecker();
                     }
                 }
             }
@@ -316,40 +311,10 @@ document.addEventListener('DOMContentLoaded', function() {
         document.head.appendChild(script);
     }
 
-    // Time checker to advance before endcards
-    let timeCheckInterval = null;
-    
-    function startTimeChecker() {
-        stopTimeChecker(); // Clear any existing interval
-        
-        timeCheckInterval = setInterval(() => {
-            if (ytPlayer && playerReady && autoplay) {
-                const currentTime = ytPlayer.getCurrentTime();
-                const duration = ytPlayer.getDuration();
-                
-                // Advance when 15 seconds remain to avoid endcards
-                if (duration - currentTime <= 15) {
-                    console.log('Advancing before endcards appear');
-                    stopTimeChecker();
-                    if (currentIndex < psalmsWithMusic.length - 1) {
-                        navigateToPsalm(currentIndex + 1);
-                    }
-                }
-            }
-        }, 1000); // Check every second
-    }
-    
-    function stopTimeChecker() {
-        if (timeCheckInterval) {
-            clearInterval(timeCheckInterval);
-            timeCheckInterval = null;
-        }
-    }
 
     // Navigate to specific psalm
     function navigateToPsalm(index) {
         if (index >= 0 && index < psalmsWithMusic.length) {
-            stopTimeChecker(); // Stop any running time checker
             currentIndex = index;
             loadCurrentPsalm();
         }
