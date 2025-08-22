@@ -8,9 +8,6 @@
 # 4. Add it to the dictionary below with the psalm number as the key
 
 PSALM_MUSIC_VIDEOS = {
-    # Example format:
-    # 1: 'VIDEO_ID_HERE',  # "Song Title" by Artist
-    
     # Psalms 1-10
     1: 'Gxj7B-cyOXo',   # Psalm 1 - "Blessed is the man"
     2: '7HAQnp-DDek',   # Psalm 2
@@ -54,93 +51,106 @@ PSALM_MUSIC_VIDEOS = {
     34: '5gpZn3TvQT8',  # Psalm 34
     35: 'NUNI31w_nwM',  # Psalm 35
     36: '_1eyD3g6Yzw',  # Psalm 36
-    37: 'GsQkccU3nAA',  # Psalm 37
-    38: 'UKuQW5euQRI',  # Psalm 38
-    39: 'XBsSPsFW6eU',  # Psalm 39
-    40: 'bZGGXlWKi4Q',  # Psalm 40
+    37: 'GsQkccU3nAA',  # Psalm 37 (primary version)
+    38: 'bZGGXlWKi4Q',  # Psalm 38
+    39: 'Mc_FeVuk4tk',  # Psalm 39
+    40: '0FJCEMfWgT8',  # Psalm 40
     
     # Psalms 41-50
-    41: 'Mc_FeVuk4tk',  # Psalm 41
-    42: '0FJCEMfWgT8',  # Psalm 42
-    43: 'GM1KuG8NRZI',  # Psalm 43
-    44: 'Ektwwe2kt8Q',  # Psalm 44
-    45: 'Tyzh8ol-y_U',  # Psalm 45
-    46: 'RqHlmr4Z9Ok',  # Psalm 46
-    47: 'c_aJP6_KQ8o',  # Psalm 47
-    48: 'MhF2Iak54eo',  # Psalm 48
-    49: 'ZHJqqExWHJ4',  # Psalm 49
-    50: '-oV0etTr7go',  # Psalm 50
+    41: 'GM1KuG8NRZI',  # Psalm 41
+    42: 'Ektwwe2kt8Q',  # Psalm 42
+    43: 'Tyzh8ol-y_U',  # Psalm 43
+    44: 'RqHlmr4Z9Ok',  # Psalm 44
+    45: 'c_aJP6_KQ8o',  # Psalm 45
+    46: 'MhF2Iak54eo',  # Psalm 46
+    47: 'ZHJqqExWHJ4',  # Psalm 47
+    48: '-oV0etTr7go',  # Psalm 48
+    49: 'BvNGZDntmpQ',  # Psalm 49
+    50: 'tXYaas4I1I4',  # Psalm 50
     
     # Psalms 51-60
-    51: '',  # Psalm 51
-    52: '',  # Psalm 52
-    53: '',  # Psalm 53
-    54: '',  # Psalm 54
-    55: '',  # Psalm 55
-    56: '',  # Psalm 56
-    57: '',  # Psalm 57
-    58: '',  # Psalm 58
-    59: '',  # Psalm 59
-    60: '',  # Psalm 60
+    51: 'B7UgeQo0UNQ',  # Psalm 51
+    52: 'byDv5VdtZzo',  # Psalm 52
+    53: 'rhFCHcJl3HY',  # Psalm 53
+    54: 'Ny6xh1KiAbA',  # Psalm 54
+    55: '1E8EX4nwdWg',  # Psalm 55
+    56: 'yj-R2zoj8Rw',  # Psalm 56
+    57: 'Ik3EpynzZ3M',  # Psalm 57
+    58: 'a_bQanD429Q',  # Psalm 58
+    59: 'eTbQC1Nu4n8',  # Psalm 59
+    60: 'co1DgkELhwM',  # Psalm 60
     
     # Psalms 61-70
-    61: '',  # Psalm 61
-    62: '',  # Psalm 62
-    63: '',  # Psalm 63
-    64: '',  # Psalm 64
-    65: '',  # Psalm 65
-    66: '',  # Psalm 66
-    67: '',  # Psalm 67
-    68: '',  # Psalm 68
-    69: '',  # Psalm 69
-    70: '',  # Psalm 70
+    61: 'T437zj8mFYM',  # Psalm 61
+    62: '0VbdI1ggCl0',  # Psalm 62
+    63: 'b4DV7_m48DQ',  # Psalm 63
+    64: 'TZTjYlu_B5s',  # Psalm 64
+    65: 'ipTaHkDZaHE',  # Psalm 65
+    66: '8X2OKVxXQ8M',  # Psalm 66
+    67: 'iFU3cak-G84',  # Psalm 67
+    68: '1gHN6hQblNM',  # Psalm 68
+    69: 'XsiQvYYgHCU',  # Psalm 69
+    70: 'aJjp4muyeZc',  # Psalm 70
     
     # Psalms 71-80
-    71: '',  # Psalm 71
-    72: '',  # Psalm 72
-    73: '',  # Psalm 73
-    74: '',  # Psalm 74
-    75: '',  # Psalm 75
-    76: '',  # Psalm 76
-    77: '',  # Psalm 77
-    78: '',  # Psalm 78
-    79: '',  # Psalm 79
-    80: '',  # Psalm 80
+    71: 'CK6UnKqBBAA',  # Psalm 71
+    72: 'XZFxcFW6T-s',  # Psalm 72
+    73: 'kgPJxAdItAE',  # Psalm 73
+    74: 'Tk3Z5iwuGsQ',  # Psalm 74
+    75: 'FKF91YoiUps',  # Psalm 75
+    76: 'CK90t0uRuvE',  # Psalm 76
+    77: 'gOCSSrlYjLU',  # Psalm 77
+    78: 'qLwiZNqfWg8',  # Psalm 78
+    79: 'Q0a9Mv8IWxg',  # Psalm 79
+    80: 'lhAF2bBYcfg',  # Psalm 80
     
     # Psalms 81-90
-    81: '',  # Psalm 81
-    82: '',  # Psalm 82
-    83: '',  # Psalm 83
-    84: '',  # Psalm 84
-    85: '',  # Psalm 85
-    86: '',  # Psalm 86
-    87: '',  # Psalm 87
-    88: '',  # Psalm 88
-    89: '',  # Psalm 89
-    90: '',  # Psalm 90
+    81: 'Utlab2n496o',  # Psalm 81
+    82: 'NVUz30t6xYU',  # Psalm 82
+    83: 'XzjVUGK91-E',  # Psalm 83
+    84: 'VvRYA4C7JNo',  # Psalm 84
+    85: 'hzWMQLPY1w0',  # Psalm 85
+    86: '_UdeYTesiRY',  # Psalm 86
+    87: 'eE44i65l7Ac',  # Psalm 87
+    88: '4siemyqslx4',  # Psalm 88
+    89: 'WvCNJ5rIZd4',  # Psalm 89
+    90: 'Qn9z_0Cq3VU',  # Psalm 90
     
     # Psalms 91-100
-    91: '',  # Psalm 91
-    92: '',  # Psalm 92
-    93: '',  # Psalm 93
-    94: '',  # Psalm 94
-    95: '',  # Psalm 95
-    96: '',  # Psalm 96
-    97: '',  # Psalm 97
-    98: '',  # Psalm 98
-    99: '',  # Psalm 99
-    100: '', # Psalm 100
+    91: '0yJtc6axEJk',  # Psalm 91
+    92: 'OdqiIRKXDbI',  # Psalm 92
+    93: 'LGdlVekjuPI',  # Psalm 93
+    94: 'EcZOI_bfe2c',  # Psalm 94
+    95: 'fsVbAbb_6aQ',  # Psalm 95
+    96: 'ViqH5SB7Hrc',  # Psalm 96
+    97: 'YNC4Rhq-jwU',  # Psalm 97
+    98: 'K97r0Tp8Kk8',  # Psalm 98
+    99: '5xrzR6EvtFI',  # Psalm 99
+    100: 'emcVpiXi2uk', # Psalm 100
     
-    # Psalms 101-103
-    101: '', # Psalm 101
-    102: '', # Psalm 102
-    103: '', # Psalm 103
+    # Psalms 101-110
+    101: 'duIPQ_oxfQE', # Psalm 101
+    102: 'KivclalhaGo', # Psalm 102
+    103: 'nEMjCi36F2c', # Psalm 103
+    104: 'wjeiZL_bUEA', # Psalm 104
+    105: 'SYKOUvDw8mo', # Psalm 105
+    106: 'IPUsgG6FgDk', # Psalm 106
+    107: 'sbS1Zk4_WFQ', # Psalm 107
+    108: 'X2UpbhuoKoU', # Psalm 108
+    109: 'NiJ5K-921eE', # Psalm 109
+    110: 'Y-tBTmI5KVE', # Psalm 110
+    
+    # Psalms 111-114
+    111: 'T730XuMHsbA', # Psalm 111
+    112: 'veFOJeG_-3w', # Psalm 112
+    113: 'wEn6cQSOGbk', # Psalm 113
+    114: 'FkiCrBOjvts', # Psalm 114
 }
 
 # Multiple videos for the same psalm (if you have more than one song for a psalm)
 PSALM_ALTERNATE_VIDEOS = {
-    # Example:
-    # 23: ['VIDEO_ID_1', 'VIDEO_ID_2'],  # Multiple versions of Psalm 23
+    # Psalm 37 has three versions in your playlist
+    37: ['UKuQW5euQRI', 'XBsSPsFW6eU'],  # Psalm 37b and 37c
 }
 
 def get_psalm_video_id(psalm_number):
@@ -156,3 +166,24 @@ def has_psalm_music(psalm_number):
     primary = get_psalm_video_id(psalm_number)
     alternates = get_psalm_alternate_videos(psalm_number)
     return bool(primary) or bool(alternates)
+
+def get_all_psalm_videos(psalm_number):
+    """Get all video IDs for a psalm (primary + alternates)"""
+    videos = []
+    primary = get_psalm_video_id(psalm_number)
+    if primary:
+        videos.append(primary)
+    videos.extend(get_psalm_alternate_videos(psalm_number))
+    return videos
+
+def get_psalms_with_music():
+    """Get list of all psalm numbers that have music"""
+    psalms_with_music = []
+    for psalm_num in range(1, 151):  # Check all 150 psalms
+        if has_psalm_music(psalm_num):
+            psalms_with_music.append(psalm_num)
+    return psalms_with_music
+
+def get_total_psalm_count_with_music():
+    """Get total count of psalms with music"""
+    return len(get_psalms_with_music())
