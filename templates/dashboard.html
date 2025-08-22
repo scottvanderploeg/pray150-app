@@ -339,12 +339,25 @@ function navigateToPsalm() {
     }
 }
 
+// Store chart instances to prevent multiple creation
+let weekChart = null;
+let monthChart = null;
+
 // Function to create emotion line chart
 function createEmotionChart(canvasId, data, title) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) {
         console.log(`Canvas ${canvasId} not found`);
         return;
+    }
+    
+    // Destroy existing chart if it exists
+    if (canvasId === 'weekChart' && weekChart) {
+        weekChart.destroy();
+        weekChart = null;
+    } else if (canvasId === 'monthChart' && monthChart) {
+        monthChart.destroy();
+        monthChart = null;
     }
     
     console.log(`Creating chart for ${canvasId} with data:`, data);
@@ -368,31 +381,26 @@ function createEmotionChart(canvasId, data, title) {
             data: data.map(item => item.value),
             borderColor: '#E93C02',
             backgroundColor: 'rgba(233, 60, 2, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.3,
             pointBackgroundColor: '#E93C02',
             pointBorderColor: '#ffffff',
             pointBorderWidth: 2,
-            pointRadius: 6,
-            pointHoverRadius: 8
+            pointRadius: 4,
+            pointHoverRadius: 6
         }]
     };
     
     try {
-        new Chart(ctx, {
+        const chartInstance = new Chart(ctx, {
             type: 'line',
             data: chartData,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: {
-                        top: 10,
-                        right: 10,
-                        bottom: 40,
-                        left: 40
-                    }
+                    padding: 20
                 },
                 plugins: {
                     legend: {
@@ -415,10 +423,9 @@ function createEmotionChart(canvasId, data, title) {
                         ticks: {
                             stepSize: 1,
                             font: {
-                                size: 10
+                                size: 12
                             },
                             callback: function(value) {
-                                // Just show numbers instead of emotion text to avoid overlap
                                 return Math.round(value);
                             }
                         },
@@ -429,23 +436,25 @@ function createEmotionChart(canvasId, data, title) {
                     x: {
                         ticks: {
                             font: {
-                                size: 10
+                                size: 12
                             },
-                            maxRotation: 0,
-                            minRotation: 0
+                            maxRotation: 0
                         },
                         grid: {
                             color: 'rgba(0,0,0,0.1)'
                         }
                     }
-                },
-                elements: {
-                    point: {
-                        hoverBackgroundColor: '#E93C02'
-                    }
                 }
             }
         });
+        
+        // Store the chart instance
+        if (canvasId === 'weekChart') {
+            weekChart = chartInstance;
+        } else if (canvasId === 'monthChart') {
+            monthChart = chartInstance;
+        }
+        
         console.log(`Successfully created chart for ${canvasId}`);
     } catch (error) {
         console.error(`Error creating chart for ${canvasId}:`, error);
