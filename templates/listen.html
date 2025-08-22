@@ -181,8 +181,21 @@ document.addEventListener('DOMContentLoaded', function() {
         prevBtn.addEventListener('click', () => navigateToPsalm(currentIndex - 1));
         nextBtn.addEventListener('click', () => navigateToPsalm(currentIndex + 1));
         
+        // Play/pause button functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (ytPlayer && playerReady) {
+                const playerState = ytPlayer.getPlayerState();
+                if (playerState === YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                } else if (playerState === YT.PlayerState.PAUSED || playerState === YT.PlayerState.CUED) {
+                    ytPlayer.playVideo();
+                }
+            }
+        });
+        
         autoplayToggle.addEventListener('change', (e) => {
             autoplay = e.target.checked;
+            console.log('Auto-advance toggled:', autoplay);
         });
 
         psalmSelect.addEventListener('change', (e) => {
@@ -219,32 +232,79 @@ document.addEventListener('DOMContentLoaded', function() {
         currentIndexSpan.textContent = currentIndex + 1;
     }
 
-    // Load YouTube player
+    // Load YouTube player with proper API integration
     function loadYouTubePlayer(videoId) {
         // Clear container
         youtubeContainer.innerHTML = '';
         
-        // Create iframe
-        const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1`;
-        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-        iframe.allowFullscreen = true;
-        iframe.style.width = '100%';
-        iframe.style.height = '100%';
-        iframe.style.border = 'none';
-        iframe.style.borderRadius = '8px';
-        iframe.id = 'youtube-player';
+        // Create player div
+        const playerDiv = document.createElement('div');
+        playerDiv.id = 'youtube-player';
+        playerDiv.style.width = '100%';
+        playerDiv.style.height = '100%';
+        youtubeContainer.appendChild(playerDiv);
         
-        youtubeContainer.appendChild(iframe);
-        
-        // Listen for video end (simplified approach)
-        if (autoplay) {
-            setTimeout(() => {
-                if (autoplay && currentIndex < psalmsWithMusic.length - 1) {
-                    navigateToPsalm(currentIndex + 1);
-                }
-            }, 300000); // 5 minutes - adjust based on average song length
+        // Initialize YouTube player with API
+        if (window.YT && window.YT.Player) {
+            createYouTubePlayer(videoId);
+        } else {
+            // Load YouTube API if not already loaded
+            loadYouTubeAPI(() => createYouTubePlayer(videoId));
         }
+    }
+
+    // Create YouTube player instance
+    function createYouTubePlayer(videoId) {
+        ytPlayer = new YT.Player('youtube-player', {
+            videoId: videoId,
+            playerVars: {
+                autoplay: 1,
+                rel: 0,
+                modestbranding: 1,
+                controls: 1,
+                disablekb: 0,
+                enablejsapi: 1
+            },
+            events: {
+                onReady: function(event) {
+                    playerReady = true;
+                    playPauseBtn.disabled = false;
+                    console.log('YouTube player ready');
+                },
+                onStateChange: function(event) {
+                    // YT.PlayerState.ENDED = 0
+                    if (event.data === YT.PlayerState.ENDED) {
+                        console.log('Video ended, auto-advance:', autoplay);
+                        if (autoplay && currentIndex < psalmsWithMusic.length - 1) {
+                            setTimeout(() => {
+                                navigateToPsalm(currentIndex + 1);
+                            }, 1000); // Small delay before advancing
+                        }
+                    }
+                    
+                    // Update play/pause button
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    } else if (event.data === YT.PlayerState.PAUSED) {
+                        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                }
+            }
+        });
+    }
+
+    // Load YouTube API
+    function loadYouTubeAPI(callback) {
+        if (window.YT) {
+            callback();
+            return;
+        }
+        
+        window.onYouTubeIframeAPIReady = callback;
+        
+        const script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(script);
     }
 
     // Navigate to specific psalm
