@@ -187,6 +187,33 @@
                         </div>
                     </div>
                     
+                    <!-- Emotion Scale with SVG Images -->
+                    <div class="text-center" style="border-top: 2px solid #e9ecef; margin-top: 40px; padding-top: 20px;">
+                        <p class="text-muted mb-3"><strong>Emotion Scale</strong></p>
+                        <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/emoji-terrible.svg') }}" style="width: 30px; height: 30px; margin-right: 8px;" alt="Awful">
+                                <span class="text-muted">1 - Awful</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/emoji-bad.svg') }}" style="width: 30px; height: 30px; margin-right: 8px;" alt="Bad">
+                                <span class="text-muted">2 - Bad</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/emoji-okay.svg') }}" style="width: 30px; height: 30px; margin-right: 8px;" alt="Okay">
+                                <span class="text-muted">3 - Okay</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/emoji-good.svg') }}" style="width: 30px; height: 30px; margin-right: 8px;" alt="Good">
+                                <span class="text-muted">4 - Good</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename='images/emoji-great.svg') }}" style="width: 30px; height: 30px; margin-right: 8px;" alt="Great">
+                                <span class="text-muted">5 - Great</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     {% else %}
                     <div class="text-center py-4">
                         <i class="fas fa-heart fa-3x text-muted mb-3"></i>
@@ -416,14 +443,13 @@ function createEmotionChart(canvasId, data, title) {
                             },
                             callback: function(value) {
                                 const emotions = {
-                                    1: '😭 Awful',
-                                    2: '😢 Bad', 
-                                    3: '😐 Okay',
-                                    4: '🙂 Good',
-                                    5: '😆 Great'
+                                    1: 'Awful',
+                                    2: 'Bad', 
+                                    3: 'Okay',
+                                    4: 'Good',
+                                    5: 'Great'
                                 };
-                                const result = emotions[Math.round(value)] || '';
-                                return result;
+                                return emotions[Math.round(value)] || '';
                             }
                         },
                         grid: {
