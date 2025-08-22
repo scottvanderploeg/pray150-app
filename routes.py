@@ -427,6 +427,42 @@ def api_psalms_with_music():
             'error': str(e)
         }), 500
 
+@main_bp.route('/api/listening-progress', methods=['POST'])
+@login_required
+def save_listening_progress():
+    """Save user's listening progress"""
+    try:
+        data = request.get_json()
+        psalm_number = data.get('psalm_number')
+        position = data.get('position', 0)
+        
+        if not psalm_number or not (1 <= psalm_number <= 150):
+            return jsonify({'success': False, 'error': 'Invalid psalm number'}), 400
+        
+        # Update user's listening progress
+        success = current_user.update_listening_progress(psalm_number, position)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to save progress'}), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@main_bp.route('/api/listening-progress')
+@login_required
+def get_listening_progress():
+    """Get user's listening progress"""
+    try:
+        resume_position = current_user.get_listening_resume_position()
+        return jsonify({
+            'success': True,
+            'data': resume_position
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @main_bp.route('/psalm/<int:psalm_number>')
 @login_required
 def psalm(psalm_number):

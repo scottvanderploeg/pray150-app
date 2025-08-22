@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let autoplay = true;
     let ytPlayer = null;
     let playerReady = false;
+    let progressSaveInterval = null;
 
     // DOM elements
     const currentPsalmTitle = document.getElementById('currentPsalmTitle');
@@ -141,6 +142,85 @@ document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
     }
 
+    // Load saved listening progress from server
+    function loadListeningProgress() {
+        return fetch('/api/listening-progress')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const { psalm_number, position } = data.data;
+                    console.log('Loading saved progress:', psalm_number, position);
+                    
+                    // Find the index for this psalm
+                    const psalmIndex = psalmsWithMusic.findIndex(p => p.psalm_number === psalm_number);
+                    if (psalmIndex !== -1) {
+                        // Check if they were within 15 seconds of the end
+                        // We'll check this when the video loads by comparing position to duration
+                        return {
+                            psalmIndex: psalmIndex,
+                            position: position || 0,
+                            psalmNumber: psalm_number
+                        };
+                    }
+                }
+                return { psalmIndex: 0, position: 0, psalmNumber: 1 };
+            })
+            .catch(error => {
+                console.error('Error loading listening progress:', error);
+                return { psalmIndex: 0, position: 0, psalmNumber: 1 };
+            });
+    }
+
+    // Save listening progress to server
+    function saveListeningProgress(psalmNumber, position) {
+        const data = {
+            psalm_number: psalmNumber,
+            position: Math.floor(position)
+        };
+        
+        fetch('/api/listening-progress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                console.error('Failed to save listening progress:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving listening progress:', error);
+        });
+    }
+
+    // Start saving progress periodically
+    function startProgressTracking() {
+        if (progressSaveInterval) {
+            clearInterval(progressSaveInterval);
+        }
+        
+        progressSaveInterval = setInterval(() => {
+            if (ytPlayer && playerReady && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+                const currentTime = ytPlayer.getCurrentTime();
+                const currentPsalm = psalmsWithMusic[currentIndex];
+                if (currentPsalm) {
+                    saveListeningProgress(currentPsalm.psalm_number, currentTime);
+                }
+            }
+        }, 5000); // Save every 5 seconds
+    }
+
+    // Stop saving progress
+    function stopProgressTracking() {
+        if (progressSaveInterval) {
+            clearInterval(progressSaveInterval);
+            progressSaveInterval = null;
+        }
+    }
+
     // Load list of psalms with music from server
     function loadPsalmsWithMusic() {
         fetch('/api/psalms-with-music')
@@ -150,7 +230,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     psalmsWithMusic = data.psalms;
                     populatePsalmSelect();
                     if (psalmsWithMusic.length > 0) {
-                        loadCurrentPsalm();
+                        // Load saved progress and start from there
+                        loadListeningProgress().then(progressData => {
+                            currentIndex = progressData.psalmIndex;
+                            loadCurrentPsalm(progressData.position);
+                        });
                     } else {
                         showNoMusicMessage();
                     }
@@ -206,12 +290,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load and display current psalm
-    function loadCurrentPsalm() {
+    function loadCurrentPsalm(startPosition = 0) {
         if (!psalmsWithMusic[currentIndex]) return;
 
         const psalm = psalmsWithMusic[currentIndex];
         updateUI(psalm);
-        loadYouTubePlayer(psalm.video_id);
+        loadYouTubePlayer(psalm.video_id, startPosition);
         updateProgress();
     }
 
@@ -233,7 +317,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Load YouTube player with proper API integration
-    function loadYouTubePlayer(videoId) {
+    function loadYouTubePlayer(videoId, startPosition = 0) {
         // Clear container
         youtubeContainer.innerHTML = '';
         
@@ -246,15 +330,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Initialize YouTube player with API
         if (window.YT && window.YT.Player) {
-            createYouTubePlayer(videoId);
+            createYouTubePlayer(videoId, startPosition);
         } else {
             // Load YouTube API if not already loaded
-            loadYouTubeAPI(() => createYouTubePlayer(videoId));
+            loadYouTubeAPI(() => createYouTubePlayer(videoId, startPosition));
         }
     }
 
     // Create YouTube player instance
-    function createYouTubePlayer(videoId) {
+    function createYouTubePlayer(videoId, startPosition = 0) {
         ytPlayer = new YT.Player('youtube-player', {
             videoId: videoId,
             playerVars: {
@@ -274,11 +358,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     playerReady = true;
                     playPauseBtn.disabled = false;
                     console.log('YouTube player ready');
+                    
+                    // Check if we should start from a saved position or advance to next psalm
+                    if (startPosition > 0) {
+                        const duration = event.target.getDuration();
+                        const remainingTime = duration - startPosition;
+                        
+                        // If within 15 seconds of end, advance to next psalm
+                        if (remainingTime <= 15 && currentIndex < psalmsWithMusic.length - 1) {
+                            console.log('Advancing to next psalm (within 15 seconds of end)');
+                            navigateToPsalm(currentIndex + 1);
+                            return;
+                        }
+                        
+                        // Otherwise, start from saved position
+                        console.log('Resuming from position:', startPosition);
+                        event.target.seekTo(startPosition, true);
+                    }
                 },
                 onStateChange: function(event) {
                     // YT.PlayerState.ENDED = 0
                     if (event.data === YT.PlayerState.ENDED) {
                         console.log('Video ended, auto-advance:', autoplay);
+                        stopProgressTracking();
                         if (autoplay && currentIndex < psalmsWithMusic.length - 1) {
                             setTimeout(() => {
                                 navigateToPsalm(currentIndex + 1);
@@ -286,11 +388,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                     
-                    // Update play/pause button
+                    // Start/stop progress tracking based on play state
                     if (event.data === YT.PlayerState.PLAYING) {
                         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    } else if (event.data === YT.PlayerState.PAUSED) {
-                        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                        startProgressTracking();
+                    } else {
+                        if (event.data === YT.PlayerState.PAUSED) {
+                            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+                        }
+                        stopProgressTracking();
                     }
                 }
             }

@@ -9,7 +9,9 @@ import uuid
 class User(UserMixin):
     def __init__(self, id=None, username=None, email=None, first_name=None, last_name=None,
                  country=None, zip_code=None, preferred_translation='NIV', 
-                 font_preference='Georgia', theme_preference='default', created_at=None):
+                 font_preference='Georgia', theme_preference='default', 
+                 listen_current_psalm=None, listen_current_position=None, 
+                 listen_last_updated=None, created_at=None):
         self.id = str(id) if id else None  # Store as string for consistency
         self.username = username
         self.email = email
@@ -20,6 +22,9 @@ class User(UserMixin):
         self.preferred_translation = preferred_translation
         self.font_preference = font_preference
         self.theme_preference = theme_preference
+        self.listen_current_psalm = listen_current_psalm
+        self.listen_current_position = listen_current_position
+        self.listen_last_updated = listen_last_updated
         self.created_at = created_at or datetime.utcnow()
     
     @property
@@ -68,6 +73,9 @@ class User(UserMixin):
                     preferred_translation=profile.get('preferred_translation', 'NIV'),
                     font_preference=profile.get('font_preference', 'Georgia'),
                     theme_preference=profile.get('theme_preference', 'default'),
+                    listen_current_psalm=profile.get('listen_current_psalm'),
+                    listen_current_position=profile.get('listen_current_position'),
+                    listen_last_updated=profile.get('listen_last_updated'),
                     created_at=profile.get('created_at')
                 )
             else:
@@ -156,6 +164,55 @@ class User(UserMixin):
         except Exception as e:
             print(f"Error getting current psalm: {e}")
             return 1  # Default to Psalm 1
+
+    def update_listening_progress(self, psalm_number, position_seconds):
+        """Update user's listening progress"""
+        try:
+            from database import get_supabase_client
+            supabase = get_supabase_client()
+            
+            # Update the user's listening progress
+            update_data = {
+                'listen_current_psalm': psalm_number,
+                'listen_current_position': position_seconds,
+                'listen_last_updated': datetime.utcnow().isoformat()
+            }
+            
+            result = supabase.table('user_profiles').update(update_data)\
+                .eq('user_id', str(self.id)).execute()
+            
+            # Update local instance
+            self.listen_current_psalm = psalm_number
+            self.listen_current_position = position_seconds
+            self.listen_last_updated = datetime.utcnow().isoformat()
+            
+            return True
+        except Exception as e:
+            print(f"Error updating listening progress: {e}")
+            return False
+
+    def get_listening_resume_position(self):
+        """Get the position where user should resume listening"""
+        try:
+            if not self.listen_current_psalm:
+                return {'psalm_number': 1, 'position': 0}
+            
+            # If they were within 15 seconds of the end, advance to next psalm
+            if self.listen_current_position and self.listen_current_position > 0:
+                # We don't know the video duration here, so we'll handle this in the frontend
+                # For now, just return the saved position
+                return {
+                    'psalm_number': self.listen_current_psalm,
+                    'position': self.listen_current_position
+                }
+            else:
+                return {
+                    'psalm_number': self.listen_current_psalm,
+                    'position': 0
+                }
+        except Exception as e:
+            print(f"Error getting listening resume position: {e}")
+            return {'psalm_number': 1, 'position': 0}
     
     def advance_to_next_psalm(self):
         """Advance user to next psalm after completing current one"""
