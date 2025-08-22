@@ -188,24 +188,14 @@
                     </div>
                     
                     <!-- Emotion Legend -->
-                    <div class="text-center pt-4" style="border-top: 2px solid #e9ecef; margin-top: 30px;">
-                        <p class="text-muted mb-3"><strong>Emotion Scale</strong></p>
-                        <div class="row justify-content-center">
-                            <div class="col-auto">
-                                <span class="badge bg-secondary me-2 mb-2 p-2">😢 Awful (1)</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="badge bg-secondary me-2 mb-2 p-2">😔 Bad (2)</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="badge bg-secondary me-2 mb-2 p-2">😐 Okay (3)</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="badge bg-secondary me-2 mb-2 p-2">😊 Good (4)</span>
-                            </div>
-                            <div class="col-auto">
-                                <span class="badge bg-secondary mb-2 p-2">😃 Great (5)</span>
-                            </div>
+                    <div class="text-center" style="border-top: 2px solid #e9ecef; margin-top: 60px; padding-top: 30px;">
+                        <p class="text-muted mb-4"><strong>Chart Reference: Emotion Scale</strong></p>
+                        <div class="d-flex justify-content-center flex-wrap gap-3">
+                            <span class="badge bg-secondary p-2">😢 Awful (1)</span>
+                            <span class="badge bg-secondary p-2">😔 Bad (2)</span>
+                            <span class="badge bg-secondary p-2">😐 Okay (3)</span>
+                            <span class="badge bg-secondary p-2">😊 Good (4)</span>
+                            <span class="badge bg-secondary p-2">😃 Great (5)</span>
                         </div>
                     </div>
                     {% else %}
@@ -367,7 +357,7 @@ function createEmotionChart(canvasId, data, title) {
         return;
     }
     
-    // Process data for chart
+    // Process data for chart - ensure clean date labels only
     const chartData = {
         labels: data.map(item => {
             const date = new Date(item.date);
@@ -377,7 +367,7 @@ function createEmotionChart(canvasId, data, title) {
             });
         }),
         datasets: [{
-            label: 'Heart Condition',
+            label: 'Heart Condition', 
             data: data.map(item => item.value),
             borderColor: '#E93C02',
             backgroundColor: 'rgba(233, 60, 2, 0.1)',
@@ -400,7 +390,12 @@ function createEmotionChart(canvasId, data, title) {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: 20
+                    padding: {
+                        top: 10,
+                        right: 10,
+                        bottom: 50,
+                        left: 50
+                    }
                 },
                 plugins: {
                     legend: {
@@ -438,7 +433,11 @@ function createEmotionChart(canvasId, data, title) {
                             font: {
                                 size: 12
                             },
-                            maxRotation: 0
+                            maxRotation: 0,
+                            callback: function(value, index, values) {
+                                // Ensure only clean date labels, no emojis
+                                return this.getLabelForValue(value);
+                            }
                         },
                         grid: {
                             color: 'rgba(0,0,0,0.1)'
