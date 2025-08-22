@@ -24,20 +24,20 @@ class BibleAPI:
     PSALMS_BOOK_ID = 19
     TIMEOUT = 30
     
-    # Available translations from the API
+    # Available translations from the API (ordered by preference)
     AVAILABLE_TRANSLATIONS = {
-        'ESV': 'English Standard Version',
-        'NIV': 'New International Version (1984)', 
         'NIV2011': 'New International Version (2011)',  # Available via RapidAPI subscription
+        'ESV': 'English Standard Version',
         'NLT': 'New Living Translation',
+        'NIV': 'New International Version (1984)', 
         'KJV': 'King James Version',
+        'CSB': 'Christian Standard Bible',
+        'NASB': 'New American Standard Bible',
         'ASV': 'American Standard-ASV1901',
         'BBE': 'Bible in Basic English',
         'DARBY': 'Darby English Bible',
         'WEB': 'World English Bible',
         'YLT': "Young's Literal Translation",
-        'CSB': 'Christian Standard Bible',
-        'NASB': 'New American Standard Bible',
         'WLC': 'Hebrew (Westminster Leningrad Codex)',
         'LXX': 'Greek (Septuagint)'
     }
@@ -203,6 +203,7 @@ class BibleAPI:
             verses = []
             verse_number = 1
             max_verses = 200  # Safety limit
+            consecutive_empty = 0  # Track consecutive empty responses
             
             while verse_number <= max_verses:
                 params = {
@@ -214,11 +215,18 @@ class BibleAPI:
                 response = self.session.get(url, params=params, headers=headers, timeout=self.TIMEOUT)
                 
                 if response.status_code == 404:
-                    # No more verses in this psalm
-                    break
+                    consecutive_empty += 1
+                    if consecutive_empty >= 3:  # Stop after 3 consecutive 404s
+                        break
+                    verse_number += 1
+                    continue
                 elif response.status_code != 200:
                     logger.error(f"RapidAPI error {response.status_code} for Psalm {psalm_number}:{verse_number}")
-                    break
+                    consecutive_empty += 1
+                    if consecutive_empty >= 3:
+                        break
+                    verse_number += 1
+                    continue
                 
                 try:
                     data = response.json()
@@ -232,19 +240,40 @@ class BibleAPI:
                             verse_text = str(text_data)
                         
                         if verse_text:
-                            verses.append({
-                                'verse_number': verse_number,
-                                'text': verse_text.strip(),
-                                'verse_id': f"{psalm_number}:{verse_number}"
-                            })
+                            # Clean up special characters and formatting issues
+                            cleaned_text = verse_text.strip()
+                            
+                            # Remove backslashes and number sequences that appear to be formatting artifacts
+                            import re
+                            cleaned_text = re.sub(r'\\+["\n]*\s*\d+,\d+,\d+,?', '', cleaned_text)
+                            cleaned_text = re.sub(r'\\+["\n]*', '', cleaned_text)
+                            cleaned_text = re.sub(r'\s+', ' ', cleaned_text).strip()
+                            
+                            # Only add if there's meaningful text after cleaning
+                            if len(cleaned_text) > 10:  # Ensure it's not just artifacts
+                                verses.append({
+                                    'verse_number': verse_number,
+                                    'text': cleaned_text,
+                                    'verse_id': f"{psalm_number}:{verse_number}"
+                                })
+                                consecutive_empty = 0  # Reset counter on successful verse
                             verse_number += 1
                         else:
-                            break
+                            consecutive_empty += 1
+                            if consecutive_empty >= 3:
+                                break
+                            verse_number += 1
                     else:
-                        break
+                        consecutive_empty += 1
+                        if consecutive_empty >= 3:
+                            break
+                        verse_number += 1
                 except (ValueError, KeyError) as e:
                     logger.error(f"Error parsing RapidAPI response for Psalm {psalm_number}:{verse_number}: {e}")
-                    break
+                    consecutive_empty += 1
+                    if consecutive_empty >= 3:
+                        break
+                    verse_number += 1
             
             if not verses:
                 logger.warning(f"No verses found for Psalm {psalm_number} in NIV 2011")
