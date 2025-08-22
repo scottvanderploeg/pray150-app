@@ -544,7 +544,7 @@
         
         // Create iframe for primary video
         const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${primaryVideoId}?rel=0&modestbranding=1`;
+        iframe.src = `https://www.youtube.com/embed/${primaryVideoId}?rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&showinfo=0`;
         iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
         iframe.allowFullscreen = true;
         iframe.style.width = '100%';
