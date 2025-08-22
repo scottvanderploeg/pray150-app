@@ -52,11 +52,13 @@
                             <div class="col-md-4 mb-3">
                                 <label for="translation" class="form-label">Preferred Translation</label>
                                 <select class="form-select" id="translation" name="translation">
-                                    <option value="NIV" {% if current_user.preferred_translation == 'NIV' %}selected{% endif %}>NIV</option>
+                                    <option value="NIV2011" {% if current_user.preferred_translation == 'NIV2011' %}selected{% endif %}>NIV 2011</option>
                                     <option value="ESV" {% if current_user.preferred_translation == 'ESV' %}selected{% endif %}>ESV</option>
                                     <option value="NLT" {% if current_user.preferred_translation == 'NLT' %}selected{% endif %}>NLT</option>
-                                    <option value="NKJV" {% if current_user.preferred_translation == 'NKJV' %}selected{% endif %}>NKJV</option>
-                                    <option value="NRSV" {% if current_user.preferred_translation == 'NRSV' %}selected{% endif %}>NRSV</option>
+                                    <option value="NIV" {% if current_user.preferred_translation == 'NIV' %}selected{% endif %}>NIV 1984</option>
+                                    <option value="KJV" {% if current_user.preferred_translation == 'KJV' %}selected{% endif %}>KJV</option>
+                                    <option value="CSB" {% if current_user.preferred_translation == 'CSB' %}selected{% endif %}>CSB</option>
+                                    <option value="NASB" {% if current_user.preferred_translation == 'NASB' %}selected{% endif %}>NASB</option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">

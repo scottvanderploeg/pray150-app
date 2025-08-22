@@ -107,14 +107,36 @@ class User(UserMixin):
         return True  # User info is managed by Supabase Auth
 
     def update_preferences(self, translation=None, font=None, theme=None):
-        """Update user preferences - simplified"""
-        if translation:
-            self.preferred_translation = translation
-        if font:
-            self.font_preference = font
-        if theme:
-            self.theme_preference = theme
-        return True
+        """Update user preferences and save to Supabase"""
+        try:
+            from database import get_supabase_client
+            supabase = get_supabase_client()
+            
+            # Update local attributes
+            if translation:
+                self.preferred_translation = translation
+            if font:
+                self.font_preference = font
+            if theme:
+                self.theme_preference = theme
+            
+            # Save to database
+            update_data = {}
+            if translation:
+                update_data['preferred_translation'] = translation
+            if font:
+                update_data['font_preference'] = font
+            if theme:
+                update_data['theme_preference'] = theme
+            
+            if update_data:
+                result = supabase.table('user_profiles').update(update_data)\
+                    .eq('user_id', str(self.id)).execute()
+                return bool(result.data)
+            return True
+        except Exception as e:
+            print(f"Error updating user preferences: {e}")
+            return False
     
     @property
     def is_admin(self):
