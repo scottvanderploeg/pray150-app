@@ -108,6 +108,16 @@ class User(UserMixin):
             self.theme_preference = theme
         return True
     
+    @property
+    def is_admin(self):
+        """Check if user is admin by checking email against ADMIN_EMAILS env var"""
+        import os
+        if not self.email:
+            return False
+        admin_emails = os.environ.get('ADMIN_EMAILS', '').split(',')
+        admin_emails = [email.strip() for email in admin_emails if email.strip()]
+        return self.email in admin_emails
+    
     def get_current_psalm_number(self):
         """Get the user's current psalm number in their sequential progression"""
         try:
