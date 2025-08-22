@@ -173,29 +173,30 @@
                     {% if emotion_trends_week or emotion_trends_month %}
                     <div class="row">
                         <!-- This Week Chart -->
-                        <div class="col-lg-6">
-                            <div class="chart-container" style="height: 300px;">
+                        <div class="col-lg-6 mb-4">
+                            <div class="chart-container" style="height: 280px; position: relative;">
                                 <h6 class="fw-bold mb-3">This Week</h6>
-                                <canvas id="weekChart"></canvas>
+                                <canvas id="weekChart" style="max-height: 250px;"></canvas>
                             </div>
                         </div>
                         <!-- This Month Chart -->
-                        <div class="col-lg-6">
-                            <div class="chart-container" style="height: 300px;">
+                        <div class="col-lg-6 mb-4">
+                            <div class="chart-container" style="height: 280px; position: relative;">
                                 <h6 class="fw-bold mb-3">This Month</h6>
-                                <canvas id="monthChart"></canvas>
+                                <canvas id="monthChart" style="max-height: 250px;"></canvas>
                             </div>
                         </div>
                     </div>
                     <!-- Emotion Legend -->
-                    <div class="text-center mt-3">
-                        <small class="text-muted">
-                            <span class="me-3">😢 Awful</span>
-                            <span class="me-3">😔 Bad</span>
-                            <span class="me-3">😐 Okay</span>
-                            <span class="me-3">😊 Good</span>
-                            <span>😃 Great</span>
-                        </small>
+                    <div class="text-center mt-4 pt-3" style="border-top: 1px solid #e9ecef;">
+                        <small class="text-muted d-block mb-2">Emotion Scale:</small>
+                        <div class="d-flex justify-content-center flex-wrap gap-2">
+                            <span class="badge bg-light text-dark px-2 py-1">😢 Awful</span>
+                            <span class="badge bg-light text-dark px-2 py-1">😔 Bad</span>
+                            <span class="badge bg-light text-dark px-2 py-1">😐 Okay</span>
+                            <span class="badge bg-light text-dark px-2 py-1">😊 Good</span>
+                            <span class="badge bg-light text-dark px-2 py-1">😃 Great</span>
+                        </div>
                     </div>
                     {% else %}
                     <div class="text-center py-4">
