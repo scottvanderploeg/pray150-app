@@ -222,16 +222,28 @@ class BibleAPI:
                 
                 try:
                     data = response.json()
-                    if data and 'verse' in data:
-                        verses.append({
-                            'verse_number': verse_number,
-                            'text': data['verse'].strip(),
-                            'verse_id': f"{psalm_number}:{verse_number}"
-                        })
-                        verse_number += 1
+                    if data and 'Text' in data:
+                        # Extract the verse text from the Text field
+                        text_data = data['Text']
+                        if isinstance(text_data, dict):
+                            # Get the first (and likely only) value from the dict
+                            verse_text = list(text_data.values())[0] if text_data else ""
+                        else:
+                            verse_text = str(text_data)
+                        
+                        if verse_text:
+                            verses.append({
+                                'verse_number': verse_number,
+                                'text': verse_text.strip(),
+                                'verse_id': f"{psalm_number}:{verse_number}"
+                            })
+                            verse_number += 1
+                        else:
+                            break
                     else:
                         break
-                except (ValueError, KeyError):
+                except (ValueError, KeyError) as e:
+                    logger.error(f"Error parsing RapidAPI response for Psalm {psalm_number}:{verse_number}: {e}")
                     break
             
             if not verses:
