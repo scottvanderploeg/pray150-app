@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return fetch('/api/listening-progress')
             .then(response => response.json())
             .then(data => {
+                console.log('API Response:', data);
                 if (data.success && data.data) {
                     const { psalm_number, position } = data.data;
                     console.log('Loading saved progress:', psalm_number, position);
@@ -163,10 +164,50 @@ document.addEventListener('DOMContentLoaded', function() {
                         };
                     }
                 }
+                
+                // Temporary fallback - check localStorage for session progress
+                const sessionProgress = localStorage.getItem('listenProgress');
+                if (sessionProgress) {
+                    try {
+                        const parsed = JSON.parse(sessionProgress);
+                        console.log('Using localStorage fallback:', parsed);
+                        const psalmIndex = psalmsWithMusic.findIndex(p => p.psalm_number === parsed.psalm_number);
+                        if (psalmIndex !== -1) {
+                            return {
+                                psalmIndex: psalmIndex,
+                                position: parsed.position || 0,
+                                psalmNumber: parsed.psalm_number
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Error parsing localStorage progress:', e);
+                    }
+                }
+                
                 return { psalmIndex: 0, position: 0, psalmNumber: 1 };
             })
             .catch(error => {
                 console.error('Error loading listening progress:', error);
+                
+                // Temporary fallback - check localStorage for session progress
+                const sessionProgress = localStorage.getItem('listenProgress');
+                if (sessionProgress) {
+                    try {
+                        const parsed = JSON.parse(sessionProgress);
+                        console.log('Using localStorage fallback after error:', parsed);
+                        const psalmIndex = psalmsWithMusic.findIndex(p => p.psalm_number === parsed.psalm_number);
+                        if (psalmIndex !== -1) {
+                            return {
+                                psalmIndex: psalmIndex,
+                                position: parsed.position || 0,
+                                psalmNumber: parsed.psalm_number
+                            };
+                        }
+                    } catch (e) {
+                        console.error('Error parsing localStorage progress:', e);
+                    }
+                }
+                
                 return { psalmIndex: 0, position: 0, psalmNumber: 1 };
             });
     }
@@ -178,6 +219,9 @@ document.addEventListener('DOMContentLoaded', function() {
             position: Math.floor(position)
         };
         
+        // Also save to localStorage as fallback
+        localStorage.setItem('listenProgress', JSON.stringify(data));
+        
         fetch('/api/listening-progress', {
             method: 'POST',
             headers: {
@@ -188,11 +232,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (!data.success) {
-                console.error('Failed to save listening progress:', data.error);
+                console.error('Failed to save listening progress to server:', data.error);
+                console.log('Progress saved to localStorage instead');
+            } else {
+                console.log('Progress saved successfully');
             }
         })
         .catch(error => {
-            console.error('Error saving listening progress:', error);
+            console.error('Error saving listening progress to server:', error);
+            console.log('Progress saved to localStorage instead');
         });
     }
 

@@ -181,38 +181,47 @@ class User(UserMixin):
             result = supabase.table('user_profiles').update(update_data)\
                 .eq('user_id', str(self.id)).execute()
             
-            # Update local instance
-            self.listen_current_psalm = psalm_number
-            self.listen_current_position = position_seconds
-            self.listen_last_updated = datetime.utcnow().isoformat()
+            # Update local instance if the attributes exist
+            if hasattr(self, 'listen_current_psalm'):
+                self.listen_current_psalm = psalm_number
+            if hasattr(self, 'listen_current_position'):
+                self.listen_current_position = position_seconds
+            if hasattr(self, 'listen_last_updated'):
+                self.listen_last_updated = datetime.utcnow().isoformat()
             
             return True
         except Exception as e:
             print(f"Error updating listening progress: {e}")
+            print(f"This is likely because the database columns don't exist yet.")
+            print(f"Please add these columns to your user_profiles table in Supabase:")
+            print(f"ALTER TABLE user_profiles ADD COLUMN listen_current_psalm INTEGER;")
+            print(f"ALTER TABLE user_profiles ADD COLUMN listen_current_position FLOAT;")
+            print(f"ALTER TABLE user_profiles ADD COLUMN listen_last_updated TIMESTAMP;")
             return False
 
     def get_listening_resume_position(self):
         """Get the position where user should resume listening"""
         try:
-            if not self.listen_current_psalm:
-                return {'psalm_number': 1, 'position': 0}
-            
-            # If they were within 15 seconds of the end, advance to next psalm
-            if self.listen_current_position and self.listen_current_position > 0:
-                # We don't know the video duration here, so we'll handle this in the frontend
-                # For now, just return the saved position
-                return {
-                    'psalm_number': self.listen_current_psalm,
-                    'position': self.listen_current_position
-                }
+            # Check if listening progress attributes exist (database columns may not exist yet)
+            if hasattr(self, 'listen_current_psalm') and self.listen_current_psalm:
+                # If they were within 15 seconds of the end, advance to next psalm
+                if hasattr(self, 'listen_current_position') and self.listen_current_position and self.listen_current_position > 0:
+                    # We don't know the video duration here, so we'll handle this in the frontend
+                    # For now, just return the saved position
+                    return {
+                        'psalm_number': self.listen_current_psalm,
+                        'position': self.listen_current_position
+                    }
+                else:
+                    return {
+                        'psalm_number': self.listen_current_psalm,
+                        'position': 0
+                    }
             else:
-                return {
-                    'psalm_number': self.listen_current_psalm,
-                    'position': 0
-                }
+                return {'psalm_number': None, 'position': 0}
         except Exception as e:
             print(f"Error getting listening resume position: {e}")
-            return {'psalm_number': 1, 'position': 0}
+            return {'psalm_number': None, 'position': 0}
     
     def advance_to_next_psalm(self):
         """Advance user to next psalm after completing current one"""
