@@ -402,18 +402,32 @@ def api_psalm_music(psalm_number):
 
 @main_bp.route('/api/psalms-with-music')
 def api_psalms_with_music():
-    """API endpoint to get list of all psalms with music"""
+    """API endpoint to get list of all psalms with music (including alternates)"""
     try:
-        from psalm_music_config import has_psalm_music, get_psalm_video_id
+        from psalm_music_config import has_psalm_music, get_all_psalm_videos
         
         psalms_with_music = []
         for psalm_num in range(1, 151):
             if has_psalm_music(psalm_num):
-                video_id = get_psalm_video_id(psalm_num)
-                psalms_with_music.append({
-                    'psalm_number': psalm_num,
-                    'video_id': video_id
-                })
+                all_videos = get_all_psalm_videos(psalm_num)
+                
+                # Add each video as a separate entry for sequential playback
+                for i, video_id in enumerate(all_videos):
+                    if video_id:  # Only include if there's a video ID
+                        # For alternates, add a suffix to distinguish them
+                        if i > 0:  # This is an alternate version
+                            suffix_letter = chr(ord('b') + i - 1)  # b, c, d, etc.
+                            display_name = f"Psalm {psalm_num}{suffix_letter}"
+                        else:
+                            display_name = f"Psalm {psalm_num}"
+                        
+                        psalms_with_music.append({
+                            'psalm_number': psalm_num,
+                            'video_id': video_id,
+                            'display_name': display_name,
+                            'is_alternate': i > 0,
+                            'alternate_index': i
+                        })
         
         return jsonify({
             'success': True,

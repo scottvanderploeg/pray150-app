@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', function() {
         psalmsWithMusic.forEach((psalm, index) => {
             const option = document.createElement('option');
             option.value = index;
-            option.textContent = `Psalm ${psalm.psalm_number}`;
+            option.textContent = psalm.display_name || `Psalm ${psalm.psalm_number}`;
             psalmSelect.appendChild(option);
         });
     }
@@ -349,8 +349,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Update UI elements
     function updateUI(psalm) {
-        currentPsalmTitle.textContent = `Psalm ${psalm.psalm_number}`;
-        currentPsalmInfo.textContent = `Worship music for Psalm ${psalm.psalm_number}`;
+        const displayName = psalm.display_name || `Psalm ${psalm.psalm_number}`;
+        currentPsalmTitle.textContent = displayName;
+        currentPsalmInfo.textContent = `Worship music for ${displayName}`;
         
         // Update controls
         prevBtn.disabled = currentIndex === 0;
