@@ -353,9 +353,9 @@ document.addEventListener('DOMContentLoaded', function() {
         currentPsalmTitle.textContent = displayName;
         currentPsalmInfo.textContent = `Worship music for ${displayName}`;
         
-        // Update controls
-        prevBtn.disabled = currentIndex === 0;
-        nextBtn.disabled = currentIndex === psalmsWithMusic.length - 1;
+        // Update controls (never disable since we now loop)
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
         playPauseBtn.disabled = false;
         
         // Update selector
@@ -413,8 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const duration = event.target.getDuration();
                         const remainingTime = duration - startPosition;
                         
-                        // If within 15 seconds of end, advance to next psalm
-                        if (remainingTime <= 15 && currentIndex < psalmsWithMusic.length - 1) {
+                        // If within 15 seconds of end, advance to next psalm (with looping)
+                        if (remainingTime <= 15) {
                             console.log('Advancing to next psalm (within 15 seconds of end)');
                             navigateToPsalm(currentIndex + 1);
                             return;
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (event.data === YT.PlayerState.ENDED) {
                         console.log('Video ended, auto-advance:', autoplay);
                         stopProgressTracking();
-                        if (autoplay && currentIndex < psalmsWithMusic.length - 1) {
+                        if (autoplay) {
                             setTimeout(() => {
                                 navigateToPsalm(currentIndex + 1);
                             }, 1000); // Small delay before advancing
@@ -467,12 +467,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    // Navigate to specific psalm
+    // Navigate to specific psalm (with looping)
     function navigateToPsalm(index) {
-        if (index >= 0 && index < psalmsWithMusic.length) {
+        if (psalmsWithMusic.length === 0) return;
+        
+        // Handle looping: wrap around to beginning if past end, or to end if before beginning
+        if (index >= psalmsWithMusic.length) {
+            currentIndex = 0; // Loop back to first psalm
+        } else if (index < 0) {
+            currentIndex = psalmsWithMusic.length - 1; // Loop to last psalm
+        } else {
             currentIndex = index;
-            loadCurrentPsalm();
         }
+        
+        loadCurrentPsalm();
     }
 
     // Update progress bar
