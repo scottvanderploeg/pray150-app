@@ -340,6 +340,28 @@ def bible_api_demo():
     return render_template('bible_api_demo.html',
                          available_translations=get_available_translations())
 
+@main_bp.route('/listen')
+@login_required
+def listen():
+    """Listen page for continuous psalm music playback"""
+    try:
+        # Import the music configuration
+        from psalm_music_config import has_psalm_music
+        
+        # Get list of psalms that have music configured
+        psalms_with_music = []
+        for psalm_num in range(1, 151):
+            if has_psalm_music(psalm_num):
+                psalms_with_music.append(psalm_num)
+        
+        return render_template('listen.html', 
+                             psalms_with_music=psalms_with_music,
+                             total_psalms_with_music=len(psalms_with_music))
+                             
+    except Exception as e:
+        flash(f'Error loading listen page: {str(e)}', 'error')
+        return redirect(url_for('main.dashboard'))
+
 @main_bp.route('/api/psalm-music/<int:psalm_number>')
 def api_psalm_music(psalm_number):
     """API endpoint to get music for a specific psalm"""
@@ -372,6 +394,33 @@ def api_psalm_music(psalm_number):
                 'message': 'No music configured for this psalm'
             })
             
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/psalms-with-music')
+def api_psalms_with_music():
+    """API endpoint to get list of all psalms with music"""
+    try:
+        from psalm_music_config import has_psalm_music, get_psalm_video_id
+        
+        psalms_with_music = []
+        for psalm_num in range(1, 151):
+            if has_psalm_music(psalm_num):
+                video_id = get_psalm_video_id(psalm_num)
+                psalms_with_music.append({
+                    'psalm_number': psalm_num,
+                    'video_id': video_id
+                })
+        
+        return jsonify({
+            'success': True,
+            'psalms': psalms_with_music,
+            'total': len(psalms_with_music)
+        })
+        
     except Exception as e:
         return jsonify({
             'success': False,

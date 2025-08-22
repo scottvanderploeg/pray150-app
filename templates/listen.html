@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Listen - Pray150{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 fw-bold mb-2">
+                        <i class="fas fa-music text-primary me-2"></i>
+                        Listen to the Psalms
+                    </h1>
+                    <p class="text-muted">Experience continuous worship music for all 150 psalms</p>
+                </div>
+                <div>
+                    <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Player Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <!-- Currently Playing -->
+                    <div class="text-center mb-4">
+                        <h3 class="h4 fw-bold mb-2" id="currentPsalmTitle">
+                            Loading Psalm Music...
+                        </h3>
+                        <p class="text-muted mb-0" id="currentPsalmInfo">
+                            Preparing your worship experience
+                        </p>
+                    </div>
+
+                    <!-- YouTube Player Container -->
+                    <div class="ratio ratio-16x9 mb-4" style="max-width: 800px; margin: 0 auto;">
+                        <div id="youtube-container" class="bg-light rounded d-flex justify-content-center align-items-center">
+                            <div class="text-muted" id="loading-message">
+                                <i class="fas fa-music fa-2x mb-3 d-block"></i>
+                                Loading worship music...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Player Controls -->
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-start">
+                                <button class="btn btn-outline-secondary me-2" id="prevBtn" disabled>
+                                    <i class="fas fa-step-backward"></i>
+                                </button>
+                                <button class="btn btn-primary me-2" id="playPauseBtn" disabled>
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary" id="nextBtn" disabled>
+                                    <i class="fas fa-step-forward"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <label for="autoplayToggle" class="form-check-label me-2 small">Auto-advance:</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="autoplayToggle" checked>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex justify-content-end align-items-center">
+                                <span class="small text-muted me-2">Psalm:</span>
+                                <select class="form-select form-select-sm" id="psalmSelect" style="width: auto;">
+                                    <option value="">Select psalm...</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Info -->
+                    <div class="mt-4 text-center">
+                        <div class="progress mb-2" style="height: 6px;">
+                            <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted">
+                            <span id="currentIndex">0</span> of <span id="totalPsalms">{{ total_psalms_with_music }}</span> psalms with music
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-10">
+            <div class="card border-0 bg-light">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold mb-3">About This Experience</h5>
+                    <p class="text-muted mb-0">
+                        This listening experience includes worship music for {{ total_psalms_with_music }} psalms. 
+                        Each piece is carefully selected to help you meditate on God's Word through music. 
+                        You can listen continuously or jump to any specific psalm using the controls above.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Listen page JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    let psalmsWithMusic = [];
+    let currentIndex = 0;
+    let autoplay = true;
+    let ytPlayer = null;
+    let playerReady = false;
+
+    // DOM elements
+    const currentPsalmTitle = document.getElementById('currentPsalmTitle');
+    const currentPsalmInfo = document.getElementById('currentPsalmInfo');
+    const youtubeContainer = document.getElementById('youtube-container');
+    const loadingMessage = document.getElementById('loading-message');
+    const prevBtn = document.getElementById('prevBtn');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const autoplayToggle = document.getElementById('autoplayToggle');
+    const psalmSelect = document.getElementById('psalmSelect');
+    const progressBar = document.getElementById('progressBar');
+    const currentIndexSpan = document.getElementById('currentIndex');
+
+    // Initialize the listen page
+    function init() {
+        loadPsalmsWithMusic();
+        setupEventListeners();
+    }
+
+    // Load list of psalms with music from server
+    function loadPsalmsWithMusic() {
+        fetch('/api/psalms-with-music')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    psalmsWithMusic = data.psalms;
+                    populatePsalmSelect();
+                    if (psalmsWithMusic.length > 0) {
+                        loadCurrentPsalm();
+                    } else {
+                        showNoMusicMessage();
+                    }
+                } else {
+                    console.error('Failed to load psalms with music:', data.error);
+                    showErrorMessage();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading psalms with music:', error);
+                showErrorMessage();
+            });
+    }
+
+    // Populate psalm selector dropdown
+    function populatePsalmSelect() {
+        psalmSelect.innerHTML = '<option value="">Select psalm...</option>';
+        psalmsWithMusic.forEach((psalm, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `Psalm ${psalm.psalm_number}`;
+            psalmSelect.appendChild(option);
+        });
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        prevBtn.addEventListener('click', () => navigateToPsalm(currentIndex - 1));
+        nextBtn.addEventListener('click', () => navigateToPsalm(currentIndex + 1));
+        
+        autoplayToggle.addEventListener('change', (e) => {
+            autoplay = e.target.checked;
+        });
+
+        psalmSelect.addEventListener('change', (e) => {
+            if (e.target.value !== '') {
+                navigateToPsalm(parseInt(e.target.value));
+            }
+        });
+    }
+
+    // Load and display current psalm
+    function loadCurrentPsalm() {
+        if (!psalmsWithMusic[currentIndex]) return;
+
+        const psalm = psalmsWithMusic[currentIndex];
+        updateUI(psalm);
+        loadYouTubePlayer(psalm.video_id);
+        updateProgress();
+    }
+
+    // Update UI elements
+    function updateUI(psalm) {
+        currentPsalmTitle.textContent = `Psalm ${psalm.psalm_number}`;
+        currentPsalmInfo.textContent = `Worship music for Psalm ${psalm.psalm_number}`;
+        
+        // Update controls
+        prevBtn.disabled = currentIndex === 0;
+        nextBtn.disabled = currentIndex === psalmsWithMusic.length - 1;
+        playPauseBtn.disabled = false;
+        
+        // Update selector
+        psalmSelect.value = currentIndex;
+        
+        // Update progress
+        currentIndexSpan.textContent = currentIndex + 1;
+    }
+
+    // Load YouTube player
+    function loadYouTubePlayer(videoId) {
+        // Clear container
+        youtubeContainer.innerHTML = '';
+        
+        // Create iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&autoplay=1`;
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        iframe.style.borderRadius = '8px';
+        iframe.id = 'youtube-player';
+        
+        youtubeContainer.appendChild(iframe);
+        
+        // Listen for video end (simplified approach)
+        if (autoplay) {
+            setTimeout(() => {
+                if (autoplay && currentIndex < psalmsWithMusic.length - 1) {
+                    navigateToPsalm(currentIndex + 1);
+                }
+            }, 300000); // 5 minutes - adjust based on average song length
+        }
+    }
+
+    // Navigate to specific psalm
+    function navigateToPsalm(index) {
+        if (index >= 0 && index < psalmsWithMusic.length) {
+            currentIndex = index;
+            loadCurrentPsalm();
+        }
+    }
+
+    // Update progress bar
+    function updateProgress() {
+        const progress = ((currentIndex + 1) / psalmsWithMusic.length) * 100;
+        progressBar.style.width = `${progress}%`;
+    }
+
+    // Show error message
+    function showErrorMessage() {
+        loadingMessage.innerHTML = `
+            <i class="fas fa-exclamation-triangle fa-2x mb-3 d-block text-warning"></i>
+            Unable to load psalm music. Please try again later.
+        `;
+    }
+
+    // Show no music message
+    function showNoMusicMessage() {
+        loadingMessage.innerHTML = `
+            <i class="fas fa-music fa-2x mb-3 d-block text-muted"></i>
+            No psalm music is currently configured.
+        `;
+    }
+
+    // Initialize the page
+    init();
+});
+</script>
+{% endblock %}
