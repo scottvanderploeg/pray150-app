@@ -223,7 +223,7 @@ def system_info():
     try:
         # Test database connection
         supabase = get_supabase_client()
-        db_test = supabase.table('users').select('id').limit(1).execute()
+        db_test = supabase.table('user_profiles').select('id').limit(1).execute()
         db_status = 'Connected' if db_test.data is not None else 'Error'
         
         # Get environment info (be careful not to expose sensitive data)
@@ -250,9 +250,9 @@ def export_data(data_type):
         supabase = get_supabase_client()
         
         if data_type == 'users':
-            data = supabase.table('users').select('*').execute()
+            data = supabase.table('user_profiles').select('*').execute()
         elif data_type == 'prayers':
-            data = supabase.table('prayers').select('*').execute()
+            data = supabase.table('prayer_lists').select('*').execute()
         elif data_type == 'journals':
             data = supabase.table('journal_entries').select('*').execute()
         elif data_type == 'markups':
