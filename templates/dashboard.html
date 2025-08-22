@@ -411,11 +411,11 @@ function createEmotionChart(canvasId, data, title) {
                             },
                             callback: function(value) {
                                 const emotions = {
-                                    1: '😢 Awful',
-                                    2: '😔 Bad', 
+                                    1: '😞 Awful',
+                                    2: '😟 Bad', 
                                     3: '😐 Okay',
                                     4: '😊 Good',
-                                    5: '😃 Great'
+                                    5: '😄 Great'
                                 };
                                 return emotions[Math.round(value)] || '';
                             }
