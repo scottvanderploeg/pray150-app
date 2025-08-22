@@ -318,9 +318,11 @@ function navigateToPsalm() {
     }
 }
 
-// Store chart instances to prevent multiple creation
+// Store chart instances to prevent multiple creation  
 let weekChart = null;
 let monthChart = null;
+
+// Force refresh timestamp: 2025-08-22-20:10
 
 // Function to create emotion line chart
 function createEmotionChart(canvasId, data, title) {
