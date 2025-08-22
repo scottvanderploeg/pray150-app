@@ -66,7 +66,7 @@ def dashboard():
     current_psalm_number = current_user.get_current_psalm_number()
     
     # Get user's preferred translation
-    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'NIV2011'
+    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'ESV'
     
     # Fetch current psalm from Bible API
     current_psalm_api = get_psalm(current_psalm_number, user_translation)
@@ -486,7 +486,7 @@ def psalm(psalm_number):
         return redirect(url_for('main.dashboard'))
     
     # Get user's preferred translation
-    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'NIV2011'
+    user_translation = current_user.preferred_translation if hasattr(current_user, 'preferred_translation') else 'ESV'
     
     # Fetch psalm from Bible API
     psalm_api_data = get_psalm(psalm_number, user_translation)

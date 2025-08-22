@@ -26,7 +26,6 @@ class BibleAPI:
     
     # Available translations from the API (ordered by preference)
     AVAILABLE_TRANSLATIONS = {
-        'NIV2011': 'New International Version (2011)',  # Available via RapidAPI subscription
         'ESV': 'English Standard Version',
         'NLT': 'New Living Translation',
         'NIV': 'New International Version (1984)', 
@@ -77,9 +76,7 @@ class BibleAPI:
         if translation in ['WLC', 'LXX']:
             return self._get_original_language_psalm(translation, psalm_number)
         
-        # Check if this is NIV 2011 (requires RapidAPI)
-        if translation == 'NIV2011':
-            return self._get_rapidapi_niv_psalm(psalm_number)
+        # RapidAPI NIV service removed - was providing NIV 1984 text, not NIV 2011
         
         # Check if this is a translation that requires API.Bible access
         if translation in ['CSB', 'NASB']:
