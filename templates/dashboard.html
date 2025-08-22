@@ -330,7 +330,7 @@ function createEmotionChart(canvasId, data, title) {
         return;
     }
     
-    // Destroy existing chart if it exists
+    // Always destroy existing chart and clear the canvas
     if (canvasId === 'weekChart' && weekChart) {
         weekChart.destroy();
         weekChart = null;
@@ -338,6 +338,9 @@ function createEmotionChart(canvasId, data, title) {
         monthChart.destroy();
         monthChart = null;
     }
+    
+    // Clear the canvas completely
+    ctx.getContext('2d').clearRect(0, 0, ctx.width, ctx.height);
     
     console.log(`Creating chart for ${canvasId} with data:`, data);
     
@@ -417,7 +420,9 @@ function createEmotionChart(canvasId, data, title) {
                                     4: '😊 Good',
                                     5: '😄 Great'
                                 };
-                                return emotions[Math.round(value)] || '';
+                                const result = emotions[Math.round(value)] || '';
+                                console.log(`Y-axis label for value ${value}: ${result}`);
+                                return result;
                             }
                         },
                         grid: {
