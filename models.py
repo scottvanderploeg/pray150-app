@@ -70,7 +70,7 @@ class User(UserMixin):
                     last_name=profile.get('last_name'),
                     country=profile.get('country'),
                     zip_code=profile.get('zip_code'),
-                    preferred_translation=profile.get('preferred_translation', 'ESV'),
+                    preferred_translation=profile.get('preferred_translation', 'NIV'),
                     font_preference=profile.get('font_preference', 'Georgia'),
                     theme_preference=profile.get('theme_preference', 'default'),
                     listen_current_psalm=profile.get('listen_current_psalm'),
@@ -84,7 +84,7 @@ class User(UserMixin):
                     id=str(user_id),
                     username=f"user_{str(user_id)[:8]}",
                     first_name="User",
-                    preferred_translation='ESV'
+                    preferred_translation='NIV'
                 )
         except Exception as e:
             print(f"Error getting user by ID {user_id}: {e}")
@@ -93,7 +93,7 @@ class User(UserMixin):
                 id=str(user_id),
                 username=f"user_{str(user_id)[:8]}",
                 first_name="User",
-                preferred_translation='ESV'
+                preferred_translation='NIV'
             )
 
     @staticmethod

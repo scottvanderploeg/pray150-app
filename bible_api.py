@@ -26,9 +26,9 @@ class BibleAPI:
     
     # Available translations from the API (ordered by preference)
     AVAILABLE_TRANSLATIONS = {
+        'NIV': 'New International Version (1984)',
         'ESV': 'English Standard Version',
         'NLT': 'New Living Translation',
-        'NIV': 'New International Version (1984)', 
         'KJV': 'King James Version',
         'CSB': 'Christian Standard Bible',
         'NASB': 'New American Standard Bible',
