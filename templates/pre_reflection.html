@@ -28,6 +28,10 @@
 
                     <!-- Emoji Selection -->
                     <form id="reflectionForm" method="GET" action="{{ url_for('main.pre_reflection_journal', psalm_number=psalm_number) }}">
+                        <!-- Hidden field to pass explore parameter -->
+                        {% if is_explore %}
+                        <input type="hidden" name="is_explore" value="true">
+                        {% endif %}
                         <div class="row g-4 justify-content-center">
                             <!-- Terrible -->
                             <div class="col-4 col-md-2">

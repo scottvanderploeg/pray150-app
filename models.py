@@ -154,7 +154,8 @@ class User(UserMixin):
             supabase = get_supabase_client()
             
             # Get all journal entries for this user to see which psalms have been completed
-            journal_result = supabase.table('journal_entries').select('psalm_id, created_at')\
+            # Exclude explore sessions from sequential progression calculation
+            journal_result = supabase.table('journal_entries').select('psalm_id, created_at, prompt_responses')\
                 .eq('user_id', str(self.id))\
                 .order('created_at', desc=False).execute()
             
@@ -163,10 +164,16 @@ class User(UserMixin):
                 return 1
             
             # Get all psalms that have journal entries (completed psalms)
+            # Exclude explore sessions from sequential progression
             completed_psalms = set()
             for entry in journal_result.data:
                 psalm_id = entry.get('psalm_id')
-                if psalm_id:
+                prompt_responses = entry.get('prompt_responses', {})
+                
+                # Check if this was an explore session - if so, don't count it for progression
+                is_explore = prompt_responses.get('is_explore', False)
+                
+                if psalm_id and not is_explore:
                     completed_psalms.add(int(psalm_id))
             
             print(f"DEBUG: User {self.id} completed psalms: {sorted(completed_psalms)}")

@@ -25,6 +25,10 @@
                 <div class="card-body p-5">
                     <form method="POST">
                         <input type="hidden" name="emotion" value="{{ emotion }}">
+                        <!-- Pass through explore parameter -->
+                        {% if is_explore %}
+                        <input type="hidden" name="is_explore" value="true">
+                        {% endif %}
                         
                         <!-- Prompt -->
                         <div class="mb-4">

@@ -110,7 +110,9 @@ def dashboard():
 @login_required
 def pre_reflection(psalm_number):
     """Pre-reflection page with emoji selection for heart/soul state"""
-    return render_template('pre_reflection.html', psalm_number=psalm_number)
+    # Check if this is an explore session
+    is_explore = request.args.get('explore', 'false').lower() == 'true'
+    return render_template('pre_reflection.html', psalm_number=psalm_number, is_explore=is_explore)
 
 @main_bp.route('/reflect/<int:psalm_number>/journal', methods=['GET', 'POST'])
 @login_required
@@ -122,10 +124,14 @@ def pre_reflection_journal(psalm_number):
         
         # Store the reflection data in session to pass to psalm page
         from flask import session
+        # Check if this is an explore session
+        is_explore = request.form.get('is_explore', 'false').lower() == 'true'
+        
         session['pre_reflection'] = {
             'emotion': emotion,
             'journal_text': journal_text,
-            'psalm_number': psalm_number
+            'psalm_number': psalm_number,
+            'is_explore': is_explore
         }
         
         # Redirect to psalm page with pre-filled reflection
@@ -133,12 +139,14 @@ def pre_reflection_journal(psalm_number):
     
     # GET request - show journal entry form
     emotion = request.args.get('emotion')
+    is_explore = request.args.get('is_explore', 'false').lower() == 'true'
     if not emotion:
         return redirect(url_for('main.pre_reflection', psalm_number=psalm_number))
     
     return render_template('pre_reflection_journal.html', 
                          psalm_number=psalm_number, 
-                         emotion=emotion)
+                         emotion=emotion,
+                         is_explore=is_explore)
 
 @main_bp.route('/journal-history')
 @login_required
@@ -578,6 +586,13 @@ def save_journal():
                 pre_reflection_data = session.get('pre_reflection', None)
                 if pre_reflection_data and pre_reflection_data.get('emotion'):
                     today_entry.prompt_responses['emotion'] = pre_reflection_data['emotion']
+                    
+            # Preserve explore flag if not already present and we have it from session
+            if 'is_explore' not in today_entry.prompt_responses:
+                from flask import session
+                pre_reflection_data = session.get('pre_reflection', None)
+                if pre_reflection_data and pre_reflection_data.get('is_explore'):
+                    today_entry.prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
             today_entry.save()
         else:
@@ -588,6 +603,10 @@ def save_journal():
             # Include emotion data in prompt responses if available
             if pre_reflection_data and pre_reflection_data.get('emotion'):
                 prompt_responses['emotion'] = pre_reflection_data['emotion']
+                
+            # Include explore flag in prompt responses if this is an explore session
+            if pre_reflection_data and pre_reflection_data.get('is_explore'):
+                prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
             # Create new consolidated entry
             entry = JournalEntry(

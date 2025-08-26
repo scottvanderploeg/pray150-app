@@ -315,7 +315,8 @@ function navigateToPsalm() {
     const psalmNumber = selector.value;
     
     if (psalmNumber) {
-        window.location.href = `/psalm/${psalmNumber}`;
+        // Navigate to pre-reflection page with explore parameter to indicate this is an exploration
+        window.location.href = `/pre_reflection/${psalmNumber}?explore=true`;
     }
 }
 
