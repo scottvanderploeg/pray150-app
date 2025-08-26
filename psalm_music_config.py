@@ -140,13 +140,14 @@ PSALM_MUSIC_VIDEOS = {
     109: 'NiJ5K-921eE', # Psalm 109
     110: 'Y-tBTmI5KVE', # Psalm 110
     
-    # Psalms 111-116
+    # Psalms 111-117
     111: 'T730XuMHsbA', # Psalm 111
     112: 'veFOJeG_-3w', # Psalm 112
     113: 'wEn6cQSOGbk', # Psalm 113
     114: 'FkiCrBOjvts', # Psalm 114
     115: '-FAWPuepvGs', # Psalm 115
     116: '7EGPvWK8w8k', # Psalm 116
+    117: '3iIQXFowCgo', # Psalm 117
 }
 
 # Multiple videos for the same psalm (if you have more than one song for a psalm)
