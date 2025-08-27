@@ -133,28 +133,63 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Fix font picker display names
+    // Fix font picker display names with direct text replacement
     setTimeout(() => {
         const fontPicker = globalToolbar.container.querySelector('.ql-picker.ql-font');
         if (fontPicker) {
             const pickerItems = fontPicker.querySelectorAll('.ql-picker-item');
             const pickerLabel = fontPicker.querySelector('.ql-picker-label');
             
-            // Update picker items with readable names
+            // Create array of font names in order
+            const fontDisplayNames = [
+                'Default Font',
+                'Playfair Display',
+                'Merriweather', 
+                'Lora',
+                'Crimson Text',
+                'Libre Baskerville',
+                'Source Serif Pro',
+                'Cormorant Garamond',
+                'Vollkorn',
+                'Alegreya',
+                'Spectral',
+                'Neuton',
+                'Linden Hill',
+                'Cardo',
+                'Gentium Basic',
+                'Domine',
+                'Bitter',
+                'Arvo',
+                'Rokkitt',
+                'Georgia',
+                'Times New Roman',
+                'Arial',
+                'Helvetica Neue',
+                'Open Sans',
+                'Roboto'
+            ];
+            
+            // Update each picker item directly
             pickerItems.forEach((item, index) => {
-                const value = item.getAttribute('data-value') || '';
-                const displayName = fontNames[value === '' ? false : value];
-                if (displayName) {
-                    item.setAttribute('data-label', displayName);
+                if (index < fontDisplayNames.length) {
+                    item.textContent = fontDisplayNames[index];
+                    item.setAttribute('data-label', fontDisplayNames[index]);
+                    
+                    // Add font family preview
+                    const value = item.getAttribute('data-value') || '';
+                    if (value && value !== '') {
+                        item.style.fontFamily = `var(--ql-font-${value}), Georgia, serif`;
+                    }
                 }
             });
             
             // Update the main label
             if (pickerLabel) {
+                pickerLabel.textContent = 'Font';
                 pickerLabel.setAttribute('data-label', 'Font');
             }
         }
-    }, 100);
+    }, 200);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
