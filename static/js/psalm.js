@@ -9,8 +9,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Journal auto-save functionality
     const journalForm = document.getElementById('journalForm');
-    const journalTextareas = document.querySelectorAll('.journal-textarea');
+    const journalEditors = document.querySelectorAll('.journal-editor');
     const saveStatus = document.getElementById('saveStatus');
+    
+    // Initialize Quill editors
+    const quillInstances = {};
+    const toolbarOptions = [
+        [{ 'font': ['serif', 'sans-serif', 'monospace'] }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'color': [] }, { 'background': [] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'align': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        ['clean']
+    ];
     
     let isHighlightMode = false;
     let isNoteMode = false;
@@ -65,8 +78,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Initialize Quill editors
+    journalEditors.forEach((editorElement, index) => {
+        const promptNumber = editorElement.getAttribute('data-prompt');
+        const placeholder = editorElement.getAttribute('data-placeholder');
+        
+        // Get initial content
+        const initialContent = editorElement.innerHTML.trim();
+        
+        // Clear the div content before initializing Quill
+        editorElement.innerHTML = '';
+        
+        const quill = new Quill(editorElement, {
+            theme: 'snow',
+            placeholder: placeholder,
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+        
+        // Set initial content if exists
+        if (initialContent && initialContent !== '') {
+            // Check if content is HTML or plain text
+            if (initialContent.includes('<') && initialContent.includes('>')) {
+                quill.root.innerHTML = initialContent;
+            } else {
+                quill.setText(initialContent);
+            }
+        }
+        
+        // Store quill instance
+        quillInstances[promptNumber] = quill;
+        
+        // Add change listener for auto-save
+        quill.on('text-change', function(delta, oldDelta, source) {
+            if (source === 'user') {
+                scheduleAutoSave();
+            }
+        });
+    });
+
     // Journal auto-save functionality
-    if (journalForm && journalTextareas.length > 0) {
+    if (journalForm && journalEditors.length > 0) {
         // Initialize with empty save status
         if (saveStatus) {
             saveStatus.textContent = 'Ready';
@@ -174,10 +227,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const psalmId = journalForm.dataset.psalmId;
             const promptResponses = {};
             
-            journalTextareas.forEach(textarea => {
-                const promptNum = textarea.dataset.prompt;
-                const content = textarea.value.trim();
-                if (content) {
+            // Collect data from Quill editors
+            Object.keys(quillInstances).forEach(promptNum => {
+                const quill = quillInstances[promptNum];
+                const content = quill.getLength() > 1 ? quill.root.innerHTML.trim() : '';
+                if (content && content !== '<p><br></p>') {
                     promptResponses[promptNum] = content;
                 }
             });
@@ -270,31 +324,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 3000);
         
-        // Add event listeners for auto-save
-        journalTextareas.forEach(textarea => {
-            textarea.addEventListener('input', function() {
-                // Clear existing timeout
-                if (saveTimeout) {
-                    clearTimeout(saveTimeout);
-                }
-                
-                // Set new timeout for auto-save (2 seconds after user stops typing)
-                saveTimeout = setTimeout(saveJournal, 2000);
-                
-                if (saveStatus) {
-                    saveStatus.textContent = 'Typing...';
-                    saveStatus.className = 'text-muted';
-                }
-            });
-
-            // Save on blur (when user clicks away)
-            textarea.addEventListener('blur', function() {
-                if (saveTimeout) {
-                    clearTimeout(saveTimeout);
-                }
-                saveTimeout = setTimeout(saveJournal, 500);
-            });
-        });
+        // Note: Auto-save is now handled by Quill text-change events above
+        // Each Quill editor calls scheduleAutoSave() when content changes
+        
+        // Function to schedule auto-save with debouncing
+        function scheduleAutoSave() {
+            // Clear existing timeout
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+            
+            // Set new timeout for auto-save (2 seconds after user stops typing)
+            saveTimeout = setTimeout(saveJournal, 2000);
+            
+            if (saveStatus) {
+                saveStatus.textContent = 'Typing...';
+                saveStatus.className = 'text-muted';
+            }
+        }
 
         // Save before page unload
         window.addEventListener('beforeunload', function() {
