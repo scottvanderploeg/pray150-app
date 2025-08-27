@@ -319,14 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                             <div id="fontSizeDropdown" style="display: none; position: absolute; top: 32px; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;">
-                                    <button type="button" onclick="console.log('Font size 10px clicked'); applySimpleFormat('size', '10px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 10px;" title="10px">10px</button>
-                                    <button type="button" onclick="console.log('Font size 12px clicked'); applySimpleFormat('size', '12px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 12px;" title="12px">12px</button>
-                                    <button type="button" onclick="console.log('Font size 14px clicked'); applySimpleFormat('size', '14px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 14px;" title="14px">14px</button>
-                                    <button type="button" onclick="console.log('Font size 16px clicked'); applySimpleFormat('size', '16px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 16px;" title="16px">16px</button>
-                                    <button type="button" onclick="console.log('Font size 18px clicked'); applySimpleFormat('size', '18px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 18px;" title="18px">18px</button>
-                                    <button type="button" onclick="console.log('Font size 20px clicked'); applySimpleFormat('size', '20px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 20px;" title="20px">20px</button>
-                                    <button type="button" onclick="console.log('Font size 24px clicked'); applySimpleFormat('size', '24px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 24px;" title="24px">24px</button>
-                                    <button type="button" onclick="console.log('Font size 28px clicked'); applySimpleFormat('size', '28px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 28px;" title="28px">28px</button>
+                                    <button type="button" onclick="console.log('Font size 10px clicked'); applyFontSize('10px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 10px;" title="10px">10px</button>
+                                    <button type="button" onclick="console.log('Font size 12px clicked'); applyFontSize('12px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 12px;" title="12px">12px</button>
+                                    <button type="button" onclick="console.log('Font size 14px clicked'); applyFontSize('14px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 14px;" title="14px">14px</button>
+                                    <button type="button" onclick="console.log('Font size 16px clicked'); applyFontSize('16px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 16px;" title="16px">16px</button>
+                                    <button type="button" onclick="console.log('Font size 18px clicked'); applyFontSize('18px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 18px;" title="18px">18px</button>
+                                    <button type="button" onclick="console.log('Font size 20px clicked'); applyFontSize('20px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 20px;" title="20px">20px</button>
+                                    <button type="button" onclick="console.log('Font size 24px clicked'); applyFontSize('24px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 24px;" title="24px">24px</button>
+                                    <button type="button" onclick="console.log('Font size 28px clicked'); applyFontSize('28px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 28px;" title="28px">28px</button>
                                 </div>
                             </div>
                         </div>
@@ -514,6 +514,86 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         } else {
                             console.log('No active editor found for custom', formatType);
+                        }
+                    };
+
+                    // Add font size function that uses inline styles
+                    window.applyFontSize = function(size) {
+                        console.log('Font size function called:', size);
+                        const allEditors = document.querySelectorAll('.ql-editor');
+                        console.log('Found', allEditors.length, 'Quill editors on page');
+                        
+                        let activeEditor = null;
+                        
+                        // Check each editor for selection or focus
+                        for (let i = 0; i < allEditors.length; i++) {
+                            const editorElement = allEditors[i];
+                            console.log('Checking editor', i + 1);
+                            
+                            let quillInstance = null;
+                            if (editorElement.__quill) {
+                                quillInstance = editorElement.__quill;
+                                console.log('Found Quill instance via __quill property');
+                            } else {
+                                const container = editorElement.closest('.ql-container');
+                                if (container && container.__quill) {
+                                    quillInstance = container.__quill;
+                                    console.log('Found Quill instance via container __quill property');
+                                }
+                            }
+                            
+                            if (quillInstance) {
+                                const selection = quillInstance.getSelection();
+                                console.log('Editor', i + 1, 'selection:', selection);
+                                
+                                if (selection && selection.length > 0) {
+                                    console.log('Editor', i + 1, 'has text selection - using this one');
+                                    activeEditor = quillInstance;
+                                    break;
+                                } else if (selection && selection.length === 0 && document.activeElement === editorElement) {
+                                    console.log('Editor', i + 1, 'has cursor focus - using this one');
+                                    activeEditor = quillInstance;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (activeEditor) {
+                            const selection = activeEditor.getSelection();
+                            console.log('Using active editor with selection:', selection);
+                            
+                            if (selection) {
+                                if (selection.length > 0) {
+                                    // Apply to selected text using style formatting
+                                    const styleFormat = `font-size: ${size};`;
+                                    const currentFormat = activeEditor.getFormat(selection);
+                                    
+                                    // Combine with existing styles if any
+                                    let newStyle = styleFormat;
+                                    if (currentFormat.style) {
+                                        // Remove existing font-size from style and add new one
+                                        const existingStyle = currentFormat.style.replace(/font-size:[^;]*;?/g, '');
+                                        newStyle = existingStyle + ' ' + styleFormat;
+                                    }
+                                    
+                                    activeEditor.formatText(selection.index, selection.length, 'style', newStyle);
+                                    console.log('Applied font size', size, 'to selected text');
+                                } else {
+                                    // Apply for future typing using style formatting
+                                    const styleFormat = `font-size: ${size};`;
+                                    activeEditor.format('style', styleFormat);
+                                    console.log('Set font size', size, 'for future typing');
+                                }
+                                
+                                // Close the dropdown
+                                const dropdown = document.getElementById('fontSizeDropdown');
+                                if (dropdown) {
+                                    dropdown.style.display = 'none';
+                                    console.log('Font size selected, dropdown closed');
+                                }
+                            }
+                        } else {
+                            console.log('No active editor found for font size');
                         }
                     };
                     
