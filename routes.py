@@ -521,7 +521,16 @@ def psalm(psalm_number):
         print(f"DEBUG: Looking for today's entry for {today}")
         for entry in journal_entries:
             print(f"DEBUG: Entry {entry.id}, created_at: {entry.created_at}")
-            if entry.created_at and entry.created_at.startswith(today):
+            # Handle both string and datetime objects for created_at
+            created_date = None
+            if entry.created_at:
+                if isinstance(entry.created_at, str):
+                    created_date = entry.created_at[:10]  # Get YYYY-MM-DD part
+                else:
+                    # If it's a datetime object, format it
+                    created_date = entry.created_at.strftime('%Y-%m-%d')
+            
+            if created_date and created_date == today:
                 today_entry = entry
                 print(f"DEBUG: Found today's entry: {entry.id}")
                 break
@@ -595,7 +604,16 @@ def save_journal():
         # Filter to today's entries only
         today_entry = None
         for entry in existing_entries:
-            if entry.created_at and entry.created_at.startswith(today):
+            # Handle both string and datetime objects for created_at
+            created_date = None
+            if entry.created_at:
+                if isinstance(entry.created_at, str):
+                    created_date = entry.created_at[:10]  # Get YYYY-MM-DD part
+                else:
+                    # If it's a datetime object, format it
+                    created_date = entry.created_at.strftime('%Y-%m-%d')
+            
+            if created_date and created_date == today:
                 today_entry = entry
                 break
         
