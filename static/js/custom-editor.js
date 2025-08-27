@@ -248,13 +248,29 @@ function saveJournalEntries() {
     
     const editors = document.querySelectorAll('.custom-editor-content');
     const data = {};
+    let hasContent = false;
     
     editors.forEach(editor => {
         const prompt = editor.getAttribute('data-prompt');
         if (prompt) {
-            data[prompt] = editor.innerHTML;
+            const htmlContent = editor.innerHTML;
+            
+            // Check if there's actual text content (not just formatting)
+            const textContent = editor.textContent || editor.innerText;
+            const cleanText = textContent.replace(/\s/g, '').replace(/\u00A0/g, ''); // Remove spaces and non-breaking spaces
+            
+            if (cleanText.length > 0) {
+                data[prompt] = htmlContent;
+                hasContent = true;
+            }
         }
     });
+    
+    // Only save if there's actual content
+    if (!hasContent) {
+        console.log('No meaningful content to save, skipping auto-save');
+        return;
+    }
     
     // Add psalm ID
     const psalmMatch = window.location.pathname.match(/\/psalm\/(\d+)/);
