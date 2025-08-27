@@ -790,6 +790,35 @@
     
     // Call loadYouTubeVideo when page loads
     document.addEventListener('DOMContentLoaded', loadYouTubeVideo);
+    
+    // Simple format function for colors and highlighting
+    function applySimpleFormat(formatType, color) {
+        console.log('Simple format function called:', formatType, color);
+        
+        // Find the currently active editor
+        let activeEditor = null;
+        if (typeof quillInstances !== 'undefined') {
+            Object.values(quillInstances).forEach(quill => {
+                const selection = quill.getSelection();
+                if (selection && selection.length > 0) {
+                    activeEditor = quill;
+                }
+            });
+        }
+        
+        if (activeEditor) {
+            const selection = activeEditor.getSelection();
+            if (selection && selection.length > 0) {
+                console.log('Applying', formatType, 'with color:', color);
+                activeEditor.format(formatType, color);
+                console.log('Format applied successfully');
+            } else {
+                alert('Please select some text first!');
+            }
+        } else {
+            alert('Please click in a text box and select some text first!');
+        }
+    }
 </script>
 
 <!-- Quill.js Rich Text Editor -->
