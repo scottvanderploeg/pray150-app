@@ -52,64 +52,47 @@ window.formatText = function(command, value = null) {
     }
     
     try {
-        // Special handling for font size
+        // Restore selection before applying any formatting
+        if (savedRange) {
+            selection.removeAllRanges();
+            selection.addRange(savedRange);
+        }
+        
+        // Special handling for font size - use document.execCommand which handles inheritance better
         if (command === 'fontSize') {
-            if (savedRange) {
+            // For font size, we need to use a different approach
+            if (savedRange && savedRange.collapsed) {
+                // No selection - create a span for future typing
+                const span = document.createElement('span');
+                span.style.fontSize = value;
+                span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
+                savedRange.insertNode(span);
+                // Position cursor at the end of the span for future typing
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
-                
-                if (savedRange.collapsed) {
-                    // No selection - set for next typing
-                    const span = document.createElement('span');
-                    span.style.fontSize = value;
-                    span.appendChild(document.createTextNode('\u200B')); // Zero-width space
-                    savedRange.insertNode(span);
-                    savedRange.setStart(span.firstChild, 1);
-                    savedRange.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(savedRange);
-                } else {
-                    // Has selection - wrap it
-                    const contents = savedRange.extractContents();
-                    const span = document.createElement('span');
-                    span.style.fontSize = value;
-                    span.appendChild(contents);
-                    savedRange.insertNode(span);
-                    // Clear selection after wrapping
-                    savedRange.collapse(false);
-                    selection.removeAllRanges();
-                    selection.addRange(savedRange);
-                }
-            }
-        }
-        // Special handling for colors and highlights to preserve selection better
-        else if (command === 'foreColor' || command === 'hiliteColor') {
-            if (savedRange) {
+            } else if (savedRange) {
+                // Has selection - wrap it
+                const contents = savedRange.extractContents();
+                const span = document.createElement('span');
+                span.style.fontSize = value;
+                span.appendChild(contents);
+                savedRange.insertNode(span);
+                // Position cursor after the span
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
-                
-                if (command === 'hiliteColor' && value === 'transparent') {
-                    // Remove highlight
-                    document.execCommand('hiliteColor', false, 'transparent');
-                    document.execCommand('removeFormat', false, null);
-                } else {
-                    // Apply color or highlight
-                    document.execCommand(command, false, value);
-                }
-                
-                // Restore cursor position after formatting
-                if (savedRange.collapsed) {
-                    selection.removeAllRanges();
-                    selection.addRange(savedRange);
-                }
             }
         }
-        // Standard formatting commands
+        // Special handling for highlight removal
+        else if (command === 'hiliteColor' && value === 'transparent') {
+            document.execCommand('hiliteColor', false, 'transparent');
+            document.execCommand('removeFormat', false, null);
+        }
+        // For all other commands, use execCommand which handles cursor positioning well
         else {
-            if (savedRange) {
-                selection.removeAllRanges();
-                selection.addRange(savedRange);
-            }
             document.execCommand(command, false, value);
         }
         
@@ -124,8 +107,13 @@ window.formatText = function(command, value = null) {
         // Close any open dropdowns
         closeAllDropdowns();
         
-        // Keep focus on editor and ensure cursor position is maintained
+        // Keep focus on editor
         activeEditor.focus();
+        
+        // For better formatting inheritance, trigger a small delay to let the browser settle
+        setTimeout(() => {
+            updateButtonStates(activeEditor);
+        }, 10);
         
     } catch (error) {
         console.error('Error applying format:', error);
@@ -314,6 +302,11 @@ function initializeCustomEditors() {
         });
         
         editor.addEventListener('keyup', function() {
+            updateButtonStates(this);
+        });
+        
+        // Handle selection change events for better formatting inheritance
+        editor.addEventListener('selectionchange', function() {
             updateButtonStates(this);
         });
         
