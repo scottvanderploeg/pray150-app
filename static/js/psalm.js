@@ -26,60 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     Quill.register(Font, true);
     
-    // Override the font picker to show custom names
-    const Picker = Quill.import('ui/picker');
-    class FontPicker extends Picker {
-        constructor(select, icon) {
-            super(select, icon);
-            this.selectItem(null, true);
-        }
-        
-        buildItem(option) {
-            const item = super.buildItem(option);
-            const value = option.getAttribute('value') || '';
-            if (fontNames[value] || fontNames[value === '' ? false : value]) {
-                const displayName = fontNames[value === '' ? false : value];
-                item.textContent = displayName;
-                item.setAttribute('data-label', displayName);
-            }
-            return item;
-        }
-    }
-    
-    // Register the custom picker
-    Quill.register('ui/font-picker', FontPicker);
-    
-    // Define custom font options with display names
-    const fontOptions = [
-        ['', 'Default Font'],
-        ['playfair', 'Playfair Display'],
-        ['merriweather', 'Merriweather'], 
-        ['lora', 'Lora'],
-        ['crimson', 'Crimson Text'],
-        ['baskerville', 'Libre Baskerville'],
-        ['source-serif', 'Source Serif Pro'],
-        ['cormorant', 'Cormorant Garamond'],
-        ['vollkorn', 'Vollkorn'],
-        ['alegreya', 'Alegreya'],
-        ['spectral', 'Spectral'],
-        ['neuton', 'Neuton'],
-        ['linden', 'Linden Hill'],
-        ['cardo', 'Cardo'],
-        ['gentium', 'Gentium Basic'],
-        ['domine', 'Domine'],
-        ['bitter', 'Bitter'],
-        ['arvo', 'Arvo'],
-        ['rokkitt', 'Rokkitt'],
-        ['georgia', 'Georgia'],
-        ['times', 'Times New Roman'],
-        ['arial', 'Arial'],
-        ['helvetica', 'Helvetica Neue'],
-        ['opensans', 'Open Sans'],
-        ['roboto', 'Roboto']
-    ];
-    
     const toolbarOptions = [
-        [{ 'font': fontOptions.map(f => f[0] || false) }],
+        [{ 'font': [
+            false, 'playfair', 'merriweather', 'lora', 'crimson', 'baskerville',
+            'source-serif', 'cormorant', 'vollkorn', 'alegreya', 'spectral',
+            'neuton', 'linden', 'cardo', 'gentium', 'domine', 'bitter',
+            'arvo', 'rokkitt', 'georgia', 'times', 'arial', 'helvetica',
+            'opensans', 'roboto'
+        ] }],
         [{ 'size': ['small', false, 'large', 'huge'] }],
         [{ 'color': [] }, { 'background': [] }],
         ['bold', 'italic', 'underline', 'strike'],
@@ -179,43 +133,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Customize font picker display with proper names
+    // Fix font picker display names
     setTimeout(() => {
         const fontPicker = globalToolbar.container.querySelector('.ql-picker.ql-font');
         if (fontPicker) {
             const pickerItems = fontPicker.querySelectorAll('.ql-picker-item');
             const pickerLabel = fontPicker.querySelector('.ql-picker-label');
             
-            // Create a map for quick lookup
-            const fontMap = {};
-            fontOptions.forEach(([value, name]) => {
-                fontMap[value || ''] = name;
-            });
-            
-            // Update each picker item
+            // Update picker items with readable names
             pickerItems.forEach((item, index) => {
                 const value = item.getAttribute('data-value') || '';
-                const displayName = fontMap[value] || fontOptions[index]?.[1] || 'Default Font';
-                
-                // Clear existing content and set new text
-                item.innerHTML = '';
-                item.textContent = displayName;
-                item.setAttribute('data-label', displayName);
-                
-                // Apply font family for preview
-                if (value && value !== '') {
-                    item.style.fontFamily = `var(--ql-font-${value})`;
+                const displayName = fontNames[value === '' ? false : value];
+                if (displayName) {
+                    item.setAttribute('data-label', displayName);
                 }
             });
             
             // Update the main label
             if (pickerLabel) {
-                pickerLabel.innerHTML = '';
-                pickerLabel.textContent = 'Font';
                 pickerLabel.setAttribute('data-label', 'Font');
             }
         }
-    }, 300);
+    }, 100);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {

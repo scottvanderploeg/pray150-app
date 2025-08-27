@@ -46,8 +46,16 @@
     #global-toolbar {
         position: sticky;
         top: 20px;
-        z-index: 100;
+        z-index: 1000;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    #global-toolbar .ql-editor {
+        display: none !important;
+    }
+    
+    #global-toolbar .ql-picker-options {
+        z-index: 1001 !important;
     }
     
     /* Quill Editor Styling */
@@ -107,21 +115,21 @@
     .ql-font-opensans { font-family: 'Open Sans', sans-serif; }
     .ql-font-roboto { font-family: 'Roboto', sans-serif; }
     
-    /* Font dropdown styling */
-    .ql-picker.ql-font .ql-picker-label::before,
-    .ql-picker.ql-font .ql-picker-item::before {
+    /* Font dropdown styling with proper names */
+    .ql-picker.ql-font .ql-picker-label[data-label]::before {
         content: attr(data-label) !important;
     }
     
-    /* Hide default Quill font text */
-    .ql-picker.ql-font .ql-picker-label[data-label]::before,
     .ql-picker.ql-font .ql-picker-item[data-label]::before {
         content: attr(data-label) !important;
     }
     
-    .ql-picker.ql-font .ql-picker-label span,
-    .ql-picker.ql-font .ql-picker-item span {
-        display: none !important;
+    .ql-picker.ql-font .ql-picker-label:not([data-label])::before {
+        content: 'Font';
+    }
+    
+    .ql-picker.ql-font .ql-picker-item:not([data-label])::before {
+        content: 'Default Font';
     }
     
     /* CSS variables for font preview */
