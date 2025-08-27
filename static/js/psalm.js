@@ -130,47 +130,108 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Connect global toolbar to individual editors
     function connectGlobalToolbar() {
-        const toolbar = globalToolbar.getModule('toolbar');
-        if (toolbar) {
-            console.log('Connecting global toolbar handlers');
-            
-            // Helper function to get active editor
-            const getActiveEditor = () => {
-                let activeEditor = null;
-                Object.values(quillInstances).forEach(quill => {
-                    const selection = quill.getSelection();
-                    if (selection) {
-                        activeEditor = quill;
-                    }
-                });
-                return activeEditor;
-            };
-            
-            // Override the toolbar's built-in handlers
-            const toolbarModule = globalToolbar.getModule('toolbar');
-            if (toolbarModule) {
-                // Store original handlers
-                const originalHandlers = toolbarModule.handlers;
+        console.log('Connecting global toolbar handlers');
+        
+        // Helper function to get active editor
+        const getActiveEditor = () => {
+            let activeEditor = null;
+            Object.values(quillInstances).forEach(quill => {
+                const selection = quill.getSelection();
+                if (selection) {
+                    activeEditor = quill;
+                }
+            });
+            return activeEditor;
+        };
+        
+        // Wait for toolbar to be fully rendered
+        setTimeout(() => {
+            const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
+            if (toolbarContainer) {
+                console.log('Found toolbar container, adding direct event listeners');
                 
-                // Override each format handler
-                ['bold', 'italic', 'underline', 'strike', 'color', 'background', 'size', 'align', 'list', 'indent', 'clean'].forEach(format => {
-                    toolbarModule.addHandler(format, function(value) {
+                // Add listeners to all buttons
+                const buttons = toolbarContainer.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
                         const activeEditor = getActiveEditor();
-                        if (activeEditor) {
-                            console.log(`Applying ${format}:`, value);
-                            if (format === 'clean') {
-                                const selection = activeEditor.getSelection();
-                                if (selection) {
-                                    activeEditor.removeFormat(selection);
-                                }
-                            } else {
-                                activeEditor.format(format, value);
+                        if (!activeEditor) return;
+                        
+                        const className = button.className;
+                        console.log('Button clicked:', className);
+                        
+                        if (className.includes('ql-bold')) {
+                            const currentFormat = activeEditor.getFormat();
+                            activeEditor.format('bold', !currentFormat.bold);
+                        } else if (className.includes('ql-italic')) {
+                            const currentFormat = activeEditor.getFormat();
+                            activeEditor.format('italic', !currentFormat.italic);
+                        } else if (className.includes('ql-underline')) {
+                            const currentFormat = activeEditor.getFormat();
+                            activeEditor.format('underline', !currentFormat.underline);
+                        } else if (className.includes('ql-strike')) {
+                            const currentFormat = activeEditor.getFormat();
+                            activeEditor.format('strike', !currentFormat.strike);
+                        } else if (className.includes('ql-clean')) {
+                            const selection = activeEditor.getSelection();
+                            if (selection) {
+                                activeEditor.removeFormat(selection);
                             }
                         }
                     });
                 });
+                
+                // Add listeners to color pickers
+                const colorPickers = toolbarContainer.querySelectorAll('.ql-color .ql-picker-options .ql-picker-item');
+                colorPickers.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const activeEditor = getActiveEditor();
+                        if (!activeEditor) return;
+                        
+                        const color = item.getAttribute('data-value') || item.style.backgroundColor;
+                        console.log('Color selected:', color);
+                        activeEditor.format('color', color);
+                    });
+                });
+                
+                // Add listeners to background color pickers
+                const backgroundPickers = toolbarContainer.querySelectorAll('.ql-background .ql-picker-options .ql-picker-item');
+                backgroundPickers.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const activeEditor = getActiveEditor();
+                        if (!activeEditor) return;
+                        
+                        const color = item.getAttribute('data-value') || item.style.backgroundColor;
+                        console.log('Background color selected:', color);
+                        activeEditor.format('background', color);
+                    });
+                });
+                
+                // Add listeners to dropdowns
+                const selects = toolbarContainer.querySelectorAll('select');
+                selects.forEach(select => {
+                    select.addEventListener('change', (e) => {
+                        const activeEditor = getActiveEditor();
+                        if (!activeEditor) return;
+                        
+                        const className = select.className;
+                        const value = select.value;
+                        console.log('Select changed:', className, value);
+                        
+                        if (className.includes('ql-size')) {
+                            activeEditor.format('size', value || false);
+                        } else if (className.includes('ql-align')) {
+                            activeEditor.format('align', value || false);
+                        } else if (className.includes('ql-list')) {
+                            activeEditor.format('list', value || false);
+                        }
+                    });
+                });
+            } else {
+                console.log('Toolbar container not found');
             }
-        }
+        }, 1000);
     }
     
     // Connect toolbar after a delay to ensure everything is initialized
