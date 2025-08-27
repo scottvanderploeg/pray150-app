@@ -172,8 +172,10 @@ class User(UserMixin):
                 
                 # Check if this was an explore session - if so, don't count it for progression
                 is_explore = prompt_responses.get('is_explore', False)
+                # Only count psalms that are explicitly marked as completed
+                is_completed = prompt_responses.get('completed', False)
                 
-                if psalm_id and not is_explore:
+                if psalm_id and not is_explore and is_completed:
                     completed_psalms.add(int(psalm_id))
             
             print(f"DEBUG: User {self.id} completed psalms: {sorted(completed_psalms)}")

@@ -549,6 +549,7 @@ def save_journal():
             data = request.get_json()
             psalm_id = data.get('psalm_id')
             prompt_responses = data.get('prompt_responses', {})
+            completed = data.get('completed', False)
         else:
             # Handle form data for backward compatibility
             psalm_id = request.form.get('psalm_id')
@@ -580,6 +581,10 @@ def save_journal():
             # Update existing entry with consolidated responses
             today_entry.prompt_responses.update(prompt_responses)
             
+            # Update completed status if provided
+            if 'completed' not in today_entry.prompt_responses:
+                today_entry.prompt_responses['completed'] = completed
+            
             # Preserve emotion data if not already present and we have it from session
             if 'emotion' not in today_entry.prompt_responses:
                 from flask import session
@@ -609,6 +614,10 @@ def save_journal():
                 prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
             # Create new consolidated entry
+            # Add completed flag to prompt_responses
+            if 'completed' not in prompt_responses:
+                prompt_responses['completed'] = completed
+            
             entry = JournalEntry(
                 user_id=current_user.id,
                 psalm_id=psalm_id,
@@ -641,8 +650,17 @@ def complete_psalm():
             flash('Please complete the journal prompts before marking this psalm as complete.', 'warning')
             return redirect(url_for('main.psalm', psalm_number=psalm_number))
         
-        # For now, we're using journal entries as completion tracking
-        # Since the user has journal entries for this psalm, it's considered complete
+        # Mark the journal entry as completed
+        for entry_data in journal_result.data:
+            # Update the prompt_responses to mark as completed
+            prompt_responses = entry_data.get('prompt_responses', {})
+            prompt_responses['completed'] = True
+            
+            # Update the entry in Supabase
+            supabase.table('journal_entries').update({
+                'prompt_responses': prompt_responses
+            }).eq('id', entry_data['id']).execute()
+        
         flash('Psalm completed! Moving to your next psalm in the journey.', 'success')
             
     except Exception as e:

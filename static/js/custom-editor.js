@@ -278,6 +278,9 @@ function saveJournalEntries() {
         data.psalm_id = parseInt(psalmMatch[1]);
     }
     
+    // Mark this as a draft (not completed)
+    data.completed = false;
+    
     console.log('Saving data:', data);
     
     fetch('/save_journal', {
