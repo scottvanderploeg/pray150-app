@@ -211,6 +211,66 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('All toolbar handlers set up successfully');
             
+            // Override the built-in Quill color buttons with our working functionality
+            setTimeout(() => {
+                const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
+                if (toolbarContainer) {
+                    console.log('Setting up enhanced color button overrides');
+                    
+                    // Replace color picker dropdowns with our enhanced versions
+                    const colorPicker = toolbarContainer.querySelector('.ql-color .ql-picker-options');
+                    const backgroundPicker = toolbarContainer.querySelector('.ql-background .ql-picker-options');
+                    
+                    if (colorPicker) {
+                        colorPicker.innerHTML = `
+                            <span class="ql-picker-item" data-value="black" style="background-color: black;" title="Black"></span>
+                            <span class="ql-picker-item" data-value="gray" style="background-color: gray;" title="Gray"></span>
+                            <span class="ql-picker-item" data-value="red" style="background-color: red;" title="Red"></span>
+                            <span class="ql-picker-item" data-value="blue" style="background-color: blue;" title="Blue"></span>
+                            <span class="ql-picker-item" data-value="green" style="background-color: green;" title="Green"></span>
+                            <span class="ql-picker-item" data-value="purple" style="background-color: purple;" title="Purple"></span>
+                            <span class="ql-picker-item" data-value="orange" style="background-color: orange;" title="Orange"></span>
+                            <span class="ql-picker-item" data-value="darkblue" style="background-color: darkblue;" title="Dark Blue"></span>
+                            <span class="ql-picker-item" data-value="darkgreen" style="background-color: darkgreen;" title="Dark Green"></span>
+                            <span class="ql-picker-item" data-value="brown" style="background-color: brown;" title="Brown"></span>
+                        `;
+                        
+                        // Add click handlers for color picker items
+                        colorPicker.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('ql-picker-item')) {
+                                const color = e.target.getAttribute('data-value');
+                                console.log('Enhanced color picker clicked:', color);
+                                applySimpleFormat('color', color);
+                            }
+                        });
+                    }
+                    
+                    if (backgroundPicker) {
+                        backgroundPicker.innerHTML = `
+                            <span class="ql-picker-item" data-value="yellow" style="background-color: yellow;" title="Yellow Highlight"></span>
+                            <span class="ql-picker-item" data-value="lightblue" style="background-color: lightblue;" title="Light Blue Highlight"></span>
+                            <span class="ql-picker-item" data-value="lightgreen" style="background-color: lightgreen;" title="Light Green Highlight"></span>
+                            <span class="ql-picker-item" data-value="pink" style="background-color: pink;" title="Pink Highlight"></span>
+                            <span class="ql-picker-item" data-value="lavender" style="background-color: lavender;" title="Lavender Highlight"></span>
+                            <span class="ql-picker-item" data-value="" style="background-color: white; border: 2px solid #ccc; position: relative;" title="Remove Highlight">
+                                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
+                            </span>
+                        `;
+                        
+                        // Add click handlers for background picker items
+                        backgroundPicker.addEventListener('click', (e) => {
+                            if (e.target.classList.contains('ql-picker-item')) {
+                                const color = e.target.getAttribute('data-value');
+                                console.log('Enhanced background picker clicked:', color);
+                                applySimpleFormat('background', color || false);
+                            }
+                        });
+                    }
+                    
+                    console.log('Enhanced color button overrides complete');
+                }
+            }, 3000);
+            
             // Add simple color buttons that actually work
             setTimeout(() => {
                 const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
