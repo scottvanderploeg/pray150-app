@@ -791,58 +791,76 @@
     // Call loadYouTubeVideo when page loads
     document.addEventListener('DOMContentLoaded', loadYouTubeVideo);
     
-    // Simple format function for colors and highlighting
-    let lastActiveQuill = null;
-    let lastSelection = null;
-    
-    // Store selection when editor gets focus
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(() => {
-            if (typeof quillInstances !== 'undefined') {
-                Object.values(quillInstances).forEach(quill => {
-                    quill.on('selection-change', function(range, oldRange, source) {
-                        if (range) {
-                            lastActiveQuill = quill;
-                            lastSelection = range;
-                            console.log('Selection stored:', range);
-                        }
-                    });
-                });
-            }
-        }, 2000);
-    });
-    
     function applySimpleFormat(formatType, color) {
         console.log('Simple format function called:', formatType, color);
-        console.log('Last selection:', lastSelection);
-        console.log('Last active editor:', lastActiveQuill);
         
-        if (lastActiveQuill && lastSelection && lastSelection.length > 0) {
-            console.log('Applying', formatType, 'with color:', color);
+        // Try multiple approaches to find an active editor
+        let activeEditor = null;
+        let hasSelection = false;
+        
+        // Approach 1: Check all Quill instances for focus or selection
+        if (typeof quillInstances !== 'undefined') {
+            console.log('Checking', Object.keys(quillInstances).length, 'quill instances');
             
-            // Restore selection and apply format
-            lastActiveQuill.setSelection(lastSelection);
-            lastActiveQuill.format(formatType, color);
-            
-            console.log('Format applied successfully');
-        } else {
-            // Try to find any editor with current selection as fallback
-            let foundEditor = null;
-            if (typeof quillInstances !== 'undefined') {
-                Object.values(quillInstances).forEach(quill => {
+            Object.values(quillInstances).forEach(quill => {
+                try {
                     const selection = quill.getSelection();
-                    if (selection && selection.length > 0) {
-                        foundEditor = quill;
+                    if (selection) {
+                        console.log('Found editor with selection:', selection);
+                        if (selection.length > 0) {
+                            activeEditor = quill;
+                            hasSelection = true;
+                            console.log('Editor has text selection');
+                        } else if (!activeEditor && quill.hasFocus()) {
+                            activeEditor = quill;
+                            console.log('Editor has focus');
+                        }
+                    }
+                } catch (e) {
+                    console.log('Error checking editor:', e);
+                }
+            });
+        }
+        
+        // Approach 2: Find focused element
+        if (!activeEditor) {
+            const focusedElement = document.activeElement;
+            console.log('Focused element:', focusedElement);
+            
+            if (focusedElement && focusedElement.classList.contains('ql-editor')) {
+                // Find the quill instance for this editor
+                Object.values(quillInstances || {}).forEach(quill => {
+                    if (quill.root === focusedElement) {
+                        activeEditor = quill;
+                        console.log('Found editor from focused element');
                     }
                 });
             }
-            
-            if (foundEditor) {
-                console.log('Found editor with selection, applying format');
-                foundEditor.format(formatType, color);
-            } else {
-                alert('Please select some text in a journal response box first!');
+        }
+        
+        if (activeEditor) {
+            try {
+                const currentSelection = activeEditor.getSelection();
+                console.log('Current selection in active editor:', currentSelection);
+                
+                if (currentSelection && currentSelection.length > 0) {
+                    // Apply to selection
+                    activeEditor.format(formatType, color);
+                    console.log('Applied', formatType, color, 'to selection');
+                } else {
+                    // Insert text with formatting at cursor
+                    const cursorPos = currentSelection ? currentSelection.index : 0;
+                    activeEditor.insertText(cursorPos, 'Sample', { [formatType]: color });
+                    activeEditor.setSelection(cursorPos, 6); // Select the inserted text
+                    console.log('Inserted sample text with', formatType, color);
+                }
+            } catch (e) {
+                console.error('Error applying format:', e);
+                alert('Error applying formatting. Please try again.');
             }
+        } else {
+            console.log('No active editor found');
+            alert('Please click in a journal response box first, then select text or position your cursor where you want to apply formatting.');
         }
     }
 </script>
