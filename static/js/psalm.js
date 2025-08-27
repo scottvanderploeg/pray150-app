@@ -875,12 +875,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Add change listener for auto-save
-        quill.on('text-change', function(delta, oldDelta, source) {
-            if (source === 'user') {
-                scheduleAutoSave();
-            }
-        });
+        // Auto-save disabled - using custom editor auto-save instead
+        // quill.on('text-change', function(delta, oldDelta, source) {
+        //     if (source === 'user') {
+        //         scheduleAutoSave();
+        //     }
+        // });
         
         // Connect editor to global toolbar
         quill.on('selection-change', function(range) {
@@ -925,13 +925,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Journal auto-save functionality
-    if (journalForm && journalEditors.length > 0) {
-        // Initialize with empty save status
-        if (saveStatus) {
-            saveStatus.textContent = 'Ready';
-            saveStatus.className = 'text-muted';
-        }
+    // DISABLED: Old journal auto-save functionality - using custom editor auto-save instead
+    // if (journalForm && journalEditors.length > 0) {
+    //     // Initialize with empty save status
+    //     if (saveStatus) {
+    //         saveStatus.textContent = 'Ready';
+    //         saveStatus.className = 'text-muted';
+    //     }
+    if (false) { // Disable this entire block
 
         // Create persistent emotion indicator
         function createEmotionIndicator() {
@@ -1134,21 +1135,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Note: Auto-save is now handled by Quill text-change events above
         // Each Quill editor calls scheduleAutoSave() when content changes
         
-        // Function to schedule auto-save with debouncing
-        function scheduleAutoSave() {
-            // Clear existing timeout
-            if (saveTimeout) {
-                clearTimeout(saveTimeout);
-            }
-            
-            // Set new timeout for auto-save (2 seconds after user stops typing)
-            saveTimeout = setTimeout(saveJournal, 2000);
-            
-            if (saveStatus) {
-                saveStatus.textContent = 'Typing...';
-                saveStatus.className = 'text-muted';
-            }
-        }
+        // DISABLED: Old auto-save system - using custom editor auto-save instead
+        // function scheduleAutoSave() {
+        //     // Clear existing timeout
+        //     if (saveTimeout) {
+        //         clearTimeout(saveTimeout);
+        //     }
+        //     
+        //     // Set new timeout for auto-save (2 seconds after user stops typing)
+        //     saveTimeout = setTimeout(saveJournal, 2000);
+        //     
+        //     if (saveStatus) {
+        //         saveStatus.textContent = 'Typing...';
+        //         saveStatus.className = 'text-muted';
+        //     }
+        // }
 
         // Save before page unload
         window.addEventListener('beforeunload', function() {
