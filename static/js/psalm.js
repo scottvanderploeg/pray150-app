@@ -304,6 +304,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <button type="button" id="customUnderlineBtn" onclick="console.log('Custom underline clicked'); applyCustomFormat('underline')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Underline">
                                 <u>U</u>
                             </button>
+                            <button type="button" id="customStrikeBtn" onclick="console.log('Custom strikethrough clicked'); applyCustomFormat('strike')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Strikethrough">
+                                <s>S</s>
+                            </button>
                         </div>
                     `;
                     
@@ -440,6 +443,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 } else if (formatType === 'underline') {
                                     const button = document.getElementById('customUnderlineBtn');
+                                    if (button) {
+                                        button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                    }
+                                } else if (formatType === 'strike') {
+                                    const button = document.getElementById('customStrikeBtn');
                                     if (button) {
                                         button.style.background = newValue ? '#e0e0e0' : '#fff';
                                     }
