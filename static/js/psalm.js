@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
         
-        // Override the global toolbar's editor
+        // Override the global toolbar's editor and handlers
         const toolbar = globalToolbar.getModule('toolbar');
         if (toolbar) {
             // Replace the toolbar's quill reference
@@ -163,59 +163,53 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            console.log('Toolbar proxy set up successfully');
+            // Override specific format handlers
+            const originalHandlers = toolbar.handlers;
             
-            // Add debugging for color picker clicks
-            setTimeout(() => {
-                const toolbarContainer = document.querySelector('#global-toolbar');
-                if (toolbarContainer) {
-                    console.log('Adding color picker debugging');
-                    
-                    // Listen for all clicks on the toolbar
-                    toolbarContainer.addEventListener('click', (e) => {
-                        console.log('Toolbar click:', e.target.className, e.target.tagName);
-                        
-                        // Check if it's a color picker item
-                        if (e.target.closest('.ql-color') || e.target.closest('.ql-background')) {
-                            console.log('Color picker clicked!', e.target);
-                            
-                            // Get the active editor
-                            if (currentActiveEditor) {
-                                const selection = currentActiveEditor.getSelection();
-                                console.log('Current selection:', selection);
-                                
-                                if (selection && selection.length > 0) {
-                                    // Determine if it's text color or background
-                                    const isBackground = e.target.closest('.ql-background');
-                                    const formatType = isBackground ? 'background' : 'color';
-                                    
-                                    // Get color value from the clicked element
-                                    let colorValue = e.target.getAttribute('data-value');
-                                    if (!colorValue && e.target.style.backgroundColor) {
-                                        colorValue = e.target.style.backgroundColor;
-                                    }
-                                    if (!colorValue && e.target.style.color) {
-                                        colorValue = e.target.style.color;
-                                    }
-                                    
-                                    console.log('Applying', formatType, 'color:', colorValue);
-                                    
-                                    if (colorValue) {
-                                        currentActiveEditor.format(formatType, colorValue);
-                                        console.log('Color applied successfully');
-                                    } else {
-                                        console.log('No color value found');
-                                    }
-                                } else {
-                                    console.log('No text selected');
-                                }
-                            } else {
-                                console.log('No active editor');
-                            }
-                        }
-                    });
+            // Override color handler
+            toolbar.addHandler('color', function(value) {
+                console.log('Color handler called with value:', value);
+                if (currentActiveEditor) {
+                    const selection = currentActiveEditor.getSelection();
+                    if (selection && selection.length > 0) {
+                        currentActiveEditor.format('color', value);
+                        console.log('Color applied:', value);
+                    } else {
+                        console.log('No text selected for color');
+                    }
+                } else {
+                    console.log('No active editor for color');
                 }
-            }, 2000);
+            });
+            
+            // Override background handler
+            toolbar.addHandler('background', function(value) {
+                console.log('Background handler called with value:', value);
+                if (currentActiveEditor) {
+                    const selection = currentActiveEditor.getSelection();
+                    if (selection && selection.length > 0) {
+                        currentActiveEditor.format('background', value);
+                        console.log('Background applied:', value);
+                    } else {
+                        console.log('No text selected for background');
+                    }
+                } else {
+                    console.log('No active editor for background');
+                }
+            });
+            
+            // Override other formatting handlers
+            ['bold', 'italic', 'underline', 'strike'].forEach(format => {
+                toolbar.addHandler(format, function(value) {
+                    console.log(`${format} handler called`);
+                    if (currentActiveEditor) {
+                        const currentFormat = currentActiveEditor.getFormat();
+                        currentActiveEditor.format(format, !currentFormat[format]);
+                    }
+                });
+            });
+            
+            console.log('All toolbar handlers set up successfully');
         }
     }
     
