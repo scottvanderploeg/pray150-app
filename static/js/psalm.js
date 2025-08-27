@@ -131,8 +131,41 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to add font selector
     function addFontSelector() {
         console.log('Attempting to add font selector...');
-        const toolbar = globalToolbar.container.querySelector('.ql-toolbar');
-        console.log('Toolbar found:', toolbar);
+        
+        // Try different ways to find the toolbar
+        let toolbar = null;
+        
+        // Method 1: Look for .ql-toolbar in globalToolbar container
+        if (globalToolbar && globalToolbar.container) {
+            toolbar = globalToolbar.container.querySelector('.ql-toolbar');
+            console.log('Method 1 - Toolbar in container:', toolbar);
+        }
+        
+        // Method 2: Look directly in the global-toolbar element
+        if (!toolbar) {
+            const globalToolbarEl = document.getElementById('global-toolbar');
+            if (globalToolbarEl) {
+                toolbar = globalToolbarEl.querySelector('.ql-toolbar');
+                console.log('Method 2 - Toolbar in global element:', toolbar);
+            }
+        }
+        
+        // Method 3: Check if the global-toolbar element itself has toolbar class
+        if (!toolbar) {
+            const globalToolbarEl = document.getElementById('global-toolbar');
+            if (globalToolbarEl && globalToolbarEl.classList.contains('ql-toolbar')) {
+                toolbar = globalToolbarEl;
+                console.log('Method 3 - Global element is toolbar:', toolbar);
+            }
+        }
+        
+        // Method 4: Look for any .ql-toolbar on the page
+        if (!toolbar) {
+            toolbar = document.querySelector('.ql-toolbar');
+            console.log('Method 4 - Any toolbar on page:', toolbar);
+        }
+        
+        console.log('Final toolbar found:', toolbar);
         
         if (toolbar && !toolbar.querySelector('.ql-font-custom')) {
             console.log('Adding custom font selector to toolbar');
@@ -228,13 +261,25 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Custom font selector added successfully');
         } else {
             console.log('Font selector already exists or toolbar not found');
+            if (!toolbar) {
+                console.log('Toolbar is null - checking DOM structure...');
+                const globalEl = document.getElementById('global-toolbar');
+                console.log('Global toolbar element:', globalEl);
+                if (globalEl) {
+                    console.log('Global toolbar HTML:', globalEl.innerHTML);
+                }
+            }
         }
     }
     
-    // Try multiple times to add font selector
-    setTimeout(addFontSelector, 100);
-    setTimeout(addFontSelector, 500);
-    setTimeout(addFontSelector, 1000);
+    // Try multiple times to add font selector with longer delays
+    setTimeout(addFontSelector, 200);
+    setTimeout(addFontSelector, 800);
+    setTimeout(addFontSelector, 2000);
+    
+    // Also try when page is fully loaded
+    document.addEventListener('DOMContentLoaded', addFontSelector);
+    window.addEventListener('load', addFontSelector);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
