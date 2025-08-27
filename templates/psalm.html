@@ -794,73 +794,83 @@
     function applySimpleFormat(formatType, color) {
         console.log('Simple format function called:', formatType, color);
         
-        // Try multiple approaches to find an active editor
-        let activeEditor = null;
-        let hasSelection = false;
+        // Find all Quill editor elements on the page
+        const quillEditors = document.querySelectorAll('.ql-editor');
+        console.log('Found', quillEditors.length, 'Quill editors on page');
         
-        // Approach 1: Check all Quill instances for focus or selection
-        if (typeof quillInstances !== 'undefined') {
-            console.log('Checking', Object.keys(quillInstances).length, 'quill instances');
+        let activeEditor = null;
+        
+        // Check each editor for focus or selection
+        quillEditors.forEach((editorElement, index) => {
+            console.log('Checking editor', index + 1);
             
-            Object.values(quillInstances).forEach(quill => {
-                try {
-                    const selection = quill.getSelection();
-                    if (selection) {
-                        console.log('Found editor with selection:', selection);
-                        if (selection.length > 0) {
-                            activeEditor = quill;
-                            hasSelection = true;
-                            console.log('Editor has text selection');
-                        } else if (!activeEditor && quill.hasFocus()) {
-                            activeEditor = quill;
-                            console.log('Editor has focus');
+            // Try to get the Quill instance from the parent container
+            let quillInstance = null;
+            let parent = editorElement.parentElement;
+            
+            // Look for Quill instance in various ways
+            if (parent.__quill) {
+                quillInstance = parent.__quill;
+                console.log('Found Quill instance via __quill property');
+            } else if (window.Quill && window.Quill.find) {
+                quillInstance = window.Quill.find(editorElement);
+                console.log('Found Quill instance via Quill.find');
+            } else {
+                // Try to find in global quillInstances if available
+                if (typeof window.quillInstances !== 'undefined') {
+                    Object.values(window.quillInstances).forEach(quill => {
+                        if (quill.root === editorElement) {
+                            quillInstance = quill;
+                            console.log('Found Quill instance in global quillInstances');
                         }
+                    });
+                }
+            }
+            
+            if (quillInstance) {
+                try {
+                    const selection = quillInstance.getSelection();
+                    console.log('Editor', index + 1, 'selection:', selection);
+                    
+                    if (selection && selection.length > 0) {
+                        activeEditor = quillInstance;
+                        console.log('Editor', index + 1, 'has text selection - using this one');
+                        return; // Found editor with selection, use it
+                    } else if (quillInstance.hasFocus() && !activeEditor) {
+                        activeEditor = quillInstance;
+                        console.log('Editor', index + 1, 'has focus - potential candidate');
                     }
                 } catch (e) {
-                    console.log('Error checking editor:', e);
+                    console.log('Error checking editor', index + 1, ':', e);
                 }
-            });
-        }
-        
-        // Approach 2: Find focused element
-        if (!activeEditor) {
-            const focusedElement = document.activeElement;
-            console.log('Focused element:', focusedElement);
-            
-            if (focusedElement && focusedElement.classList.contains('ql-editor')) {
-                // Find the quill instance for this editor
-                Object.values(quillInstances || {}).forEach(quill => {
-                    if (quill.root === focusedElement) {
-                        activeEditor = quill;
-                        console.log('Found editor from focused element');
-                    }
-                });
+            } else {
+                console.log('Could not find Quill instance for editor', index + 1);
             }
-        }
+        });
         
         if (activeEditor) {
             try {
                 const currentSelection = activeEditor.getSelection();
-                console.log('Current selection in active editor:', currentSelection);
+                console.log('Using active editor with selection:', currentSelection);
                 
                 if (currentSelection && currentSelection.length > 0) {
-                    // Apply to selection
+                    // Apply formatting to selection
                     activeEditor.format(formatType, color);
-                    console.log('Applied', formatType, color, 'to selection');
+                    console.log('Applied', formatType, ':', color, 'to selected text');
                 } else {
-                    // Insert text with formatting at cursor
+                    // Insert colored text at cursor position
                     const cursorPos = currentSelection ? currentSelection.index : 0;
-                    activeEditor.insertText(cursorPos, 'Sample', { [formatType]: color });
-                    activeEditor.setSelection(cursorPos, 6); // Select the inserted text
-                    console.log('Inserted sample text with', formatType, color);
+                    activeEditor.insertText(cursorPos, 'Colored Text', { [formatType]: color });
+                    activeEditor.setSelection(cursorPos, 12); // Select the inserted text
+                    console.log('Inserted colored text at cursor position');
                 }
             } catch (e) {
                 console.error('Error applying format:', e);
-                alert('Error applying formatting. Please try again.');
+                alert('Error applying formatting: ' + e.message);
             }
         } else {
-            console.log('No active editor found');
-            alert('Please click in a journal response box first, then select text or position your cursor where you want to apply formatting.');
+            console.log('No active Quill editor found');
+            alert('Please click in a journal response box and select some text, then try the color button again.');
         }
     }
 </script>
