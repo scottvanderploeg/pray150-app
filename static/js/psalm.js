@@ -272,12 +272,12 @@ document.addEventListener('DOMContentLoaded', function() {
                             </button>
                             <div id="highlightDropdown" style="display: none; position: absolute; top: 32px; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 140px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
-                                    <button type="button" onclick="applySimpleFormat('background', 'yellow')" style="width: 24px; height: 24px; background: yellow; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Yellow"></button>
-                                    <button type="button" onclick="applySimpleFormat('background', 'lightblue')" style="width: 24px; height: 24px; background: lightblue; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Blue"></button>
-                                    <button type="button" onclick="applySimpleFormat('background', 'lightgreen')" style="width: 24px; height: 24px; background: lightgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Green"></button>
-                                    <button type="button" onclick="applySimpleFormat('background', 'pink')" style="width: 24px; height: 24px; background: pink; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Pink"></button>
-                                    <button type="button" onclick="applySimpleFormat('background', 'lavender')" style="width: 24px; height: 24px; background: lavender; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Lavender"></button>
-                                    <button type="button" onclick="applySimpleFormat('background', false)" style="width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 3px; cursor: pointer; position: relative;" title="Remove Highlight">
+                                    <button type="button" onclick="console.log('Yellow clicked'); applySimpleFormat('background', 'yellow')" style="width: 24px; height: 24px; background: yellow; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Yellow"></button>
+                                    <button type="button" onclick="console.log('Light blue clicked'); applySimpleFormat('background', 'lightblue')" style="width: 24px; height: 24px; background: lightblue; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Blue"></button>
+                                    <button type="button" onclick="console.log('Light green clicked'); applySimpleFormat('background', 'lightgreen')" style="width: 24px; height: 24px; background: lightgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Green"></button>
+                                    <button type="button" onclick="console.log('Pink clicked'); applySimpleFormat('background', 'pink')" style="width: 24px; height: 24px; background: pink; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Pink"></button>
+                                    <button type="button" onclick="console.log('Lavender clicked'); applySimpleFormat('background', 'lavender')" style="width: 24px; height: 24px; background: lavender; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Lavender"></button>
+                                    <button type="button" onclick="console.log('Remove highlight clicked'); applySimpleFormat('background', false)" style="width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 3px; cursor: pointer; position: relative;" title="Remove Highlight">
                                         <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
                                     </button>
                                 </div>
@@ -293,6 +293,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     const textColorDropdown = document.getElementById('textColorDropdown');
                     const highlightBtn = document.getElementById('highlightBtn');
                     const highlightDropdown = document.getElementById('highlightDropdown');
+                    
+                    console.log('Found elements:', {
+                        textColorBtn: !!textColorBtn,
+                        textColorDropdown: !!textColorDropdown,
+                        highlightBtn: !!highlightBtn,
+                        highlightDropdown: !!highlightDropdown
+                    });
                     
                     // Text color dropdown
                     if (textColorBtn && textColorDropdown) {
