@@ -126,9 +126,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Create custom font selector and add it to the toolbar
-    setTimeout(() => {
+    console.log('Global toolbar created:', globalToolbar.container);
+    
+    // Function to add font selector
+    function addFontSelector() {
+        console.log('Attempting to add font selector...');
         const toolbar = globalToolbar.container.querySelector('.ql-toolbar');
+        console.log('Toolbar found:', toolbar);
+        
         if (toolbar && !toolbar.querySelector('.ql-font-custom')) {
             console.log('Adding custom font selector to toolbar');
             
@@ -221,8 +226,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Insert at the beginning of the toolbar
             toolbar.insertBefore(fontSelectContainer, toolbar.firstChild);
             console.log('Custom font selector added successfully');
+        } else {
+            console.log('Font selector already exists or toolbar not found');
         }
-    }, 300);
+    }
+    
+    // Try multiple times to add font selector
+    setTimeout(addFontSelector, 100);
+    setTimeout(addFontSelector, 500);
+    setTimeout(addFontSelector, 1000);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
