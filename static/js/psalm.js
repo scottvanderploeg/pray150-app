@@ -154,8 +154,10 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create a proxy that redirects to the active editor
             toolbar.quill = new Proxy(originalQuill, {
                 get: function(target, prop) {
-                    if (currentActiveEditor && (prop === 'format' || prop === 'getFormat' || prop === 'getSelection' || prop === 'removeFormat')) {
-                        return currentActiveEditor[prop].bind(currentActiveEditor);
+                    if (currentActiveEditor) {
+                        return currentActiveEditor[prop] && typeof currentActiveEditor[prop] === 'function' 
+                            ? currentActiveEditor[prop].bind(currentActiveEditor) 
+                            : currentActiveEditor[prop];
                     }
                     return target[prop];
                 }
