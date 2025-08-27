@@ -292,6 +292,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Custom Bold Button -->
+                        <div style="margin-left: 15px;">
+                            <button type="button" id="customBoldBtn" onclick="console.log('Custom bold clicked'); applyCustomFormat('bold')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Bold">
+                                <strong>B</strong>
+                            </button>
+                        </div>
                     `;
                     
                     // Insert after the toolbar
@@ -376,6 +383,54 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (textDropdown) textDropdown.style.display = 'none';
                         } else {
                             console.error('Highlight dropdown not found');
+                        }
+                    };
+
+                    // Add custom format function for bold/italic/etc
+                    window.applyCustomFormat = function(formatType) {
+                        console.log('Custom format called:', formatType);
+                        
+                        // Find all Quill editors
+                        const editors = document.querySelectorAll('.ql-editor');
+                        console.log('Found', editors.length, 'Quill editors on page');
+                        
+                        let activeEditor = null;
+                        
+                        // Check each editor for selection
+                        for (let i = 0; i < editors.length; i++) {
+                            const editor = editors[i];
+                            const quillInstance = editor.__quill || editor.closest('.ql-container').__quill;
+                            
+                            if (quillInstance) {
+                                const selection = quillInstance.getSelection();
+                                console.log('Editor', i + 1, 'selection:', selection);
+                                
+                                if (selection && (selection.length > 0 || document.activeElement === editor)) {
+                                    activeEditor = quillInstance;
+                                    console.log('Editor', i + 1, 'is active - using this one');
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (activeEditor) {
+                            const selection = activeEditor.getSelection();
+                            if (selection) {
+                                const currentFormat = activeEditor.getFormat(selection);
+                                const newValue = !currentFormat[formatType];
+                                activeEditor.format(formatType, newValue);
+                                console.log('Applied custom', formatType, ':', newValue);
+                                
+                                // Update button appearance to show active state
+                                const button = document.getElementById('customBoldBtn');
+                                if (button && formatType === 'bold') {
+                                    button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                }
+                            } else {
+                                console.log('No selection for custom', formatType);
+                            }
+                        } else {
+                            console.log('No active editor found for custom', formatType);
                         }
                     };
                     
