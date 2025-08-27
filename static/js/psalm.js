@@ -295,16 +295,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <!-- Custom Formatting Buttons -->
                         <div style="margin-left: 15px; display: flex; gap: 4px;">
-                            <button type="button" id="customBoldBtn" onclick="console.log('Custom bold clicked'); applyCustomFormat('bold')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Bold">
+                            <button type="button" id="customBoldBtn" onmousedown="event.preventDefault(); console.log('Custom bold clicked'); applyCustomFormat('bold')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Bold">
                                 <strong>B</strong>
                             </button>
-                            <button type="button" id="customItalicBtn" onclick="console.log('Custom italic clicked'); applyCustomFormat('italic')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-style: italic; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Italic">
+                            <button type="button" id="customItalicBtn" onmousedown="event.preventDefault(); console.log('Custom italic clicked'); applyCustomFormat('italic')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-style: italic; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Italic">
                                 <em>I</em>
                             </button>
-                            <button type="button" id="customUnderlineBtn" onclick="console.log('Custom underline clicked'); applyCustomFormat('underline')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Underline">
+                            <button type="button" id="customUnderlineBtn" onmousedown="event.preventDefault(); console.log('Custom underline clicked'); applyCustomFormat('underline')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Underline">
                                 <u>U</u>
                             </button>
-                            <button type="button" id="customStrikeBtn" onclick="console.log('Custom strikethrough clicked'); applyCustomFormat('strike')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Strikethrough">
+                            <button type="button" id="customStrikeBtn" onmousedown="event.preventDefault(); console.log('Custom strikethrough clicked'); applyCustomFormat('strike')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Strikethrough">
                                 <s>S</s>
                             </button>
                         </div>
@@ -452,6 +452,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                         button.style.background = newValue ? '#e0e0e0' : '#fff';
                                     }
                                 }
+                                
+                                // Restore focus to the editor after formatting
+                                setTimeout(() => {
+                                    activeEditor.focus();
+                                    activeEditor.setSelection(selection.index + selection.length, 0);
+                                    console.log('Focus restored to editor');
+                                }, 10);
                             } else {
                                 console.log('No selection for custom', formatType);
                             }
