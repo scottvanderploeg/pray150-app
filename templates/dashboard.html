@@ -314,9 +314,15 @@ function navigateToPsalm() {
     const selector = document.getElementById('psalmSelector');
     const psalmNumber = selector.value;
     
-    if (psalmNumber) {
+    console.log('Selected psalm number:', psalmNumber);
+    
+    if (psalmNumber && psalmNumber !== '') {
+        console.log('Navigating to:', `/reflect/${psalmNumber}?explore=true`);
         // Navigate to pre-reflection page with explore parameter to indicate this is an exploration
         window.location.href = `/reflect/${psalmNumber}?explore=true`;
+    } else {
+        console.log('No psalm selected');
+        alert('Please select a psalm first');
     }
 }
 
