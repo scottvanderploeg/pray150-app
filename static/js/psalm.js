@@ -211,63 +211,94 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('All toolbar handlers set up successfully');
             
-            // Override the built-in Quill color buttons with our working functionality
+            // Replace built-in color buttons with custom working ones
             setTimeout(() => {
                 const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
                 if (toolbarContainer) {
-                    console.log('Setting up enhanced color button overrides');
+                    console.log('Replacing color buttons with custom working versions');
                     
-                    // Replace color picker dropdowns with our enhanced versions
-                    const colorPicker = toolbarContainer.querySelector('.ql-color .ql-picker-options');
-                    const backgroundPicker = toolbarContainer.querySelector('.ql-background .ql-picker-options');
+                    // Remove original color and background buttons
+                    const originalColorBtn = toolbarContainer.querySelector('.ql-color');
+                    const originalBgBtn = toolbarContainer.querySelector('.ql-background');
                     
-                    if (colorPicker) {
-                        colorPicker.innerHTML = `
-                            <span class="ql-picker-item" data-value="black" style="background-color: black;" title="Black"></span>
-                            <span class="ql-picker-item" data-value="gray" style="background-color: gray;" title="Gray"></span>
-                            <span class="ql-picker-item" data-value="red" style="background-color: red;" title="Red"></span>
-                            <span class="ql-picker-item" data-value="blue" style="background-color: blue;" title="Blue"></span>
-                            <span class="ql-picker-item" data-value="green" style="background-color: green;" title="Green"></span>
-                            <span class="ql-picker-item" data-value="purple" style="background-color: purple;" title="Purple"></span>
-                            <span class="ql-picker-item" data-value="orange" style="background-color: orange;" title="Orange"></span>
-                            <span class="ql-picker-item" data-value="darkblue" style="background-color: darkblue;" title="Dark Blue"></span>
-                            <span class="ql-picker-item" data-value="darkgreen" style="background-color: darkgreen;" title="Dark Green"></span>
-                            <span class="ql-picker-item" data-value="brown" style="background-color: brown;" title="Brown"></span>
-                        `;
-                        
-                        // Add click handlers for color picker items
-                        colorPicker.addEventListener('click', (e) => {
-                            if (e.target.classList.contains('ql-picker-item')) {
-                                const color = e.target.getAttribute('data-value');
-                                console.log('Enhanced color picker clicked:', color);
-                                applySimpleFormat('color', color);
-                            }
-                        });
+                    if (originalColorBtn) {
+                        originalColorBtn.remove();
+                    }
+                    if (originalBgBtn) {
+                        originalBgBtn.remove();
                     }
                     
-                    if (backgroundPicker) {
-                        backgroundPicker.innerHTML = `
-                            <span class="ql-picker-item" data-value="yellow" style="background-color: yellow;" title="Yellow Highlight"></span>
-                            <span class="ql-picker-item" data-value="lightblue" style="background-color: lightblue;" title="Light Blue Highlight"></span>
-                            <span class="ql-picker-item" data-value="lightgreen" style="background-color: lightgreen;" title="Light Green Highlight"></span>
-                            <span class="ql-picker-item" data-value="pink" style="background-color: pink;" title="Pink Highlight"></span>
-                            <span class="ql-picker-item" data-value="lavender" style="background-color: lavender;" title="Lavender Highlight"></span>
-                            <span class="ql-picker-item" data-value="" style="background-color: white; border: 2px solid #ccc; position: relative;" title="Remove Highlight">
-                                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
+                    // Add custom color picker that looks like Quill style
+                    const customColorSection = document.createElement('span');
+                    customColorSection.className = 'ql-formats';
+                    customColorSection.innerHTML = `
+                        <span class="ql-color-custom">
+                            <svg width="18" height="18" viewBox="0 0 18 18">
+                                <line class="ql-color-label" x1="3" x2="15" y1="15" y2="15" stroke="#444" stroke-width="1"></line>
+                                <polyline class="ql-stroke" points="5.5,11 9,3 12.5,11" fill="none" stroke="#444" stroke-width="1"></polyline>
+                                <line class="ql-stroke" x1="11.63" x2="6.38" y1="9" y2="9" stroke="#444" stroke-width="1"></line>
+                            </svg>
+                            <span class="ql-color-dropdown" style="display: none; position: absolute; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 200px;">
+                                <div style="margin-bottom: 5px; font-size: 11px; font-weight: bold; color: #666;">Text Colors</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px;">
+                                    <span class="color-option" data-type="color" data-value="black" style="width: 16px; height: 16px; background: black; cursor: pointer; border: 1px solid #ccc;" title="Black"></span>
+                                    <span class="color-option" data-type="color" data-value="gray" style="width: 16px; height: 16px; background: gray; cursor: pointer; border: 1px solid #ccc;" title="Gray"></span>
+                                    <span class="color-option" data-type="color" data-value="red" style="width: 16px; height: 16px; background: red; cursor: pointer; border: 1px solid #ccc;" title="Red"></span>
+                                    <span class="color-option" data-type="color" data-value="blue" style="width: 16px; height: 16px; background: blue; cursor: pointer; border: 1px solid #ccc;" title="Blue"></span>
+                                    <span class="color-option" data-type="color" data-value="green" style="width: 16px; height: 16px; background: green; cursor: pointer; border: 1px solid #ccc;" title="Green"></span>
+                                    <span class="color-option" data-type="color" data-value="purple" style="width: 16px; height: 16px; background: purple; cursor: pointer; border: 1px solid #ccc;" title="Purple"></span>
+                                    <span class="color-option" data-type="color" data-value="orange" style="width: 16px; height: 16px; background: orange; cursor: pointer; border: 1px solid #ccc;" title="Orange"></span>
+                                    <span class="color-option" data-type="color" data-value="darkblue" style="width: 16px; height: 16px; background: darkblue; cursor: pointer; border: 1px solid #ccc;" title="Dark Blue"></span>
+                                    <span class="color-option" data-type="color" data-value="darkgreen" style="width: 16px; height: 16px; background: darkgreen; cursor: pointer; border: 1px solid #ccc;" title="Dark Green"></span>
+                                    <span class="color-option" data-type="color" data-value="brown" style="width: 16px; height: 16px; background: brown; cursor: pointer; border: 1px solid #ccc;" title="Brown"></span>
+                                </div>
+                                <div style="margin-bottom: 5px; font-size: 11px; font-weight: bold; color: #666;">Highlights</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 3px;">
+                                    <span class="color-option" data-type="background" data-value="yellow" style="width: 16px; height: 16px; background: yellow; cursor: pointer; border: 1px solid #ccc;" title="Yellow"></span>
+                                    <span class="color-option" data-type="background" data-value="lightblue" style="width: 16px; height: 16px; background: lightblue; cursor: pointer; border: 1px solid #ccc;" title="Light Blue"></span>
+                                    <span class="color-option" data-type="background" data-value="lightgreen" style="width: 16px; height: 16px; background: lightgreen; cursor: pointer; border: 1px solid #ccc;" title="Light Green"></span>
+                                    <span class="color-option" data-type="background" data-value="pink" style="width: 16px; height: 16px; background: pink; cursor: pointer; border: 1px solid #ccc;" title="Pink"></span>
+                                    <span class="color-option" data-type="background" data-value="lavender" style="width: 16px; height: 16px; background: lavender; cursor: pointer; border: 1px solid #ccc;" title="Lavender"></span>
+                                    <span class="color-option" data-type="background" data-value="" style="width: 16px; height: 16px; background: white; cursor: pointer; border: 2px solid #666; position: relative;" title="Remove Highlight">
+                                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 8px;">✕</span>
+                                    </span>
+                                </div>
                             </span>
-                        `;
-                        
-                        // Add click handlers for background picker items
-                        backgroundPicker.addEventListener('click', (e) => {
-                            if (e.target.classList.contains('ql-picker-item')) {
-                                const color = e.target.getAttribute('data-value');
-                                console.log('Enhanced background picker clicked:', color);
-                                applySimpleFormat('background', color || false);
-                            }
-                        });
-                    }
+                        </span>
+                    `;
                     
-                    console.log('Enhanced color button overrides complete');
+                    // Insert the custom section
+                    toolbarContainer.appendChild(customColorSection);
+                    
+                    // Add event handlers for the custom color picker
+                    const colorButton = customColorSection.querySelector('.ql-color-custom');
+                    const dropdown = customColorSection.querySelector('.ql-color-dropdown');
+                    
+                    // Toggle dropdown
+                    colorButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const isVisible = dropdown.style.display !== 'none';
+                        dropdown.style.display = isVisible ? 'none' : 'block';
+                    });
+                    
+                    // Handle color selection
+                    dropdown.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('color-option')) {
+                            const formatType = e.target.getAttribute('data-type');
+                            const color = e.target.getAttribute('data-value');
+                            console.log('Custom color picker:', formatType, color || 'remove');
+                            
+                            applySimpleFormat(formatType, color || false);
+                            dropdown.style.display = 'none';
+                        }
+                    });
+                    
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', () => {
+                        dropdown.style.display = 'none';
+                    });
+                    
+                    console.log('Custom color buttons added successfully');
                 }
             }, 3000);
             
