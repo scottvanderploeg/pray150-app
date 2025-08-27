@@ -210,6 +210,57 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             console.log('All toolbar handlers set up successfully');
+            
+            // Add simple color buttons that actually work
+            setTimeout(() => {
+                const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
+                if (toolbarContainer) {
+                    console.log('Adding simple color buttons');
+                    
+                    // Create a simple color section
+                    const colorSection = document.createElement('span');
+                    colorSection.className = 'ql-formats';
+                    colorSection.innerHTML = `
+                        <button type="button" class="simple-color-btn" data-color="red" style="background: red; width: 20px; height: 20px; border: 1px solid #ccc; margin: 1px;" title="Red Text"></button>
+                        <button type="button" class="simple-color-btn" data-color="blue" style="background: blue; width: 20px; height: 20px; border: 1px solid #ccc; margin: 1px;" title="Blue Text"></button>
+                        <button type="button" class="simple-color-btn" data-color="green" style="background: green; width: 20px; height: 20px; border: 1px solid #ccc; margin: 1px;" title="Green Text"></button>
+                        <button type="button" class="simple-bg-btn" data-color="yellow" style="background: yellow; width: 20px; height: 20px; border: 1px solid #ccc; margin: 1px;" title="Yellow Highlight"></button>
+                        <button type="button" class="simple-bg-btn" data-color="lightblue" style="background: lightblue; width: 20px; height: 20px; border: 1px solid #ccc; margin: 1px;" title="Blue Highlight"></button>
+                    `;
+                    
+                    // Add to toolbar
+                    toolbarContainer.appendChild(colorSection);
+                    
+                    // Add event listeners
+                    colorSection.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('simple-color-btn') || e.target.classList.contains('simple-bg-btn')) {
+                            e.preventDefault();
+                            
+                            const color = e.target.getAttribute('data-color');
+                            const isBackground = e.target.classList.contains('simple-bg-btn');
+                            
+                            console.log('Simple color button clicked:', color, 'background:', isBackground);
+                            
+                            if (currentActiveEditor) {
+                                const selection = currentActiveEditor.getSelection();
+                                console.log('Selection:', selection);
+                                
+                                if (selection && selection.length > 0) {
+                                    const formatType = isBackground ? 'background' : 'color';
+                                    currentActiveEditor.format(formatType, color);
+                                    console.log('Applied', formatType, ':', color);
+                                } else {
+                                    console.log('No text selected');
+                                }
+                            } else {
+                                console.log('No active editor');
+                            }
+                        }
+                    });
+                    
+                    console.log('Simple color buttons added');
+                }
+            }, 2500);
         }
     }
     
