@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const toolbarOptions = [
         [{ 'size': ['small', false, 'large', 'huge'] }],
-        [{ 'color': [] }, { 'background': [] }],
         ['bold', 'italic', 'underline', 'strike'],
         [{ 'align': [] }],
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
@@ -211,96 +210,58 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('All toolbar handlers set up successfully');
             
-            // Replace built-in color buttons with custom working ones
+            // Add custom color buttons below the toolbar
             setTimeout(() => {
-                const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
+                const toolbarContainer = document.querySelector('#global-toolbar');
                 if (toolbarContainer) {
-                    console.log('Replacing color buttons with custom working versions');
+                    console.log('Adding custom color buttons below toolbar');
                     
-                    // Remove original color and background buttons
-                    const originalColorBtn = toolbarContainer.querySelector('.ql-color');
-                    const originalBgBtn = toolbarContainer.querySelector('.ql-background');
-                    
-                    if (originalColorBtn) {
-                        originalColorBtn.remove();
-                    }
-                    if (originalBgBtn) {
-                        originalBgBtn.remove();
-                    }
-                    
-                    // Add custom color picker that looks like Quill style
-                    const customColorSection = document.createElement('span');
-                    customColorSection.className = 'ql-formats';
-                    customColorSection.innerHTML = `
-                        <span class="ql-color-custom">
-                            <svg width="18" height="18" viewBox="0 0 18 18">
-                                <line class="ql-color-label" x1="3" x2="15" y1="15" y2="15" stroke="#444" stroke-width="1"></line>
-                                <polyline class="ql-stroke" points="5.5,11 9,3 12.5,11" fill="none" stroke="#444" stroke-width="1"></polyline>
-                                <line class="ql-stroke" x1="11.63" x2="6.38" y1="9" y2="9" stroke="#444" stroke-width="1"></line>
-                            </svg>
-                            <span class="ql-color-dropdown" style="display: none; position: absolute; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 200px;">
-                                <div style="margin-bottom: 5px; font-size: 11px; font-weight: bold; color: #666;">Text Colors</div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 10px;">
-                                    <span class="color-option" data-type="color" data-value="black" style="width: 16px; height: 16px; background: black; cursor: pointer; border: 1px solid #ccc;" title="Black"></span>
-                                    <span class="color-option" data-type="color" data-value="gray" style="width: 16px; height: 16px; background: gray; cursor: pointer; border: 1px solid #ccc;" title="Gray"></span>
-                                    <span class="color-option" data-type="color" data-value="red" style="width: 16px; height: 16px; background: red; cursor: pointer; border: 1px solid #ccc;" title="Red"></span>
-                                    <span class="color-option" data-type="color" data-value="blue" style="width: 16px; height: 16px; background: blue; cursor: pointer; border: 1px solid #ccc;" title="Blue"></span>
-                                    <span class="color-option" data-type="color" data-value="green" style="width: 16px; height: 16px; background: green; cursor: pointer; border: 1px solid #ccc;" title="Green"></span>
-                                    <span class="color-option" data-type="color" data-value="purple" style="width: 16px; height: 16px; background: purple; cursor: pointer; border: 1px solid #ccc;" title="Purple"></span>
-                                    <span class="color-option" data-type="color" data-value="orange" style="width: 16px; height: 16px; background: orange; cursor: pointer; border: 1px solid #ccc;" title="Orange"></span>
-                                    <span class="color-option" data-type="color" data-value="darkblue" style="width: 16px; height: 16px; background: darkblue; cursor: pointer; border: 1px solid #ccc;" title="Dark Blue"></span>
-                                    <span class="color-option" data-type="color" data-value="darkgreen" style="width: 16px; height: 16px; background: darkgreen; cursor: pointer; border: 1px solid #ccc;" title="Dark Green"></span>
-                                    <span class="color-option" data-type="color" data-value="brown" style="width: 16px; height: 16px; background: brown; cursor: pointer; border: 1px solid #ccc;" title="Brown"></span>
-                                </div>
-                                <div style="margin-bottom: 5px; font-size: 11px; font-weight: bold; color: #666;">Highlights</div>
-                                <div style="display: flex; flex-wrap: wrap; gap: 3px;">
-                                    <span class="color-option" data-type="background" data-value="yellow" style="width: 16px; height: 16px; background: yellow; cursor: pointer; border: 1px solid #ccc;" title="Yellow"></span>
-                                    <span class="color-option" data-type="background" data-value="lightblue" style="width: 16px; height: 16px; background: lightblue; cursor: pointer; border: 1px solid #ccc;" title="Light Blue"></span>
-                                    <span class="color-option" data-type="background" data-value="lightgreen" style="width: 16px; height: 16px; background: lightgreen; cursor: pointer; border: 1px solid #ccc;" title="Light Green"></span>
-                                    <span class="color-option" data-type="background" data-value="pink" style="width: 16px; height: 16px; background: pink; cursor: pointer; border: 1px solid #ccc;" title="Pink"></span>
-                                    <span class="color-option" data-type="background" data-value="lavender" style="width: 16px; height: 16px; background: lavender; cursor: pointer; border: 1px solid #ccc;" title="Lavender"></span>
-                                    <span class="color-option" data-type="background" data-value="" style="width: 16px; height: 16px; background: white; cursor: pointer; border: 2px solid #666; position: relative;" title="Remove Highlight">
-                                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 8px;">✕</span>
-                                    </span>
-                                </div>
-                            </span>
-                        </span>
+                    // Create custom color toolbar
+                    const customColorToolbar = document.createElement('div');
+                    customColorToolbar.id = 'custom-color-toolbar';
+                    customColorToolbar.style.cssText = `
+                        background: #f3f3f3; 
+                        border: 1px solid #ccc; 
+                        border-top: none; 
+                        border-radius: 0 0 4px 4px; 
+                        padding: 8px 12px; 
+                        display: flex; 
+                        align-items: center; 
+                        gap: 8px; 
+                        flex-wrap: wrap;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                     `;
                     
-                    // Insert the custom section
-                    toolbarContainer.appendChild(customColorSection);
+                    customColorToolbar.innerHTML = `
+                        <span style="font-size: 12px; font-weight: 500; color: #555;">Text Colors:</span>
+                        <button type="button" onclick="applySimpleFormat('color', 'black')" style="width: 24px; height: 24px; background: black; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Black Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'gray')" style="width: 24px; height: 24px; background: gray; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Gray Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'red')" style="width: 24px; height: 24px; background: red; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Red Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'blue')" style="width: 24px; height: 24px; background: blue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Blue Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'green')" style="width: 24px; height: 24px; background: green; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Green Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'purple')" style="width: 24px; height: 24px; background: purple; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Purple Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'orange')" style="width: 24px; height: 24px; background: orange; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Orange Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'darkblue')" style="width: 24px; height: 24px; background: darkblue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Dark Blue Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'darkgreen')" style="width: 24px; height: 24px; background: darkgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Dark Green Text"></button>
+                        <button type="button" onclick="applySimpleFormat('color', 'brown')" style="width: 24px; height: 24px; background: brown; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Brown Text"></button>
+                        
+                        <span style="font-size: 12px; font-weight: 500; color: #555; margin-left: 15px;">Highlights:</span>
+                        <button type="button" onclick="applySimpleFormat('background', 'yellow')" style="width: 24px; height: 24px; background: yellow; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Yellow Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', 'lightblue')" style="width: 24px; height: 24px; background: lightblue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Light Blue Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', 'lightgreen')" style="width: 24px; height: 24px; background: lightgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Light Green Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', 'pink')" style="width: 24px; height: 24px; background: pink; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Pink Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', 'lavender')" style="width: 24px; height: 24px; background: lavender; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Lavender Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', false)" style="width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 3px; cursor: pointer; margin: 0 2px; position: relative;" title="Remove Highlight">
+                            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
+                        </button>
+                    `;
                     
-                    // Add event handlers for the custom color picker
-                    const colorButton = customColorSection.querySelector('.ql-color-custom');
-                    const dropdown = customColorSection.querySelector('.ql-color-dropdown');
+                    // Insert after the toolbar
+                    toolbarContainer.appendChild(customColorToolbar);
                     
-                    // Toggle dropdown
-                    colorButton.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const isVisible = dropdown.style.display !== 'none';
-                        dropdown.style.display = isVisible ? 'none' : 'block';
-                    });
-                    
-                    // Handle color selection
-                    dropdown.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('color-option')) {
-                            const formatType = e.target.getAttribute('data-type');
-                            const color = e.target.getAttribute('data-value');
-                            console.log('Custom color picker:', formatType, color || 'remove');
-                            
-                            applySimpleFormat(formatType, color || false);
-                            dropdown.style.display = 'none';
-                        }
-                    });
-                    
-                    // Close dropdown when clicking outside
-                    document.addEventListener('click', () => {
-                        dropdown.style.display = 'none';
-                    });
-                    
-                    console.log('Custom color buttons added successfully');
+                    console.log('Custom color toolbar added successfully');
                 }
-            }, 3000);
+            }, 1000);
             
             // Add simple color buttons that actually work
             setTimeout(() => {
