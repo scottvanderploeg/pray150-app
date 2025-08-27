@@ -301,6 +301,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <button type="button" id="customItalicBtn" onclick="console.log('Custom italic clicked'); applyCustomFormat('italic')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-style: italic; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Italic">
                                 <em>I</em>
                             </button>
+                            <button type="button" id="customUnderlineBtn" onclick="console.log('Custom underline clicked'); applyCustomFormat('underline')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Underline">
+                                <u>U</u>
+                            </button>
                         </div>
                     `;
                     
@@ -432,6 +435,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                     }
                                 } else if (formatType === 'italic') {
                                     const button = document.getElementById('customItalicBtn');
+                                    if (button) {
+                                        button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                    }
+                                } else if (formatType === 'underline') {
+                                    const button = document.getElementById('customUnderlineBtn');
                                     if (button) {
                                         button.style.background = newValue ? '#e0e0e0' : '#fff';
                                     }
