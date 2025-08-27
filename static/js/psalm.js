@@ -128,6 +128,46 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Global toolbar created:', globalToolbar.container);
     
+    // Connect global toolbar to individual editors
+    function connectGlobalToolbar() {
+        const toolbar = globalToolbar.getModule('toolbar');
+        if (toolbar) {
+            // Override toolbar handlers to work with active editor
+            const originalHandlers = toolbar.handlers;
+            
+            // Helper function to get active editor
+            const getActiveEditor = () => {
+                let activeEditor = null;
+                Object.values(quillInstances).forEach(quill => {
+                    const selection = quill.getSelection();
+                    if (selection) {
+                        activeEditor = quill;
+                    }
+                });
+                return activeEditor;
+            };
+            
+            // Override each handler to apply to active editor
+            Object.keys(originalHandlers).forEach(format => {
+                if (originalHandlers[format]) {
+                    toolbar.addHandler(format, function(value) {
+                        const activeEditor = getActiveEditor();
+                        if (activeEditor) {
+                            if (format === 'clean') {
+                                activeEditor.removeFormat(activeEditor.getSelection());
+                            } else {
+                                activeEditor.format(format, value);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+    
+    // Connect toolbar after a delay to ensure everything is initialized
+    setTimeout(connectGlobalToolbar, 500);
+    
     // Function to add font selector
     function addFontSelector() {
         console.log('Attempting to add font selector...');
@@ -228,29 +268,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 fontSelect.appendChild(option);
             });
             
-            let activeQuill = null;
-            
-            // Track which editor is currently focused
-            Object.values(quillInstances).forEach(quill => {
-                quill.on('selection-change', function(range) {
-                    if (range) {
-                        activeQuill = quill;
-                    }
-                });
-            });
-            
             // Handle font changes
             fontSelect.addEventListener('change', function() {
                 const selectedFont = this.value || false;
-                if (activeQuill) {
-                    const selection = activeQuill.getSelection();
+                
+                // Find currently active/focused editor
+                let activeEditor = null;
+                Object.values(quillInstances).forEach(quill => {
+                    const selection = quill.getSelection();
+                    if (selection) {
+                        activeEditor = quill;
+                    }
+                });
+                
+                if (activeEditor) {
+                    const selection = activeEditor.getSelection();
                     if (selection && selection.length > 0) {
                         // Format selected text
-                        activeQuill.format('font', selectedFont);
+                        activeEditor.format('font', selectedFont);
                     } else {
                         // Format new text at cursor
-                        activeQuill.format('font', selectedFont);
+                        activeEditor.format('font', selectedFont);
                     }
+                } else {
+                    console.log('No active editor found for font change');
                 }
             });
             
@@ -312,6 +353,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Store quill instance
         quillInstances[promptNumber] = quill;
+        
+        // Add focus tracking for this editor
+        quill.on('selection-change', function(range, oldRange, source) {
+            if (range) {
+                // This editor is now active
+                console.log(`Editor ${promptNumber} is now active`);
+                
+                // Update font selector to reflect current formatting
+                const format = quill.getFormat(range);
+                const fontSelect = document.querySelector('.ql-font-custom');
+                if (fontSelect && format.font) {
+                    fontSelect.value = format.font;
+                } else if (fontSelect) {
+                    fontSelect.value = '';
+                }
+            }
+        });
         
         // Add change listener for auto-save
         quill.on('text-change', function(delta, oldDelta, source) {
