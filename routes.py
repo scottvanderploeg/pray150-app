@@ -623,10 +623,17 @@ def save_journal():
             print(f"DEBUG SAVE: Current prompt_responses: {today_entry.prompt_responses}")
             print(f"DEBUG SAVE: New prompt_responses to add: {prompt_responses}")
             
+            # IMPORTANT: Make sure prompt_responses is a dictionary
+            if not isinstance(today_entry.prompt_responses, dict):
+                today_entry.prompt_responses = {}
+            
             today_entry.prompt_responses.update(prompt_responses)
             
             # Update completed status if provided
             if 'completed' not in today_entry.prompt_responses:
+                today_entry.prompt_responses['completed'] = completed
+            else:
+                # Update existing completed status
                 today_entry.prompt_responses['completed'] = completed
                 
             print(f"DEBUG SAVE: Updated prompt_responses: {today_entry.prompt_responses}")
@@ -645,7 +652,9 @@ def save_journal():
                 if pre_reflection_data and pre_reflection_data.get('is_explore'):
                     today_entry.prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
-            today_entry.save()
+            print(f"DEBUG SAVE: About to save with prompt_responses: {today_entry.prompt_responses}")
+            result = today_entry.save()
+            print(f"DEBUG SAVE: Save completed, result: {result}")
         else:
             # Check if we have pre-reflection emotion data stored separately
             from flask import session
