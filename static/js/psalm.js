@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         <!-- Highlight Dropdown -->
                         <div style="position: relative; display: inline-block; margin-left: 8px;">
-                            <button type="button" id="highlightBtn" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px;" title="Highlights">
+                            <button type="button" id="highlightBtn" onclick="console.log('Highlight button clicked directly'); toggleHighlightDropdown();" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px;" title="Highlights">
                                 <svg width="16" height="16" viewBox="0 0 18 18">
                                     <rect x="2" y="4" width="14" height="10" fill="#ffeb3b" stroke="#444" stroke-width="1"></rect>
                                     <line x1="5" x2="13" y1="7" y2="7" stroke="#444" stroke-width="1"></line>
@@ -351,6 +351,24 @@ document.addEventListener('DOMContentLoaded', function() {
                             if (highlightDropdown) highlightDropdown.style.display = 'none';
                         }
                     });
+                    
+                    // Add global toggle function for highlight dropdown
+                    window.toggleHighlightDropdown = function() {
+                        console.log('toggleHighlightDropdown called');
+                        const dropdown = document.getElementById('highlightDropdown');
+                        const textDropdown = document.getElementById('textColorDropdown');
+                        
+                        if (dropdown) {
+                            const isVisible = dropdown.style.display === 'block';
+                            dropdown.style.display = isVisible ? 'none' : 'block';
+                            console.log('Highlight dropdown toggled:', !isVisible);
+                            
+                            // Close text color dropdown
+                            if (textDropdown) textDropdown.style.display = 'none';
+                        } else {
+                            console.error('Highlight dropdown not found');
+                        }
+                    };
                     
                     console.log('Custom color toolbar with dropdowns added successfully');
                 }
