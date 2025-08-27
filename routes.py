@@ -577,6 +577,7 @@ def save_journal():
             prompt_number = request.form.get('prompt_number')
             content = request.form.get('content')
             prompt_responses = {prompt_number: content} if prompt_number and content else {}
+            completed = False  # Default for form submissions
         
         if not psalm_id:
             return jsonify({'success': False, 'error': 'Invalid journal entry data'}), 400
