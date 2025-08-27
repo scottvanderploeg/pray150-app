@@ -9,6 +9,9 @@
 <!-- Quill.js Rich Text Editor -->
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 
+<!-- Google Fonts for Rich Text Options -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&family=Lora:wght@400;500;600&family=Crimson+Text:wght@400;600&family=Libre+Baskerville:wght@400;700&family=Source+Serif+Pro:wght@400;600&family=Cormorant+Garamond:wght@300;400;500&family=Vollkorn:wght@400;500;600&family=Alegreya:wght@400;500;700&family=Spectral:wght@300;400;500&family=Neuton:wght@300;400;700&family=Linden+Hill:wght@400&family=Cardo:wght@400;700&family=Gentium+Basic:wght@400;700&family=Domine:wght@400;500;600&family=Bitter:wght@300;400;500&family=Arvo:wght@400;700&family=Rokkitt:wght@300;400;500&display=swap" rel="stylesheet">
+
 <style>
     .psalm-text {
         font-family: Georgia, serif;
@@ -39,24 +42,25 @@
         border-radius: 3px;
     }
     
+    /* Global Toolbar Styling */
+    #global-toolbar {
+        position: sticky;
+        top: 20px;
+        z-index: 100;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
     /* Quill Editor Styling */
     .journal-editor {
         border: 1px solid #dee2e6;
         border-radius: 8px;
         font-family: Georgia, serif;
         font-size: 16px;
-    }
-    
-    .journal-editor .ql-toolbar {
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        border-bottom: 1px solid #dee2e6;
-        background: #f8f9fa;
+        margin-bottom: 1rem;
     }
     
     .journal-editor .ql-container {
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
+        border-radius: 8px;
         font-size: 16px;
         font-family: Georgia, serif;
         line-height: 1.6;
@@ -67,6 +71,7 @@
         font-size: 16px;
         font-family: Georgia, serif;
         line-height: 1.6;
+        border-radius: 8px;
     }
     
     .journal-editor .ql-editor.ql-blank::before {
@@ -75,6 +80,32 @@
         font-size: 16px;
         font-family: Georgia, serif;
     }
+    
+    /* Custom Font Definitions */
+    .ql-font-playfair { font-family: 'Playfair Display', serif; }
+    .ql-font-merriweather { font-family: 'Merriweather', serif; }
+    .ql-font-lora { font-family: 'Lora', serif; }
+    .ql-font-crimson { font-family: 'Crimson Text', serif; }
+    .ql-font-baskerville { font-family: 'Libre Baskerville', serif; }
+    .ql-font-source-serif { font-family: 'Source Serif Pro', serif; }
+    .ql-font-cormorant { font-family: 'Cormorant Garamond', serif; }
+    .ql-font-vollkorn { font-family: 'Vollkorn', serif; }
+    .ql-font-alegreya { font-family: 'Alegreya', serif; }
+    .ql-font-spectral { font-family: 'Spectral', serif; }
+    .ql-font-neuton { font-family: 'Neuton', serif; }
+    .ql-font-linden { font-family: 'Linden Hill', serif; }
+    .ql-font-cardo { font-family: 'Cardo', serif; }
+    .ql-font-gentium { font-family: 'Gentium Basic', serif; }
+    .ql-font-domine { font-family: 'Domine', serif; }
+    .ql-font-bitter { font-family: 'Bitter', serif; }
+    .ql-font-arvo { font-family: 'Arvo', serif; }
+    .ql-font-rokkitt { font-family: 'Rokkitt', serif; }
+    .ql-font-georgia { font-family: Georgia, serif; }
+    .ql-font-times { font-family: 'Times New Roman', serif; }
+    .ql-font-arial { font-family: Arial, sans-serif; }
+    .ql-font-helvetica { font-family: 'Helvetica Neue', sans-serif; }
+    .ql-font-opensans { font-family: 'Open Sans', sans-serif; }
+    .ql-font-roboto { font-family: 'Roboto', sans-serif; }
 </style>
 {% endblock %}
 
@@ -252,10 +283,12 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0 pt-4">
-                    <h5 class="fw-bold mb-0">
+                    <h5 class="fw-bold mb-3">
                         <i class="fas fa-journal-whills text-primary me-2"></i>
                         Journal Prompts
                     </h5>
+                    <!-- Global Formatting Toolbar -->
+                    <div id="global-toolbar" class="mb-3" style="border: 1px solid #dee2e6; border-radius: 8px; background: #f8f9fa;"></div>
                 </div>
                 <div class="card-body">
                     <form id="journalForm" data-psalm-id="{{ psalm.id if psalm else psalm_number }}">

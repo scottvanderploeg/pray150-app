@@ -14,8 +14,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize Quill editors
     const quillInstances = {};
+    
+    // Register custom fonts with Quill
+    const Font = Quill.import('formats/font');
+    Font.whitelist = [
+        'playfair', 'merriweather', 'lora', 'crimson', 'baskerville', 
+        'source-serif', 'cormorant', 'vollkorn', 'alegreya', 'spectral',
+        'neuton', 'linden', 'cardo', 'gentium', 'domine', 'bitter',
+        'arvo', 'rokkitt', 'georgia', 'times', 'arial', 'helvetica',
+        'opensans', 'roboto'
+    ];
+    Quill.register(Font, true);
+    
     const toolbarOptions = [
-        [{ 'font': ['serif', 'sans-serif', 'monospace'] }],
+        [{ 'font': [
+            false, 'playfair', 'merriweather', 'lora', 'crimson', 'baskerville',
+            'source-serif', 'cormorant', 'vollkorn', 'alegreya', 'spectral',
+            'neuton', 'linden', 'cardo', 'gentium', 'domine', 'bitter',
+            'arvo', 'rokkitt', 'georgia', 'times', 'arial', 'helvetica',
+            'opensans', 'roboto'
+        ] }],
         [{ 'size': ['small', false, 'large', 'huge'] }],
         [{ 'color': [] }, { 'background': [] }],
         ['bold', 'italic', 'underline', 'strike'],
@@ -78,7 +96,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize Quill editors
+    // Create global toolbar
+    const globalToolbar = new Quill('#global-toolbar', {
+        theme: 'snow',
+        modules: {
+            toolbar: toolbarOptions
+        }
+    });
+    
+    // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
         const promptNumber = editorElement.getAttribute('data-prompt');
         const placeholder = editorElement.getAttribute('data-placeholder');
@@ -90,10 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
         editorElement.innerHTML = '';
         
         const quill = new Quill(editorElement, {
-            theme: 'snow',
+            theme: 'bubble', // Use bubble theme for editors (no individual toolbars)
             placeholder: placeholder,
             modules: {
-                toolbar: toolbarOptions
+                toolbar: false // No individual toolbar
             }
         });
         
@@ -114,6 +140,48 @@ document.addEventListener('DOMContentLoaded', function() {
         quill.on('text-change', function(delta, oldDelta, source) {
             if (source === 'user') {
                 scheduleAutoSave();
+            }
+        });
+        
+        // Connect editor to global toolbar
+        quill.on('selection-change', function(range) {
+            if (range) {
+                // When this editor gets focus, connect it to the global toolbar
+                globalToolbar.setContents(quill.getContents());
+                
+                // Sync toolbar state with current editor
+                const toolbar = globalToolbar.getModule('toolbar');
+                toolbar.quill = quill;
+                
+                // Override toolbar handlers to work with focused editor
+                const toolbarContainer = globalToolbar.container.querySelector('.ql-toolbar');
+                const buttons = toolbarContainer.querySelectorAll('button, select');
+                
+                buttons.forEach(button => {
+                    // Remove existing listeners and add new ones for focused editor
+                    button.onclick = null;
+                    
+                    if (button.classList.contains('ql-bold')) {
+                        button.onclick = () => quill.format('bold', !quill.getFormat().bold);
+                    } else if (button.classList.contains('ql-italic')) {
+                        button.onclick = () => quill.format('italic', !quill.getFormat().italic);
+                    } else if (button.classList.contains('ql-underline')) {
+                        button.onclick = () => quill.format('underline', !quill.getFormat().underline);
+                    } else if (button.classList.contains('ql-strike')) {
+                        button.onclick = () => quill.format('strike', !quill.getFormat().strike);
+                    }
+                    // Add more format handlers as needed
+                });
+                
+                // Handle dropdowns (font, size, etc.)
+                const selects = toolbarContainer.querySelectorAll('select');
+                selects.forEach(select => {
+                    select.onchange = function() {
+                        const format = this.classList[0].replace('ql-', '');
+                        const value = this.value || false;
+                        quill.format(format, value);
+                    };
+                });
             }
         });
     });
