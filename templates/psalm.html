@@ -414,6 +414,9 @@
                         <button type="button" onclick="applySimpleFormat('background', 'lightgreen')" style="background: lightgreen; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;" title="Green Highlight"></button>
                         <button type="button" onclick="applySimpleFormat('background', 'pink')" style="background: pink; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;" title="Pink Highlight"></button>
                         <button type="button" onclick="applySimpleFormat('background', 'lavender')" style="background: lavender; width: 20px; height: 20px; border: 1px solid #ccc; border-radius: 3px; cursor: pointer;" title="Lavender Highlight"></button>
+                        <button type="button" onclick="applySimpleFormat('background', false)" style="background: white; width: 20px; height: 20px; border: 2px solid #666; border-radius: 3px; cursor: pointer; position: relative;" title="Remove Highlight">
+                            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -845,6 +848,10 @@
                         activeEditor = quillInstance;
                         console.log('Editor', index + 1, 'has text selection - using this one');
                         return; // Found editor with selection, use it
+                    } else if (selection && selection.length === 0 && !activeEditor) {
+                        // Editor has cursor focus (selection with length 0)
+                        activeEditor = quillInstance;
+                        console.log('Editor', index + 1, 'has cursor focus - using this one');
                     } else if (quillInstance.hasFocus() && !activeEditor) {
                         activeEditor = quillInstance;
                         console.log('Editor', index + 1, 'has focus - potential candidate');
