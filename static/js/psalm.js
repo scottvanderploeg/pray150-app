@@ -128,114 +128,45 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('Global toolbar created:', globalToolbar.container);
     
-    // Connect global toolbar to individual editors
+    // Simple approach - override the global toolbar to work with active editor
     function connectGlobalToolbar() {
-        console.log('Connecting global toolbar handlers');
+        console.log('Setting up simple toolbar connection');
         
-        // Helper function to get active editor
-        const getActiveEditor = () => {
-            let activeEditor = null;
-            Object.values(quillInstances).forEach(quill => {
-                const selection = quill.getSelection();
-                if (selection) {
-                    activeEditor = quill;
+        // Track which editor is active
+        let currentActiveEditor = null;
+        
+        // Update active editor tracking
+        Object.values(quillInstances).forEach(quill => {
+            quill.on('selection-change', function(range) {
+                if (range) {
+                    currentActiveEditor = quill;
+                    console.log('Active editor changed');
                 }
             });
-            return activeEditor;
-        };
+        });
         
-        // Wait for toolbar to be fully rendered
-        setTimeout(() => {
-            const toolbarContainer = document.querySelector('#global-toolbar .ql-toolbar');
-            if (toolbarContainer) {
-                console.log('Found toolbar container, adding direct event listeners');
-                
-                // Add listeners to all buttons
-                const buttons = toolbarContainer.querySelectorAll('button');
-                buttons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const activeEditor = getActiveEditor();
-                        if (!activeEditor) return;
-                        
-                        const className = button.className;
-                        console.log('Button clicked:', className);
-                        
-                        if (className.includes('ql-bold')) {
-                            const currentFormat = activeEditor.getFormat();
-                            activeEditor.format('bold', !currentFormat.bold);
-                        } else if (className.includes('ql-italic')) {
-                            const currentFormat = activeEditor.getFormat();
-                            activeEditor.format('italic', !currentFormat.italic);
-                        } else if (className.includes('ql-underline')) {
-                            const currentFormat = activeEditor.getFormat();
-                            activeEditor.format('underline', !currentFormat.underline);
-                        } else if (className.includes('ql-strike')) {
-                            const currentFormat = activeEditor.getFormat();
-                            activeEditor.format('strike', !currentFormat.strike);
-                        } else if (className.includes('ql-clean')) {
-                            const selection = activeEditor.getSelection();
-                            if (selection) {
-                                activeEditor.removeFormat(selection);
-                            }
-                        }
-                    });
-                });
-                
-                // Add listeners to color pickers
-                const colorPickers = toolbarContainer.querySelectorAll('.ql-color .ql-picker-options .ql-picker-item');
-                colorPickers.forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const activeEditor = getActiveEditor();
-                        if (!activeEditor) return;
-                        
-                        const color = item.getAttribute('data-value') || item.style.backgroundColor;
-                        console.log('Color selected:', color);
-                        activeEditor.format('color', color);
-                    });
-                });
-                
-                // Add listeners to background color pickers
-                const backgroundPickers = toolbarContainer.querySelectorAll('.ql-background .ql-picker-options .ql-picker-item');
-                backgroundPickers.forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const activeEditor = getActiveEditor();
-                        if (!activeEditor) return;
-                        
-                        const color = item.getAttribute('data-value') || item.style.backgroundColor;
-                        console.log('Background color selected:', color);
-                        activeEditor.format('background', color);
-                    });
-                });
-                
-                // Add listeners to dropdowns
-                const selects = toolbarContainer.querySelectorAll('select');
-                selects.forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        const activeEditor = getActiveEditor();
-                        if (!activeEditor) return;
-                        
-                        const className = select.className;
-                        const value = select.value;
-                        console.log('Select changed:', className, value);
-                        
-                        if (className.includes('ql-size')) {
-                            activeEditor.format('size', value || false);
-                        } else if (className.includes('ql-align')) {
-                            activeEditor.format('align', value || false);
-                        } else if (className.includes('ql-list')) {
-                            activeEditor.format('list', value || false);
-                        }
-                    });
-                });
-            } else {
-                console.log('Toolbar container not found');
-            }
-        }, 1000);
+        // Override the global toolbar's editor
+        const toolbar = globalToolbar.getModule('toolbar');
+        if (toolbar) {
+            // Replace the toolbar's quill reference
+            const originalQuill = toolbar.quill;
+            
+            // Create a proxy that redirects to the active editor
+            toolbar.quill = new Proxy(originalQuill, {
+                get: function(target, prop) {
+                    if (currentActiveEditor && (prop === 'format' || prop === 'getFormat' || prop === 'getSelection' || prop === 'removeFormat')) {
+                        return currentActiveEditor[prop].bind(currentActiveEditor);
+                    }
+                    return target[prop];
+                }
+            });
+            
+            console.log('Toolbar proxy set up successfully');
+        }
     }
     
-    // Connect toolbar after a delay to ensure everything is initialized
-    setTimeout(connectGlobalToolbar, 500);
+    // Connect toolbar after everything is initialized
+    setTimeout(connectGlobalToolbar, 1000);
     
     // Function to add font selector
     function addFontSelector() {
