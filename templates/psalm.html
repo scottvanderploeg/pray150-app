@@ -110,7 +110,18 @@
     /* Font dropdown styling */
     .ql-picker.ql-font .ql-picker-label::before,
     .ql-picker.ql-font .ql-picker-item::before {
-        content: attr(data-label);
+        content: attr(data-label) !important;
+    }
+    
+    /* Hide default Quill font text */
+    .ql-picker.ql-font .ql-picker-label[data-label]::before,
+    .ql-picker.ql-font .ql-picker-item[data-label]::before {
+        content: attr(data-label) !important;
+    }
+    
+    .ql-picker.ql-font .ql-picker-label span,
+    .ql-picker.ql-font .ql-picker-item span {
+        display: none !important;
     }
     
     /* CSS variables for font preview */
