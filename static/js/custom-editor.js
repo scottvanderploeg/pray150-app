@@ -87,27 +87,16 @@ window.formatText = function(command, value = null) {
         }
         // Special handling for highlights
         else if (command === 'hiliteColor') {
-            if (value === 'transparent') {
-                if (savedRange && savedRange.collapsed) {
-                    // No selection - create a span with no background for future typing
-                    const span = document.createElement('span');
-                    span.style.backgroundColor = 'transparent';
-                    span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
-                    savedRange.insertNode(span);
-                    // Position cursor at the end of the span for future typing
-                    savedRange.setStartAfter(span);
-                    savedRange.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(savedRange);
-                } else {
-                    // Has selection - remove highlight
-                    document.execCommand('hiliteColor', false, 'transparent');
-                    document.execCommand('removeFormat', false, null);
-                }
-            } else if (savedRange && savedRange.collapsed) {
-                // No selection - create a span for future typing with highlight
+            if (savedRange && savedRange.collapsed) {
+                // No selection - create a span for future typing
                 const span = document.createElement('span');
-                span.style.backgroundColor = value;
+                if (value === 'transparent') {
+                    // For no highlight, don't set any background color
+                    span.style.backgroundColor = '';
+                } else {
+                    // For colored highlights, set the background color
+                    span.style.backgroundColor = value;
+                }
                 span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
                 savedRange.insertNode(span);
                 // Position cursor at the end of the span for future typing
@@ -116,10 +105,16 @@ window.formatText = function(command, value = null) {
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
             } else if (savedRange) {
-                // Has selection - wrap it with highlight
+                // Has selection - wrap it with highlight or remove highlight
                 const contents = savedRange.extractContents();
                 const span = document.createElement('span');
-                span.style.backgroundColor = value;
+                if (value === 'transparent') {
+                    // For no highlight, don't set any background color
+                    span.style.backgroundColor = '';
+                } else {
+                    // For colored highlights, set the background color
+                    span.style.backgroundColor = value;
+                }
                 span.appendChild(contents);
                 savedRange.insertNode(span);
                 // Position cursor after the span
