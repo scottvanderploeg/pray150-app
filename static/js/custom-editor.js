@@ -106,8 +106,8 @@ function closeAllDropdowns(exceptId = null) {
 function updateButtonStates(editor) {
     if (!editor) return;
     
-    // Find the toolbar for this editor
-    const toolbar = editor.closest('.custom-editor').querySelector('.custom-editor-toolbar');
+    // Find the global toolbar
+    const toolbar = document.querySelector('.global-toolbar .custom-editor-toolbar');
     if (!toolbar) return;
     
     // Get current formatting
