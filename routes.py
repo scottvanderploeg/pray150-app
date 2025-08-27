@@ -513,32 +513,42 @@ def psalm(psalm_number):
     # Get user's journal entries for this psalm
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id if psalm else psalm_number)
     
-    # Find the most recent entry for today (for loading into editor)
+    # Find the most recent entry with content (prioritize today's entries)
     today = datetime.now().strftime('%Y-%m-%d')
     today_entry = None
     if journal_entries:
-        # Debug: print all entries and their dates
-        print(f"DEBUG: Looking for today's entry for {today}")
+        print(f"🔍 DEBUG: Looking for best entry to load for {today}")
+        
+        # Find all entries from today and rank by content and recency
+        today_entries = []
         for entry in journal_entries:
-            print(f"DEBUG: Entry {entry.id}, created_at: {entry.created_at}")
+            print(f"🔍 DEBUG: Entry {entry.id}, created_at: {entry.created_at}, has_content: {bool(entry.prompt_responses and any(entry.prompt_responses.values()))}")
+            
             # Handle both string and datetime objects for created_at
             created_date = None
             if entry.created_at:
                 if isinstance(entry.created_at, str):
                     created_date = entry.created_at[:10]  # Get YYYY-MM-DD part
                 else:
-                    # If it's a datetime object, format it
                     created_date = entry.created_at.strftime('%Y-%m-%d')
             
             if created_date and created_date == today:
-                today_entry = entry
-                print(f"DEBUG: Found today's entry: {entry.id}")
-                break
+                today_entries.append(entry)
+        
+        # Sort today's entries by: 1) has content, 2) most recent
+        if today_entries:
+            def entry_priority(entry):
+                has_content = bool(entry.prompt_responses and any(str(v).strip() for v in entry.prompt_responses.values() if v and str(v) != 'None'))
+                return (has_content, entry.created_at or '')
+            
+            today_entries.sort(key=entry_priority, reverse=True)
+            today_entry = today_entries[0]
+            print(f"🔍 DEBUG: Selected today's entry: {today_entry.id} (has_content: {bool(today_entry.prompt_responses and any(today_entry.prompt_responses.values()))})")
         
         # If no today entry found, get the most recent entry regardless of date
         if not today_entry and journal_entries:
             today_entry = journal_entries[0]  # Most recent entry
-            print(f"DEBUG: Using most recent entry: {today_entry.id}")
+            print(f"🔍 DEBUG: Using most recent entry: {today_entry.id}")
     
     # Pass only today's entry for editor loading (empty dict if no today entry)
     entries_dict = {today_entry.id: today_entry} if today_entry else {}
