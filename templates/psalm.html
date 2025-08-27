@@ -867,11 +867,37 @@
                     activeEditor.format(formatType, color);
                     console.log('Applied', formatType, ':', color, 'to selected text');
                 } else {
-                    // Insert colored text at cursor position
-                    const cursorPos = currentSelection ? currentSelection.index : 0;
-                    activeEditor.insertText(cursorPos, 'Colored Text', { [formatType]: color });
-                    activeEditor.setSelection(cursorPos, 12); // Select the inserted text
-                    console.log('Inserted colored text at cursor position');
+                    // Set formatting for future typing at cursor position
+                    activeEditor.format(formatType, color);
+                    console.log('Set', formatType, ':', color, 'for future typing');
+                    
+                    // Give user feedback
+                    const colorName = color.charAt(0).toUpperCase() + color.slice(1);
+                    const formatName = formatType === 'background' ? 'highlight' : 'text color';
+                    
+                    // Briefly show a small indicator
+                    const indicator = document.createElement('div');
+                    indicator.textContent = `${colorName} ${formatName} active`;
+                    indicator.style.cssText = `
+                        position: fixed; 
+                        top: 20px; 
+                        right: 20px; 
+                        background: ${color}; 
+                        color: ${formatType === 'background' ? 'black' : 'white'}; 
+                        padding: 5px 10px; 
+                        border-radius: 4px; 
+                        font-size: 12px; 
+                        z-index: 1000;
+                        ${formatType === 'background' ? 'border: 1px solid #333;' : ''}
+                    `;
+                    document.body.appendChild(indicator);
+                    
+                    // Remove indicator after 2 seconds
+                    setTimeout(() => {
+                        if (indicator.parentNode) {
+                            indicator.parentNode.removeChild(indicator);
+                        }
+                    }, 2000);
                 }
             } catch (e) {
                 console.error('Error applying format:', e);
