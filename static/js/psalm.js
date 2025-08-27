@@ -295,32 +295,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     const highlightDropdown = document.getElementById('highlightDropdown');
                     
                     // Text color dropdown
-                    textColorBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        textColorDropdown.style.display = textColorDropdown.style.display === 'none' ? 'block' : 'none';
-                        highlightDropdown.style.display = 'none'; // Close other dropdown
-                    });
+                    if (textColorBtn && textColorDropdown) {
+                        textColorBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const isVisible = textColorDropdown.style.display === 'block';
+                            textColorDropdown.style.display = isVisible ? 'none' : 'block';
+                            if (highlightDropdown) highlightDropdown.style.display = 'none';
+                            console.log('Text color dropdown toggled:', !isVisible);
+                        });
+                    }
                     
                     // Highlight dropdown
-                    highlightBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        highlightDropdown.style.display = highlightDropdown.style.display === 'none' ? 'block' : 'none';
-                        textColorDropdown.style.display = 'none'; // Close other dropdown
-                    });
+                    if (highlightBtn && highlightDropdown) {
+                        highlightBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const isVisible = highlightDropdown.style.display === 'block';
+                            highlightDropdown.style.display = isVisible ? 'none' : 'block';
+                            if (textColorDropdown) textColorDropdown.style.display = 'none';
+                            console.log('Highlight dropdown toggled:', !isVisible);
+                        });
+                    }
                     
                     // Close dropdowns when clicking color options
-                    textColorDropdown.addEventListener('click', () => {
-                        textColorDropdown.style.display = 'none';
-                    });
+                    if (textColorDropdown) {
+                        textColorDropdown.addEventListener('click', (e) => {
+                            if (e.target.tagName === 'BUTTON') {
+                                textColorDropdown.style.display = 'none';
+                                console.log('Text color selected, dropdown closed');
+                            }
+                        });
+                    }
                     
-                    highlightDropdown.addEventListener('click', () => {
-                        highlightDropdown.style.display = 'none';
-                    });
+                    if (highlightDropdown) {
+                        highlightDropdown.addEventListener('click', (e) => {
+                            if (e.target.tagName === 'BUTTON') {
+                                highlightDropdown.style.display = 'none';
+                                console.log('Highlight color selected, dropdown closed');
+                            }
+                        });
+                    }
                     
                     // Close dropdowns when clicking outside
-                    document.addEventListener('click', () => {
-                        textColorDropdown.style.display = 'none';
-                        highlightDropdown.style.display = 'none';
+                    document.addEventListener('click', (e) => {
+                        if (!e.target.closest('#textColorBtn') && !e.target.closest('#textColorDropdown')) {
+                            if (textColorDropdown) textColorDropdown.style.display = 'none';
+                        }
+                        if (!e.target.closest('#highlightBtn') && !e.target.closest('#highlightDropdown')) {
+                            if (highlightDropdown) highlightDropdown.style.display = 'none';
+                        }
                     });
                     
                     console.log('Custom color toolbar with dropdowns added successfully');
