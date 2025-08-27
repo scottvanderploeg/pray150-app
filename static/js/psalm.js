@@ -308,6 +308,28 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <s>S</s>
                             </button>
                         </div>
+
+                        <!-- Font Size Dropdown -->
+                        <div style="position: relative; display: inline-block; margin-left: 15px;">
+                            <button type="button" id="fontSizeBtn" onclick="console.log('Font size button clicked'); toggleFontSizeDropdown();" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px;" title="Font Size">
+                                <svg width="16" height="16" viewBox="0 0 18 18">
+                                    <path d="M10.187 3.5h-.375v.375H7.312V5h-.375V3.875h-2.5V5h-.375V3.875H1.562V3.5h2.5v-.375H1.562V2.75h2.5V2.375h-.375V2h.375v-.375h2.5V2h.375v.375h2.5V2.75h-.375v.375h2.5v.375h-2.5V3.5zM11.5 8h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v1h-1v1h1v.5h-1v-.5h-5v.5h-1v-.5h1v-1h-1v-1h1v-1h-1v-1h1v-1h-1v-1h1v-1h-1v-1h1V8h-1v-.5h1V8h5v-.5h1V8z" fill="#444"></path>
+                                </svg>
+                                Size ▼
+                            </button>
+                            <div id="fontSizeDropdown" style="display: none; position: absolute; top: 32px; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 120px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px;">
+                                    <button type="button" onclick="console.log('Font size 10px clicked'); applySimpleFormat('size', '10px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 10px;" title="10px">10px</button>
+                                    <button type="button" onclick="console.log('Font size 12px clicked'); applySimpleFormat('size', '12px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 12px;" title="12px">12px</button>
+                                    <button type="button" onclick="console.log('Font size 14px clicked'); applySimpleFormat('size', '14px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 14px;" title="14px">14px</button>
+                                    <button type="button" onclick="console.log('Font size 16px clicked'); applySimpleFormat('size', '16px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 16px;" title="16px">16px</button>
+                                    <button type="button" onclick="console.log('Font size 18px clicked'); applySimpleFormat('size', '18px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 18px;" title="18px">18px</button>
+                                    <button type="button" onclick="console.log('Font size 20px clicked'); applySimpleFormat('size', '20px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 20px;" title="20px">20px</button>
+                                    <button type="button" onclick="console.log('Font size 24px clicked'); applySimpleFormat('size', '24px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 24px;" title="24px">24px</button>
+                                    <button type="button" onclick="console.log('Font size 28px clicked'); applySimpleFormat('size', '28px')" style="width: 50px; height: 24px; background: white; border: 1px solid #999; border-radius: 3px; cursor: pointer; font-size: 28px;" title="28px">28px</button>
+                                </div>
+                            </div>
+                        </div>
                     `;
                     
                     // Insert after the toolbar
@@ -333,6 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             const isVisible = textColorDropdown.style.display === 'block';
                             textColorDropdown.style.display = isVisible ? 'none' : 'block';
                             if (highlightDropdown) highlightDropdown.style.display = 'none';
+                            const fontSizeDropdown = document.getElementById('fontSizeDropdown');
+                            if (fontSizeDropdown) fontSizeDropdown.style.display = 'none';
                             console.log('Text color dropdown toggled:', !isVisible);
                         });
                     }
@@ -375,6 +399,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (!e.target.closest('#highlightBtn') && !e.target.closest('#highlightDropdown')) {
                             if (highlightDropdown) highlightDropdown.style.display = 'none';
                         }
+                        if (!e.target.closest('#fontSizeBtn') && !e.target.closest('#fontSizeDropdown')) {
+                            const fontSizeDropdown = document.getElementById('fontSizeDropdown');
+                            if (fontSizeDropdown) fontSizeDropdown.style.display = 'none';
+                        }
                     });
                     
                     // Add global toggle function for highlight dropdown
@@ -382,16 +410,38 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('toggleHighlightDropdown called');
                         const dropdown = document.getElementById('highlightDropdown');
                         const textDropdown = document.getElementById('textColorDropdown');
+                        const fontSizeDropdown = document.getElementById('fontSizeDropdown');
                         
                         if (dropdown) {
                             const isVisible = dropdown.style.display === 'block';
                             dropdown.style.display = isVisible ? 'none' : 'block';
                             console.log('Highlight dropdown toggled:', !isVisible);
                             
-                            // Close text color dropdown
+                            // Close other dropdowns
                             if (textDropdown) textDropdown.style.display = 'none';
+                            if (fontSizeDropdown) fontSizeDropdown.style.display = 'none';
                         } else {
                             console.error('Highlight dropdown not found');
+                        }
+                    };
+
+                    // Add font size dropdown toggle function
+                    window.toggleFontSizeDropdown = function() {
+                        console.log('toggleFontSizeDropdown called');
+                        const dropdown = document.getElementById('fontSizeDropdown');
+                        const textDropdown = document.getElementById('textColorDropdown');
+                        const highlightDropdown = document.getElementById('highlightDropdown');
+                        
+                        if (dropdown) {
+                            const isVisible = dropdown.style.display === 'block';
+                            dropdown.style.display = isVisible ? 'none' : 'block';
+                            console.log('Font size dropdown toggled:', !isVisible);
+                            
+                            // Close other dropdowns
+                            if (textDropdown) textDropdown.style.display = 'none';
+                            if (highlightDropdown) highlightDropdown.style.display = 'none';
+                        } else {
+                            console.error('Font size dropdown not found');
                         }
                     };
 
