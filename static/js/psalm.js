@@ -132,8 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function connectGlobalToolbar() {
         const toolbar = globalToolbar.getModule('toolbar');
         if (toolbar) {
-            // Override toolbar handlers to work with active editor
-            const originalHandlers = toolbar.handlers;
+            console.log('Connecting global toolbar handlers');
             
             // Helper function to get active editor
             const getActiveEditor = () => {
@@ -147,20 +146,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 return activeEditor;
             };
             
-            // Override each handler to apply to active editor
-            Object.keys(originalHandlers).forEach(format => {
-                if (originalHandlers[format]) {
-                    toolbar.addHandler(format, function(value) {
-                        const activeEditor = getActiveEditor();
-                        if (activeEditor) {
-                            if (format === 'clean') {
-                                activeEditor.removeFormat(activeEditor.getSelection());
-                            } else {
-                                activeEditor.format(format, value);
+            // Add handlers for all toolbar formats
+            const formats = ['bold', 'italic', 'underline', 'strike', 'color', 'background', 'size', 'align', 'list', 'indent', 'clean'];
+            
+            formats.forEach(format => {
+                toolbar.addHandler(format, function(value) {
+                    const activeEditor = getActiveEditor();
+                    if (activeEditor) {
+                        console.log(`Applying ${format} with value:`, value);
+                        if (format === 'clean') {
+                            const selection = activeEditor.getSelection();
+                            if (selection) {
+                                activeEditor.removeFormat(selection);
                             }
+                        } else if (format === 'list') {
+                            activeEditor.format(format, value);
+                        } else if (format === 'indent') {
+                            activeEditor.format(format, value);
+                        } else if (format === 'align') {
+                            activeEditor.format(format, value);
+                        } else {
+                            activeEditor.format(format, value);
                         }
-                    });
-                }
+                    } else {
+                        console.log('No active editor for format:', format);
+                    }
+                });
             });
         }
     }
@@ -217,13 +228,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const fontSelect = document.createElement('select');
             fontSelect.className = 'ql-font-custom';
             fontSelect.style.cssText = `
-                padding: 4px 8px;
+                padding: 3px 6px;
                 border: 1px solid #ccc;
-                border-radius: 4px;
+                border-radius: 3px;
                 background: white;
-                font-size: 14px;
-                margin-right: 8px;
-                min-width: 160px;
+                font-size: 12px;
+                margin-right: 6px;
+                min-width: 120px;
+                max-width: 140px;
                 z-index: 1100;
                 position: relative;
             `;
@@ -257,15 +269,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 ['roboto', 'Roboto']
             ];
             
-            // Populate font selector
+            // Populate font selector with font previews
             fontOptions.forEach(([value, name]) => {
                 const option = document.createElement('option');
                 option.value = value;
                 option.textContent = name;
                 if (value && value !== '') {
                     option.style.fontFamily = `var(--ql-font-${value}), Georgia, serif`;
+                    option.style.fontSize = '14px';
+                } else {
+                    option.style.fontFamily = 'Georgia, serif';
                 }
                 fontSelect.appendChild(option);
+            });
+            
+            // Style the font selector itself to show selected font
+            fontSelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (selectedValue && selectedValue !== '') {
+                    this.style.fontFamily = `var(--ql-font-${selectedValue}), Georgia, serif`;
+                } else {
+                    this.style.fontFamily = 'Georgia, serif';
+                }
             });
             
             // Handle font changes
