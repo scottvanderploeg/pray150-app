@@ -87,17 +87,25 @@ window.formatText = function(command, value = null) {
         }
         // Special handling for highlights
         else if (command === 'hiliteColor') {
-            if (savedRange && savedRange.collapsed) {
-                // No selection - create a span for future typing
-                const span = document.createElement('span');
-                if (value === 'transparent') {
-                    // For no highlight, explicitly set transparent to override parent highlighting
-                    span.style.backgroundColor = 'transparent';
-                    span.style.background = 'none';
-                } else {
-                    // For colored highlights, set the background color
-                    span.style.backgroundColor = value;
+            if (value === 'transparent') {
+                // Use browser's built-in commands to remove highlighting
+                document.execCommand('hiliteColor', false, 'transparent');
+                document.execCommand('removeFormat', false, null);
+                // For future typing, create a span that breaks highlighting inheritance
+                if (savedRange && savedRange.collapsed) {
+                    const span = document.createElement('span');
+                    span.style.backgroundColor = 'white';  // Use white to override any parent highlighting
+                    span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
+                    savedRange.insertNode(span);
+                    savedRange.setStartAfter(span);
+                    savedRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(savedRange);
                 }
+            } else if (savedRange && savedRange.collapsed) {
+                // No selection - create a span for future typing with highlight
+                const span = document.createElement('span');
+                span.style.backgroundColor = value;
                 span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
                 savedRange.insertNode(span);
                 // Position cursor at the end of the span for future typing
@@ -106,17 +114,10 @@ window.formatText = function(command, value = null) {
                 selection.removeAllRanges();
                 selection.addRange(savedRange);
             } else if (savedRange) {
-                // Has selection - wrap it with highlight or remove highlight
+                // Has selection - wrap it with highlight
                 const contents = savedRange.extractContents();
                 const span = document.createElement('span');
-                if (value === 'transparent') {
-                    // For no highlight, explicitly set transparent to override parent highlighting
-                    span.style.backgroundColor = 'transparent';
-                    span.style.background = 'none';
-                } else {
-                    // For colored highlights, set the background color
-                    span.style.backgroundColor = value;
-                }
+                span.style.backgroundColor = value;
                 span.appendChild(contents);
                 savedRange.insertNode(span);
                 // Position cursor after the span
