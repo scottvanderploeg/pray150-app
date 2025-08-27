@@ -589,8 +589,16 @@ def save_journal():
         if request.is_json:
             data = request.get_json()
             psalm_id = data.get('psalm_id')
-            prompt_responses = data.get('prompt_responses', {})
             completed = data.get('completed', False)
+            
+            # Convert frontend format to prompt_responses format
+            prompt_responses = {}
+            for key, value in data.items():
+                if key not in ['psalm_id', 'completed'] and key.isdigit():
+                    prompt_responses[key] = value
+            
+            print(f"🔧 CONVERTED: Frontend data keys: {list(data.keys())}")
+            print(f"🔧 CONVERTED: prompt_responses: {prompt_responses}")
         else:
             # Handle form data for backward compatibility
             psalm_id = request.form.get('psalm_id')
