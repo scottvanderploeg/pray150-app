@@ -146,33 +146,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 return activeEditor;
             };
             
-            // Add handlers for all toolbar formats
-            const formats = ['bold', 'italic', 'underline', 'strike', 'color', 'background', 'size', 'align', 'list', 'indent', 'clean'];
-            
-            formats.forEach(format => {
-                toolbar.addHandler(format, function(value) {
+            // Get all the toolbar controls and connect them manually
+            const toolbarElement = globalToolbar.container.querySelector('.ql-toolbar');
+            if (toolbarElement) {
+                // Handle all button clicks
+                toolbarElement.addEventListener('click', function(e) {
                     const activeEditor = getActiveEditor();
-                    if (activeEditor) {
-                        console.log(`Applying ${format} with value:`, value);
-                        if (format === 'clean') {
+                    if (!activeEditor) return;
+                    
+                    const button = e.target.closest('button');
+                    if (button) {
+                        const className = button.className;
+                        
+                        if (className.includes('ql-bold')) {
+                            activeEditor.format('bold', !activeEditor.getFormat().bold);
+                        } else if (className.includes('ql-italic')) {
+                            activeEditor.format('italic', !activeEditor.getFormat().italic);
+                        } else if (className.includes('ql-underline')) {
+                            activeEditor.format('underline', !activeEditor.getFormat().underline);
+                        } else if (className.includes('ql-strike')) {
+                            activeEditor.format('strike', !activeEditor.getFormat().strike);
+                        } else if (className.includes('ql-clean')) {
                             const selection = activeEditor.getSelection();
                             if (selection) {
                                 activeEditor.removeFormat(selection);
                             }
-                        } else if (format === 'list') {
-                            activeEditor.format(format, value);
-                        } else if (format === 'indent') {
-                            activeEditor.format(format, value);
-                        } else if (format === 'align') {
-                            activeEditor.format(format, value);
-                        } else {
-                            activeEditor.format(format, value);
                         }
-                    } else {
-                        console.log('No active editor for format:', format);
                     }
                 });
-            });
+                
+                // Handle dropdown selections
+                toolbarElement.addEventListener('change', function(e) {
+                    const activeEditor = getActiveEditor();
+                    if (!activeEditor) return;
+                    
+                    const select = e.target;
+                    if (select.tagName === 'SELECT') {
+                        const className = select.className;
+                        const value = select.value;
+                        
+                        if (className.includes('ql-size')) {
+                            activeEditor.format('size', value || false);
+                        } else if (className.includes('ql-align')) {
+                            activeEditor.format('align', value || false);
+                        } else if (className.includes('ql-list')) {
+                            activeEditor.format('list', value || false);
+                        }
+                    }
+                });
+                
+                // Handle color pickers
+                const colorInputs = toolbarElement.querySelectorAll('input[type="color"]');
+                colorInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        const activeEditor = getActiveEditor();
+                        if (!activeEditor) return;
+                        
+                        const className = this.className;
+                        const value = this.value;
+                        
+                        if (className.includes('ql-color')) {
+                            activeEditor.format('color', value);
+                        } else if (className.includes('ql-background')) {
+                            activeEditor.format('background', value);
+                        }
+                    });
+                });
+            }
         }
     }
     
@@ -274,16 +314,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 const option = document.createElement('option');
                 option.value = value;
                 option.textContent = name;
-                if (value && value !== '') {
-                    option.style.fontFamily = `var(--ql-font-${value}), Georgia, serif`;
-                    option.style.fontSize = '14px';
-                } else {
-                    option.style.fontFamily = 'Georgia, serif';
-                }
+                option.setAttribute('data-font', value);
                 fontSelect.appendChild(option);
             });
             
-            // Style the font selector itself to show selected font
+            // Apply font family styling to the select element to show each option in its font
+            fontSelect.style.fontFamily = 'Georgia, serif';
+            
+            // Handle font selection and apply preview
             fontSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
                 if (selectedValue && selectedValue !== '') {
@@ -292,6 +330,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.style.fontFamily = 'Georgia, serif';
                 }
             });
+            
+            // Add CSS to style options (works in some browsers)
+            const style = document.createElement('style');
+            style.textContent = `
+                .ql-font-custom option[data-font="playfair"] { font-family: var(--ql-font-playfair), serif !important; }
+                .ql-font-custom option[data-font="merriweather"] { font-family: var(--ql-font-merriweather), serif !important; }
+                .ql-font-custom option[data-font="lora"] { font-family: var(--ql-font-lora), serif !important; }
+                .ql-font-custom option[data-font="crimson"] { font-family: var(--ql-font-crimson), serif !important; }
+                .ql-font-custom option[data-font="baskerville"] { font-family: var(--ql-font-baskerville), serif !important; }
+                .ql-font-custom option[data-font="source-serif"] { font-family: var(--ql-font-source-serif), serif !important; }
+                .ql-font-custom option[data-font="cormorant"] { font-family: var(--ql-font-cormorant), serif !important; }
+                .ql-font-custom option[data-font="vollkorn"] { font-family: var(--ql-font-vollkorn), serif !important; }
+                .ql-font-custom option[data-font="alegreya"] { font-family: var(--ql-font-alegreya), serif !important; }
+                .ql-font-custom option[data-font="spectral"] { font-family: var(--ql-font-spectral), serif !important; }
+                .ql-font-custom option[data-font="neuton"] { font-family: var(--ql-font-neuton), serif !important; }
+                .ql-font-custom option[data-font="linden"] { font-family: var(--ql-font-linden), serif !important; }
+                .ql-font-custom option[data-font="cardo"] { font-family: var(--ql-font-cardo), serif !important; }
+                .ql-font-custom option[data-font="gentium"] { font-family: var(--ql-font-gentium), serif !important; }
+                .ql-font-custom option[data-font="domine"] { font-family: var(--ql-font-domine), serif !important; }
+                .ql-font-custom option[data-font="bitter"] { font-family: var(--ql-font-bitter), serif !important; }
+                .ql-font-custom option[data-font="arvo"] { font-family: var(--ql-font-arvo), serif !important; }
+                .ql-font-custom option[data-font="rokkitt"] { font-family: var(--ql-font-rokkitt), serif !important; }
+                .ql-font-custom option[data-font="georgia"] { font-family: var(--ql-font-georgia), serif !important; }
+                .ql-font-custom option[data-font="times"] { font-family: var(--ql-font-times), serif !important; }
+                .ql-font-custom option[data-font="arial"] { font-family: var(--ql-font-arial), sans-serif !important; }
+                .ql-font-custom option[data-font="helvetica"] { font-family: var(--ql-font-helvetica), sans-serif !important; }
+                .ql-font-custom option[data-font="opensans"] { font-family: var(--ql-font-opensans), sans-serif !important; }
+                .ql-font-custom option[data-font="roboto"] { font-family: var(--ql-font-roboto), sans-serif !important; }
+            `;
+            document.head.appendChild(style);
             
             // Handle font changes
             fontSelect.addEventListener('change', function() {
