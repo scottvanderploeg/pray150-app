@@ -517,13 +517,25 @@ def psalm(psalm_number):
     today = datetime.now().strftime('%Y-%m-%d')
     today_entry = None
     if journal_entries:
+        # Debug: print all entries and their dates
+        print(f"DEBUG: Looking for today's entry for {today}")
         for entry in journal_entries:
+            print(f"DEBUG: Entry {entry.id}, created_at: {entry.created_at}")
             if entry.created_at and entry.created_at.startswith(today):
                 today_entry = entry
+                print(f"DEBUG: Found today's entry: {entry.id}")
                 break
+        
+        # If no today entry found, get the most recent entry regardless of date
+        if not today_entry and journal_entries:
+            today_entry = journal_entries[0]  # Most recent entry
+            print(f"DEBUG: Using most recent entry: {today_entry.id}")
     
     # Pass only today's entry for editor loading (empty dict if no today entry)
     entries_dict = {today_entry.id: today_entry} if today_entry else {}
+    print(f"DEBUG: entries_dict: {entries_dict}")
+    if today_entry:
+        print(f"DEBUG: today_entry prompt_responses: {today_entry.prompt_responses}")
     
     # Get user's markups for this psalm from database
     markups = []
