@@ -27,13 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
     Quill.register(Font, true);
     
     const toolbarOptions = [
-        [{ 'font': [
-            false, 'playfair', 'merriweather', 'lora', 'crimson', 'baskerville',
-            'source-serif', 'cormorant', 'vollkorn', 'alegreya', 'spectral',
-            'neuton', 'linden', 'cardo', 'gentium', 'domine', 'bitter',
-            'arvo', 'rokkitt', 'georgia', 'times', 'arial', 'helvetica',
-            'opensans', 'roboto'
-        ] }],
         [{ 'size': ['small', false, 'large', 'huge'] }],
         [{ 'color': [] }, { 'background': [] }],
         ['bold', 'italic', 'underline', 'strike'],
@@ -133,63 +126,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Fix font picker display names with direct text replacement
+    // Create custom font selector and add it to the toolbar
     setTimeout(() => {
-        const fontPicker = globalToolbar.container.querySelector('.ql-picker.ql-font');
-        if (fontPicker) {
-            const pickerItems = fontPicker.querySelectorAll('.ql-picker-item');
-            const pickerLabel = fontPicker.querySelector('.ql-picker-label');
+        const toolbar = globalToolbar.container.querySelector('.ql-toolbar');
+        if (toolbar) {
+            // Create custom font selector
+            const fontSelectContainer = document.createElement('span');
+            fontSelectContainer.className = 'ql-formats';
             
-            // Create array of font names in order
-            const fontDisplayNames = [
-                'Default Font',
-                'Playfair Display',
-                'Merriweather', 
-                'Lora',
-                'Crimson Text',
-                'Libre Baskerville',
-                'Source Serif Pro',
-                'Cormorant Garamond',
-                'Vollkorn',
-                'Alegreya',
-                'Spectral',
-                'Neuton',
-                'Linden Hill',
-                'Cardo',
-                'Gentium Basic',
-                'Domine',
-                'Bitter',
-                'Arvo',
-                'Rokkitt',
-                'Georgia',
-                'Times New Roman',
-                'Arial',
-                'Helvetica Neue',
-                'Open Sans',
-                'Roboto'
+            const fontSelect = document.createElement('select');
+            fontSelect.className = 'ql-font-custom';
+            fontSelect.style.cssText = `
+                padding: 4px 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                background: white;
+                font-size: 14px;
+                margin-right: 8px;
+                min-width: 160px;
+            `;
+            
+            // Font options with display names
+            const fontOptions = [
+                ['', 'Default Font'],
+                ['playfair', 'Playfair Display'],
+                ['merriweather', 'Merriweather'], 
+                ['lora', 'Lora'],
+                ['crimson', 'Crimson Text'],
+                ['baskerville', 'Libre Baskerville'],
+                ['source-serif', 'Source Serif Pro'],
+                ['cormorant', 'Cormorant Garamond'],
+                ['vollkorn', 'Vollkorn'],
+                ['alegreya', 'Alegreya'],
+                ['spectral', 'Spectral'],
+                ['neuton', 'Neuton'],
+                ['linden', 'Linden Hill'],
+                ['cardo', 'Cardo'],
+                ['gentium', 'Gentium Basic'],
+                ['domine', 'Domine'],
+                ['bitter', 'Bitter'],
+                ['arvo', 'Arvo'],
+                ['rokkitt', 'Rokkitt'],
+                ['georgia', 'Georgia'],
+                ['times', 'Times New Roman'],
+                ['arial', 'Arial'],
+                ['helvetica', 'Helvetica Neue'],
+                ['opensans', 'Open Sans'],
+                ['roboto', 'Roboto']
             ];
             
-            // Update each picker item directly
-            pickerItems.forEach((item, index) => {
-                if (index < fontDisplayNames.length) {
-                    item.textContent = fontDisplayNames[index];
-                    item.setAttribute('data-label', fontDisplayNames[index]);
-                    
-                    // Add font family preview
-                    const value = item.getAttribute('data-value') || '';
-                    if (value && value !== '') {
-                        item.style.fontFamily = `var(--ql-font-${value}), Georgia, serif`;
-                    }
+            // Populate font selector
+            fontOptions.forEach(([value, name]) => {
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = name;
+                if (value && value !== '') {
+                    option.style.fontFamily = `var(--ql-font-${value}), Georgia, serif`;
                 }
+                fontSelect.appendChild(option);
             });
             
-            // Update the main label
-            if (pickerLabel) {
-                pickerLabel.textContent = 'Font';
-                pickerLabel.setAttribute('data-label', 'Font');
-            }
+            // Handle font changes
+            fontSelect.addEventListener('change', function() {
+                const selectedFont = this.value || false;
+                // Apply to currently focused editor
+                Object.values(quillInstances).forEach(quill => {
+                    const selection = quill.getSelection();
+                    if (selection) {
+                        quill.format('font', selectedFont);
+                    }
+                });
+            });
+            
+            fontSelectContainer.appendChild(fontSelect);
+            
+            // Insert at the beginning of the toolbar
+            toolbar.insertBefore(fontSelectContainer, toolbar.firstChild);
         }
-    }, 200);
+    }, 100);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
