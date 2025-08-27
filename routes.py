@@ -573,13 +573,17 @@ def psalm(psalm_number):
 @main_bp.route('/save_journal', methods=['POST'])
 @login_required
 def save_journal():
-    print(f"DEBUG ROUTE: save_journal called")
-    print(f"DEBUG ROUTE: request.is_json = {request.is_json}")
-    print(f"DEBUG ROUTE: request.content_type = {request.content_type}")
+    print(f"🚀 DEBUG ROUTE: save_journal called")
+    print(f"🚀 DEBUG ROUTE: request.method = {request.method}")  
+    print(f"🚀 DEBUG ROUTE: request.url = {request.url}")
+    print(f"🚀 DEBUG ROUTE: request.is_json = {request.is_json}")
+    print(f"🚀 DEBUG ROUTE: request.content_type = {request.content_type}")
+    print(f"🚀 DEBUG ROUTE: current_user = {current_user}")
     if request.is_json:
-        print(f"DEBUG ROUTE: JSON data = {request.get_json()}")
+        data = request.get_json()
+        print(f"🚀 DEBUG ROUTE: JSON data = {data}")
     else:
-        print(f"DEBUG ROUTE: Form data = {request.form}")
+        print(f"🚀 DEBUG ROUTE: Form data = {dict(request.form)}")
     try:
         # Handle JSON requests for auto-save
         if request.is_json:
