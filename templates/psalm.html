@@ -106,6 +106,40 @@
     .ql-font-helvetica { font-family: 'Helvetica Neue', sans-serif; }
     .ql-font-opensans { font-family: 'Open Sans', sans-serif; }
     .ql-font-roboto { font-family: 'Roboto', sans-serif; }
+    
+    /* Font dropdown styling */
+    .ql-picker.ql-font .ql-picker-label::before,
+    .ql-picker.ql-font .ql-picker-item::before {
+        content: attr(data-label);
+    }
+    
+    /* CSS variables for font preview */
+    :root {
+        --ql-font-playfair: 'Playfair Display', serif;
+        --ql-font-merriweather: 'Merriweather', serif;
+        --ql-font-lora: 'Lora', serif;
+        --ql-font-crimson: 'Crimson Text', serif;
+        --ql-font-baskerville: 'Libre Baskerville', serif;
+        --ql-font-source-serif: 'Source Serif Pro', serif;
+        --ql-font-cormorant: 'Cormorant Garamond', serif;
+        --ql-font-vollkorn: 'Vollkorn', serif;
+        --ql-font-alegreya: 'Alegreya', serif;
+        --ql-font-spectral: 'Spectral', serif;
+        --ql-font-neuton: 'Neuton', serif;
+        --ql-font-linden: 'Linden Hill', serif;
+        --ql-font-cardo: 'Cardo', serif;
+        --ql-font-gentium: 'Gentium Basic', serif;
+        --ql-font-domine: 'Domine', serif;
+        --ql-font-bitter: 'Bitter', serif;
+        --ql-font-arvo: 'Arvo', serif;
+        --ql-font-rokkitt: 'Rokkitt', serif;
+        --ql-font-georgia: Georgia, serif;
+        --ql-font-times: 'Times New Roman', serif;
+        --ql-font-arial: Arial, sans-serif;
+        --ql-font-helvetica: 'Helvetica Neue', sans-serif;
+        --ql-font-opensans: 'Open Sans', sans-serif;
+        --ql-font-roboto: 'Roboto', sans-serif;
+    }
 </style>
 {% endblock %}
 

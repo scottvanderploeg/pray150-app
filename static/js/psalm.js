@@ -43,6 +43,35 @@ document.addEventListener('DOMContentLoaded', function() {
         ['clean']
     ];
     
+    // Font name mapping for display
+    const fontNames = {
+        false: 'Default Font',
+        'playfair': 'Playfair Display',
+        'merriweather': 'Merriweather', 
+        'lora': 'Lora',
+        'crimson': 'Crimson Text',
+        'baskerville': 'Libre Baskerville',
+        'source-serif': 'Source Serif Pro',
+        'cormorant': 'Cormorant Garamond',
+        'vollkorn': 'Vollkorn',
+        'alegreya': 'Alegreya',
+        'spectral': 'Spectral',
+        'neuton': 'Neuton',
+        'linden': 'Linden Hill',
+        'cardo': 'Cardo',
+        'gentium': 'Gentium Basic',
+        'domine': 'Domine',
+        'bitter': 'Bitter',
+        'arvo': 'Arvo',
+        'rokkitt': 'Rokkitt',
+        'georgia': 'Georgia',
+        'times': 'Times New Roman',
+        'arial': 'Arial',
+        'helvetica': 'Helvetica Neue',
+        'opensans': 'Open Sans',
+        'roboto': 'Roboto'
+    };
+    
     let isHighlightMode = false;
     let isNoteMode = false;
     let markupsVisible = true;
@@ -103,6 +132,22 @@ document.addEventListener('DOMContentLoaded', function() {
             toolbar: toolbarOptions
         }
     });
+    
+    // Customize font dropdown after toolbar is created
+    setTimeout(() => {
+        const fontSelect = globalToolbar.container.querySelector('.ql-font');
+        if (fontSelect) {
+            // Update option text to show readable names
+            const options = fontSelect.querySelectorAll('option');
+            options.forEach(option => {
+                const value = option.value || false;
+                if (fontNames[value]) {
+                    option.textContent = fontNames[value];
+                    option.style.fontFamily = value ? `var(--ql-font-${value})` : 'Georgia, serif';
+                }
+            });
+        }
+    }, 100);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
