@@ -202,8 +202,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 toolbar.addHandler(format, function(value) {
                     console.log(`${format} handler called`);
                     if (currentActiveEditor) {
-                        const currentFormat = currentActiveEditor.getFormat();
-                        currentActiveEditor.format(format, !currentFormat[format]);
+                        const selection = currentActiveEditor.getSelection();
+                        if (selection) {
+                            const currentFormat = currentActiveEditor.getFormat(selection);
+                            const newValue = !currentFormat[format];
+                            currentActiveEditor.format(format, newValue);
+                            console.log(`Applied ${format}: ${newValue}`);
+                        } else {
+                            console.log(`No selection for ${format}`);
+                        }
+                    } else {
+                        console.log(`No active editor for ${format}`);
                     }
                 });
             });
