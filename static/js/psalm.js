@@ -129,7 +129,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Create custom font selector and add it to the toolbar
     setTimeout(() => {
         const toolbar = globalToolbar.container.querySelector('.ql-toolbar');
-        if (toolbar) {
+        if (toolbar && !toolbar.querySelector('.ql-font-custom')) {
+            console.log('Adding custom font selector to toolbar');
+            
             // Create custom font selector
             const fontSelectContainer = document.createElement('span');
             fontSelectContainer.className = 'ql-formats';
@@ -144,6 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 font-size: 14px;
                 margin-right: 8px;
                 min-width: 160px;
+                z-index: 1100;
+                position: relative;
             `;
             
             // Font options with display names
@@ -186,24 +190,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 fontSelect.appendChild(option);
             });
             
+            let activeQuill = null;
+            
+            // Track which editor is currently focused
+            Object.values(quillInstances).forEach(quill => {
+                quill.on('selection-change', function(range) {
+                    if (range) {
+                        activeQuill = quill;
+                    }
+                });
+            });
+            
             // Handle font changes
             fontSelect.addEventListener('change', function() {
                 const selectedFont = this.value || false;
-                // Apply to currently focused editor
-                Object.values(quillInstances).forEach(quill => {
-                    const selection = quill.getSelection();
-                    if (selection) {
-                        quill.format('font', selectedFont);
+                if (activeQuill) {
+                    const selection = activeQuill.getSelection();
+                    if (selection && selection.length > 0) {
+                        // Format selected text
+                        activeQuill.format('font', selectedFont);
+                    } else {
+                        // Format new text at cursor
+                        activeQuill.format('font', selectedFont);
                     }
-                });
+                }
             });
             
             fontSelectContainer.appendChild(fontSelect);
             
             // Insert at the beginning of the toolbar
             toolbar.insertBefore(fontSelectContainer, toolbar.firstChild);
+            console.log('Custom font selector added successfully');
         }
-    }, 100);
+    }, 300);
     
     // Initialize Quill editors with shared toolbar
     journalEditors.forEach((editorElement, index) => {
