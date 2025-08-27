@@ -293,10 +293,13 @@ document.addEventListener('DOMContentLoaded', function() {
                             </div>
                         </div>
 
-                        <!-- Custom Bold Button -->
-                        <div style="margin-left: 15px;">
+                        <!-- Custom Formatting Buttons -->
+                        <div style="margin-left: 15px; display: flex; gap: 4px;">
                             <button type="button" id="customBoldBtn" onclick="console.log('Custom bold clicked'); applyCustomFormat('bold')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 700; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Bold">
                                 <strong>B</strong>
+                            </button>
+                            <button type="button" id="customItalicBtn" onclick="console.log('Custom italic clicked'); applyCustomFormat('italic')" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-style: italic; color: #555; display: flex; align-items: center; gap: 4px; min-width: 35px; justify-content: center;" title="Italic">
+                                <em>I</em>
                             </button>
                         </div>
                     `;
@@ -422,9 +425,16 @@ document.addEventListener('DOMContentLoaded', function() {
                                 console.log('Applied custom', formatType, ':', newValue);
                                 
                                 // Update button appearance to show active state
-                                const button = document.getElementById('customBoldBtn');
-                                if (button && formatType === 'bold') {
-                                    button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                if (formatType === 'bold') {
+                                    const button = document.getElementById('customBoldBtn');
+                                    if (button) {
+                                        button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                    }
+                                } else if (formatType === 'italic') {
+                                    const button = document.getElementById('customItalicBtn');
+                                    if (button) {
+                                        button.style.background = newValue ? '#e0e0e0' : '#fff';
+                                    }
                                 }
                             } else {
                                 console.log('No selection for custom', formatType);
