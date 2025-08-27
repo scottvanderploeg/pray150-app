@@ -91,8 +91,9 @@ window.formatText = function(command, value = null) {
                 // No selection - create a span for future typing
                 const span = document.createElement('span');
                 if (value === 'transparent') {
-                    // For no highlight, don't set any background color
-                    span.style.backgroundColor = '';
+                    // For no highlight, explicitly set transparent to override parent highlighting
+                    span.style.backgroundColor = 'transparent';
+                    span.style.background = 'none';
                 } else {
                     // For colored highlights, set the background color
                     span.style.backgroundColor = value;
@@ -109,8 +110,9 @@ window.formatText = function(command, value = null) {
                 const contents = savedRange.extractContents();
                 const span = document.createElement('span');
                 if (value === 'transparent') {
-                    // For no highlight, don't set any background color
-                    span.style.backgroundColor = '';
+                    // For no highlight, explicitly set transparent to override parent highlighting
+                    span.style.backgroundColor = 'transparent';
+                    span.style.background = 'none';
                 } else {
                     // For colored highlights, set the background color
                     span.style.backgroundColor = value;
