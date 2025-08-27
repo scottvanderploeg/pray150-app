@@ -343,8 +343,14 @@ class JournalEntry:
         """Get journal entries for a user and psalm"""
         try:
             supabase = get_supabase_client()
+            print(f"🔎 QUERY: get_by_user_and_psalm(user_id={user_id}, psalm_id={psalm_id})")
+            
             result = supabase.table('journal_entries').select('*')\
                 .eq('user_id', str(user_id)).eq('psalm_id', psalm_id).execute()
+            
+            print(f"🔎 QUERY RESULT: Found {len(result.data)} entries")
+            for entry in result.data:
+                print(f"🔎 QUERY RESULT: Entry {entry['id']}, psalm_id={entry['psalm_id']}, user_id={entry['user_id']}, has_content={bool(entry.get('prompt_responses'))}")
             
             entries = []
             for entry_data in result.data:
