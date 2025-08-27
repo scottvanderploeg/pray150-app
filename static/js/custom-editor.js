@@ -58,9 +58,8 @@ window.formatText = function(command, value = null) {
             selection.addRange(savedRange);
         }
         
-        // Special handling for font size - use document.execCommand which handles inheritance better
+        // Special handling for font size and highlights - create spans for future typing
         if (command === 'fontSize') {
-            // For font size, we need to use a different approach
             if (savedRange && savedRange.collapsed) {
                 // No selection - create a span for future typing
                 const span = document.createElement('span');
@@ -86,10 +85,36 @@ window.formatText = function(command, value = null) {
                 selection.addRange(savedRange);
             }
         }
-        // Special handling for highlight removal
-        else if (command === 'hiliteColor' && value === 'transparent') {
-            document.execCommand('hiliteColor', false, 'transparent');
-            document.execCommand('removeFormat', false, null);
+        // Special handling for highlights
+        else if (command === 'hiliteColor') {
+            if (value === 'transparent') {
+                // Remove highlight
+                document.execCommand('hiliteColor', false, 'transparent');
+                document.execCommand('removeFormat', false, null);
+            } else if (savedRange && savedRange.collapsed) {
+                // No selection - create a span for future typing with highlight
+                const span = document.createElement('span');
+                span.style.backgroundColor = value;
+                span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
+                savedRange.insertNode(span);
+                // Position cursor at the end of the span for future typing
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            } else if (savedRange) {
+                // Has selection - wrap it with highlight
+                const contents = savedRange.extractContents();
+                const span = document.createElement('span');
+                span.style.backgroundColor = value;
+                span.appendChild(contents);
+                savedRange.insertNode(span);
+                // Position cursor after the span
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            }
         }
         // For all other commands, use execCommand which handles cursor positioning well
         else {
