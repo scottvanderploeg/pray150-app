@@ -6,8 +6,7 @@
 <!-- Hebrew Fonts from Google Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700&family=Noto+Sans+Hebrew:wght@300;400;500;700&display=swap" rel="stylesheet">
 
-<!-- Quill.js Rich Text Editor -->
-<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<!-- Custom Rich Text Editor Styles -->
 
 <!-- Google Fonts for Rich Text Options -->
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&family=Lora:wght@400;500;600&family=Crimson+Text:wght@400;600&family=Libre+Baskerville:wght@400;700&family=Source+Serif+Pro:wght@400;600&family=Cormorant+Garamond:wght@300;400;500&family=Vollkorn:wght@400;500;600&family=Alegreya:wght@400;500;700&family=Spectral:wght@300;400;500&family=Neuton:wght@300;400;700&family=Linden+Hill:wght@400&family=Cardo:wght@400;700&family=Gentium+Basic:wght@400;700&family=Domine:wght@400;500;600&family=Bitter:wght@300;400;500&family=Arvo:wght@400;700&family=Rokkitt:wght@300;400;500&display=swap" rel="stylesheet">
@@ -116,35 +115,137 @@
         z-index: 999 !important;
     }
     
-    /* Quill Editor Styling */
-    .journal-editor {
+    /* Custom Rich Text Editor Styling */
+    .custom-editor {
         border: 1px solid #dee2e6;
         border-radius: 8px;
         font-family: Georgia, serif;
         font-size: 16px;
         margin-bottom: 1rem;
+        background: white;
+        position: relative;
     }
     
-    .journal-editor .ql-container {
-        border-radius: 8px;
-        font-size: 16px;
-        font-family: Georgia, serif;
-        line-height: 1.6;
+    .custom-editor-toolbar {
+        border-bottom: 1px solid #dee2e6;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
     }
     
-    .journal-editor .ql-editor {
+    .custom-editor-content {
         min-height: 100px;
-        font-size: 16px;
         font-family: Georgia, serif;
+        font-size: 16px;
         line-height: 1.6;
-        border-radius: 8px;
+        padding: 12px;
+        border-radius: 0 0 8px 8px;
+        outline: none;
+        cursor: text;
     }
     
-    .journal-editor .ql-editor.ql-blank::before {
-        font-style: normal;
+    .custom-editor-content:empty::before {
+        content: attr(data-placeholder);
         color: #6c757d;
-        font-size: 16px;
+        font-style: normal;
+        pointer-events: none;
         font-family: Georgia, serif;
+        font-size: 16px;
+    }
+    
+    .format-btn {
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #555;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 28px;
+        height: 28px;
+        justify-content: center;
+        transition: all 0.2s;
+    }
+    
+    .format-btn:hover {
+        background: #f0f0f0;
+        border-color: #999;
+    }
+    
+    .format-btn.active {
+        background: #e0e0e0;
+        border-color: #666;
+    }
+    
+    .format-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .format-dropdown-content {
+        display: none;
+        position: absolute;
+        top: 32px;
+        left: 0;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 8px;
+        z-index: 1000;
+        min-width: 120px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    
+    .format-dropdown-content.show {
+        display: block;
+    }
+    
+    .color-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+    }
+    
+    .color-option {
+        width: 24px;
+        height: 24px;
+        border: 1px solid #999;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    
+    .color-option:hover {
+        transform: scale(1.1);
+        border-color: #333;
+    }
+    
+    .size-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+    
+    .size-option {
+        padding: 4px 8px;
+        background: white;
+        border: 1px solid #999;
+        border-radius: 3px;
+        cursor: pointer;
+        text-align: center;
+        transition: background 0.1s;
+        font-size: var(--option-size);
+    }
+    
+    .size-option:hover {
+        background: #f0f0f0;
     }
     
     /* Custom Font Definitions */
@@ -413,25 +514,305 @@
                                     </small>
                                 </div>
                             {% endif %}
-                            <div class="journal-editor" data-prompt="1" data-placeholder="Reflect on where your heart and soul are today..." style="height: 120px;">{% if pre_reflection_data %}{{ pre_reflection_data.journal_text }}{% elif entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('1', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            <div class="custom-editor" data-prompt="1">
+                                <div class="custom-editor-toolbar">
+                                    <button class="format-btn" onclick="formatText('bold')" data-format="bold" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('italic')" data-format="italic" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('underline')" data-format="underline" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('strikethrough')" data-format="strikethrough" title="Strikethrough">
+                                        <s>S</s>
+                                    </button>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('color-1')" title="Text Color">
+                                            <span style="color: #000;">A</span> ▼
+                                        </button>
+                                        <div id="color-1" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: black;" onclick="formatText('foreColor', 'black')" title="Black"></div>
+                                                <div class="color-option" style="background: red;" onclick="formatText('foreColor', 'red')" title="Red"></div>
+                                                <div class="color-option" style="background: blue;" onclick="formatText('foreColor', 'blue')" title="Blue"></div>
+                                                <div class="color-option" style="background: green;" onclick="formatText('foreColor', 'green')" title="Green"></div>
+                                                <div class="color-option" style="background: purple;" onclick="formatText('foreColor', 'purple')" title="Purple"></div>
+                                                <div class="color-option" style="background: orange;" onclick="formatText('foreColor', 'orange')" title="Orange"></div>
+                                                <div class="color-option" style="background: brown;" onclick="formatText('foreColor', 'brown')" title="Brown"></div>
+                                                <div class="color-option" style="background: darkblue;" onclick="formatText('foreColor', 'darkblue')" title="Dark Blue"></div>
+                                                <div class="color-option" style="background: darkgreen;" onclick="formatText('foreColor', 'darkgreen')" title="Dark Green"></div>
+                                                <div class="color-option" style="background: darkred;" onclick="formatText('foreColor', 'darkred')" title="Dark Red"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('highlight-1')" title="Highlight">
+                                            <span style="background: yellow; padding: 2px;">H</span> ▼
+                                        </button>
+                                        <div id="highlight-1" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: yellow;" onclick="formatText('hiliteColor', 'yellow')" title="Yellow"></div>
+                                                <div class="color-option" style="background: lightblue;" onclick="formatText('hiliteColor', 'lightblue')" title="Light Blue"></div>
+                                                <div class="color-option" style="background: lightgreen;" onclick="formatText('hiliteColor', 'lightgreen')" title="Light Green"></div>
+                                                <div class="color-option" style="background: pink;" onclick="formatText('hiliteColor', 'pink')" title="Pink"></div>
+                                                <div class="color-option" style="background: lightyellow;" onclick="formatText('hiliteColor', 'lightyellow')" title="Light Yellow"></div>
+                                                <div class="color-option" style="background: transparent; border: 2px solid #999;" onclick="formatText('hiliteColor', 'transparent')" title="Remove Highlight"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('size-1')" title="Font Size">
+                                            Size ▼
+                                        </button>
+                                        <div id="size-1" class="format-dropdown-content">
+                                            <div class="size-grid">
+                                                <div class="size-option" style="--option-size: 10px;" onclick="formatText('fontSize', '10px')">10px</div>
+                                                <div class="size-option" style="--option-size: 12px;" onclick="formatText('fontSize', '12px')">12px</div>
+                                                <div class="size-option" style="--option-size: 14px;" onclick="formatText('fontSize', '14px')">14px</div>
+                                                <div class="size-option" style="--option-size: 16px;" onclick="formatText('fontSize', '16px')">16px</div>
+                                                <div class="size-option" style="--option-size: 18px;" onclick="formatText('fontSize', '18px')">18px</div>
+                                                <div class="size-option" style="--option-size: 20px;" onclick="formatText('fontSize', '20px')">20px</div>
+                                                <div class="size-option" style="--option-size: 24px;" onclick="formatText('fontSize', '24px')">24px</div>
+                                                <div class="size-option" style="--option-size: 28px;" onclick="formatText('fontSize', '28px')">28px</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="custom-editor-content" contenteditable="true" data-placeholder="Reflect on where your heart and soul are today..." data-prompt="1">{% if pre_reflection_data %}{{ pre_reflection_data.journal_text }}{% elif entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('1', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            </div>
                         </div>
 
                         <!-- Prompt 2 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">2. LOOK! Lord, help me discover new truth from your Word today.</h6>
-                            <div class="journal-editor" data-prompt="2" data-placeholder="What is the Psalm saying? What is this Psalm about?" style="height: 120px;">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('2', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            <div class="custom-editor" data-prompt="2">
+                                <div class="custom-editor-toolbar">
+                                    <button class="format-btn" onclick="formatText('bold')" data-format="bold" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('italic')" data-format="italic" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('underline')" data-format="underline" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('strikethrough')" data-format="strikethrough" title="Strikethrough">
+                                        <s>S</s>
+                                    </button>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('color-2')" title="Text Color">
+                                            <span style="color: #000;">A</span> ▼
+                                        </button>
+                                        <div id="color-2" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: black;" onclick="formatText('foreColor', 'black')" title="Black"></div>
+                                                <div class="color-option" style="background: red;" onclick="formatText('foreColor', 'red')" title="Red"></div>
+                                                <div class="color-option" style="background: blue;" onclick="formatText('foreColor', 'blue')" title="Blue"></div>
+                                                <div class="color-option" style="background: green;" onclick="formatText('foreColor', 'green')" title="Green"></div>
+                                                <div class="color-option" style="background: purple;" onclick="formatText('foreColor', 'purple')" title="Purple"></div>
+                                                <div class="color-option" style="background: orange;" onclick="formatText('foreColor', 'orange')" title="Orange"></div>
+                                                <div class="color-option" style="background: brown;" onclick="formatText('foreColor', 'brown')" title="Brown"></div>
+                                                <div class="color-option" style="background: darkblue;" onclick="formatText('foreColor', 'darkblue')" title="Dark Blue"></div>
+                                                <div class="color-option" style="background: darkgreen;" onclick="formatText('foreColor', 'darkgreen')" title="Dark Green"></div>
+                                                <div class="color-option" style="background: darkred;" onclick="formatText('foreColor', 'darkred')" title="Dark Red"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('highlight-2')" title="Highlight">
+                                            <span style="background: yellow; padding: 2px;">H</span> ▼
+                                        </button>
+                                        <div id="highlight-2" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: yellow;" onclick="formatText('hiliteColor', 'yellow')" title="Yellow"></div>
+                                                <div class="color-option" style="background: lightblue;" onclick="formatText('hiliteColor', 'lightblue')" title="Light Blue"></div>
+                                                <div class="color-option" style="background: lightgreen;" onclick="formatText('hiliteColor', 'lightgreen')" title="Light Green"></div>
+                                                <div class="color-option" style="background: pink;" onclick="formatText('hiliteColor', 'pink')" title="Pink"></div>
+                                                <div class="color-option" style="background: lightyellow;" onclick="formatText('hiliteColor', 'lightyellow')" title="Light Yellow"></div>
+                                                <div class="color-option" style="background: transparent; border: 2px solid #999;" onclick="formatText('hiliteColor', 'transparent')" title="Remove Highlight"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('size-2')" title="Font Size">
+                                            Size ▼
+                                        </button>
+                                        <div id="size-2" class="format-dropdown-content">
+                                            <div class="size-grid">
+                                                <div class="size-option" style="--option-size: 10px;" onclick="formatText('fontSize', '10px')">10px</div>
+                                                <div class="size-option" style="--option-size: 12px;" onclick="formatText('fontSize', '12px')">12px</div>
+                                                <div class="size-option" style="--option-size: 14px;" onclick="formatText('fontSize', '14px')">14px</div>
+                                                <div class="size-option" style="--option-size: 16px;" onclick="formatText('fontSize', '16px')">16px</div>
+                                                <div class="size-option" style="--option-size: 18px;" onclick="formatText('fontSize', '18px')">18px</div>
+                                                <div class="size-option" style="--option-size: 20px;" onclick="formatText('fontSize', '20px')">20px</div>
+                                                <div class="size-option" style="--option-size: 24px;" onclick="formatText('fontSize', '24px')">24px</div>
+                                                <div class="size-option" style="--option-size: 28px;" onclick="formatText('fontSize', '28px')">28px</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="custom-editor-content" contenteditable="true" data-placeholder="What is the Psalm saying? What is this Psalm about?" data-prompt="2">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('2', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            </div>
                         </div>
 
                         <!-- Prompt 3 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">3. LISTEN! Lord, what is your thought for me today from your Word?</h6>
-                            <div class="journal-editor" data-prompt="3" data-placeholder="What is God speaking to you through this Psalm?" style="height: 120px;">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('3', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            <div class="custom-editor" data-prompt="3">
+                                <div class="custom-editor-toolbar">
+                                    <button class="format-btn" onclick="formatText('bold')" data-format="bold" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('italic')" data-format="italic" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('underline')" data-format="underline" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('strikethrough')" data-format="strikethrough" title="Strikethrough">
+                                        <s>S</s>
+                                    </button>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('color-3')" title="Text Color">
+                                            <span style="color: #000;">A</span> ▼
+                                        </button>
+                                        <div id="color-3" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: black;" onclick="formatText('foreColor', 'black')" title="Black"></div>
+                                                <div class="color-option" style="background: red;" onclick="formatText('foreColor', 'red')" title="Red"></div>
+                                                <div class="color-option" style="background: blue;" onclick="formatText('foreColor', 'blue')" title="Blue"></div>
+                                                <div class="color-option" style="background: green;" onclick="formatText('foreColor', 'green')" title="Green"></div>
+                                                <div class="color-option" style="background: purple;" onclick="formatText('foreColor', 'purple')" title="Purple"></div>
+                                                <div class="color-option" style="background: orange;" onclick="formatText('foreColor', 'orange')" title="Orange"></div>
+                                                <div class="color-option" style="background: brown;" onclick="formatText('foreColor', 'brown')" title="Brown"></div>
+                                                <div class="color-option" style="background: darkblue;" onclick="formatText('foreColor', 'darkblue')" title="Dark Blue"></div>
+                                                <div class="color-option" style="background: darkgreen;" onclick="formatText('foreColor', 'darkgreen')" title="Dark Green"></div>
+                                                <div class="color-option" style="background: darkred;" onclick="formatText('foreColor', 'darkred')" title="Dark Red"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('highlight-3')" title="Highlight">
+                                            <span style="background: yellow; padding: 2px;">H</span> ▼
+                                        </button>
+                                        <div id="highlight-3" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: yellow;" onclick="formatText('hiliteColor', 'yellow')" title="Yellow"></div>
+                                                <div class="color-option" style="background: lightblue;" onclick="formatText('hiliteColor', 'lightblue')" title="Light Blue"></div>
+                                                <div class="color-option" style="background: lightgreen;" onclick="formatText('hiliteColor', 'lightgreen')" title="Light Green"></div>
+                                                <div class="color-option" style="background: pink;" onclick="formatText('hiliteColor', 'pink')" title="Pink"></div>
+                                                <div class="color-option" style="background: lightyellow;" onclick="formatText('hiliteColor', 'lightyellow')" title="Light Yellow"></div>
+                                                <div class="color-option" style="background: transparent; border: 2px solid #999;" onclick="formatText('hiliteColor', 'transparent')" title="Remove Highlight"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('size-3')" title="Font Size">
+                                            Size ▼
+                                        </button>
+                                        <div id="size-3" class="format-dropdown-content">
+                                            <div class="size-grid">
+                                                <div class="size-option" style="--option-size: 10px;" onclick="formatText('fontSize', '10px')">10px</div>
+                                                <div class="size-option" style="--option-size: 12px;" onclick="formatText('fontSize', '12px')">12px</div>
+                                                <div class="size-option" style="--option-size: 14px;" onclick="formatText('fontSize', '14px')">14px</div>
+                                                <div class="size-option" style="--option-size: 16px;" onclick="formatText('fontSize', '16px')">16px</div>
+                                                <div class="size-option" style="--option-size: 18px;" onclick="formatText('fontSize', '18px')">18px</div>
+                                                <div class="size-option" style="--option-size: 20px;" onclick="formatText('fontSize', '20px')">20px</div>
+                                                <div class="size-option" style="--option-size: 24px;" onclick="formatText('fontSize', '24px')">24px</div>
+                                                <div class="size-option" style="--option-size: 28px;" onclick="formatText('fontSize', '28px')">28px</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="custom-editor-content" contenteditable="true" data-placeholder="What is God speaking to you through this Psalm?" data-prompt="3">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('3', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            </div>
                         </div>
 
                         <!-- Prompt 4 -->
                         <div class="journal-prompt mb-4">
                             <h6 class="fw-bold text-primary">4. RESPOND: Lord, what do I need to talk to you about? What are you calling me to do?</h6>
-                            <div class="journal-editor" data-prompt="4" data-placeholder="How will you respond to God? What action is He calling you to take?" style="height: 120px;">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('4', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            <div class="custom-editor" data-prompt="4">
+                                <div class="custom-editor-toolbar">
+                                    <button class="format-btn" onclick="formatText('bold')" data-format="bold" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('italic')" data-format="italic" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('underline')" data-format="underline" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="format-btn" onclick="formatText('strikethrough')" data-format="strikethrough" title="Strikethrough">
+                                        <s>S</s>
+                                    </button>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('color-4')" title="Text Color">
+                                            <span style="color: #000;">A</span> ▼
+                                        </button>
+                                        <div id="color-4" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: black;" onclick="formatText('foreColor', 'black')" title="Black"></div>
+                                                <div class="color-option" style="background: red;" onclick="formatText('foreColor', 'red')" title="Red"></div>
+                                                <div class="color-option" style="background: blue;" onclick="formatText('foreColor', 'blue')" title="Blue"></div>
+                                                <div class="color-option" style="background: green;" onclick="formatText('foreColor', 'green')" title="Green"></div>
+                                                <div class="color-option" style="background: purple;" onclick="formatText('foreColor', 'purple')" title="Purple"></div>
+                                                <div class="color-option" style="background: orange;" onclick="formatText('foreColor', 'orange')" title="Orange"></div>
+                                                <div class="color-option" style="background: brown;" onclick="formatText('foreColor', 'brown')" title="Brown"></div>
+                                                <div class="color-option" style="background: darkblue;" onclick="formatText('foreColor', 'darkblue')" title="Dark Blue"></div>
+                                                <div class="color-option" style="background: darkgreen;" onclick="formatText('foreColor', 'darkgreen')" title="Dark Green"></div>
+                                                <div class="color-option" style="background: darkred;" onclick="formatText('foreColor', 'darkred')" title="Dark Red"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('highlight-4')" title="Highlight">
+                                            <span style="background: yellow; padding: 2px;">H</span> ▼
+                                        </button>
+                                        <div id="highlight-4" class="format-dropdown-content">
+                                            <div class="color-grid">
+                                                <div class="color-option" style="background: yellow;" onclick="formatText('hiliteColor', 'yellow')" title="Yellow"></div>
+                                                <div class="color-option" style="background: lightblue;" onclick="formatText('hiliteColor', 'lightblue')" title="Light Blue"></div>
+                                                <div class="color-option" style="background: lightgreen;" onclick="formatText('hiliteColor', 'lightgreen')" title="Light Green"></div>
+                                                <div class="color-option" style="background: pink;" onclick="formatText('hiliteColor', 'pink')" title="Pink"></div>
+                                                <div class="color-option" style="background: lightyellow;" onclick="formatText('hiliteColor', 'lightyellow')" title="Light Yellow"></div>
+                                                <div class="color-option" style="background: transparent; border: 2px solid #999;" onclick="formatText('hiliteColor', 'transparent')" title="Remove Highlight"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="format-dropdown">
+                                        <button class="format-btn" onclick="toggleDropdown('size-4')" title="Font Size">
+                                            Size ▼
+                                        </button>
+                                        <div id="size-4" class="format-dropdown-content">
+                                            <div class="size-grid">
+                                                <div class="size-option" style="--option-size: 10px;" onclick="formatText('fontSize', '10px')">10px</div>
+                                                <div class="size-option" style="--option-size: 12px;" onclick="formatText('fontSize', '12px')">12px</div>
+                                                <div class="size-option" style="--option-size: 14px;" onclick="formatText('fontSize', '14px')">14px</div>
+                                                <div class="size-option" style="--option-size: 16px;" onclick="formatText('fontSize', '16px')">16px</div>
+                                                <div class="size-option" style="--option-size: 18px;" onclick="formatText('fontSize', '18px')">18px</div>
+                                                <div class="size-option" style="--option-size: 20px;" onclick="formatText('fontSize', '20px')">20px</div>
+                                                <div class="size-option" style="--option-size: 24px;" onclick="formatText('fontSize', '24px')">24px</div>
+                                                <div class="size-option" style="--option-size: 28px;" onclick="formatText('fontSize', '28px')">28px</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="custom-editor-content" contenteditable="true" data-placeholder="How will you respond to God? What action is He calling you to take?" data-prompt="4">{% if entries_dict %}{% set entry = entries_dict.values() | list | first %}{{ entry.prompt_responses.get('4', '') | safe if entry and entry.prompt_responses else '' }}{% endif %}</div>
+                            </div>
                         </div>
                         
                         <!-- Auto-save status -->
@@ -484,7 +865,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/psalm.js') }}"></script>
+<script src="{{ url_for('static', filename='js/custom-editor.js') }}"></script>
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
     // Translation switching functionality
@@ -894,5 +1275,5 @@
 </script>
 
 <!-- Quill.js Rich Text Editor -->
-<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<!-- Custom Rich Text Editor - No external dependencies needed -->
 {% endblock %}
