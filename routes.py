@@ -513,8 +513,17 @@ def psalm(psalm_number):
     # Get user's journal entries for this psalm
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id if psalm else psalm_number)
     
-    # Pass the entries directly since they now contain all prompts in one entry
-    entries_dict = {entry.id: entry for entry in journal_entries} if journal_entries else {}
+    # Find the most recent entry for today (for loading into editor)
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_entry = None
+    if journal_entries:
+        for entry in journal_entries:
+            if entry.created_at and entry.created_at.startswith(today):
+                today_entry = entry
+                break
+    
+    # Pass only today's entry for editor loading (empty dict if no today entry)
+    entries_dict = {today_entry.id: today_entry} if today_entry else {}
     
     # Get user's markups for this psalm from database
     markups = []
