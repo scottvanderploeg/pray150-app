@@ -792,31 +792,57 @@
     document.addEventListener('DOMContentLoaded', loadYouTubeVideo);
     
     // Simple format function for colors and highlighting
+    let lastActiveQuill = null;
+    let lastSelection = null;
+    
+    // Store selection when editor gets focus
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            if (typeof quillInstances !== 'undefined') {
+                Object.values(quillInstances).forEach(quill => {
+                    quill.on('selection-change', function(range, oldRange, source) {
+                        if (range) {
+                            lastActiveQuill = quill;
+                            lastSelection = range;
+                            console.log('Selection stored:', range);
+                        }
+                    });
+                });
+            }
+        }, 2000);
+    });
+    
     function applySimpleFormat(formatType, color) {
         console.log('Simple format function called:', formatType, color);
+        console.log('Last selection:', lastSelection);
+        console.log('Last active editor:', lastActiveQuill);
         
-        // Find the currently active editor
-        let activeEditor = null;
-        if (typeof quillInstances !== 'undefined') {
-            Object.values(quillInstances).forEach(quill => {
-                const selection = quill.getSelection();
-                if (selection && selection.length > 0) {
-                    activeEditor = quill;
-                }
-            });
-        }
-        
-        if (activeEditor) {
-            const selection = activeEditor.getSelection();
-            if (selection && selection.length > 0) {
-                console.log('Applying', formatType, 'with color:', color);
-                activeEditor.format(formatType, color);
-                console.log('Format applied successfully');
-            } else {
-                alert('Please select some text first!');
-            }
+        if (lastActiveQuill && lastSelection && lastSelection.length > 0) {
+            console.log('Applying', formatType, 'with color:', color);
+            
+            // Restore selection and apply format
+            lastActiveQuill.setSelection(lastSelection);
+            lastActiveQuill.format(formatType, color);
+            
+            console.log('Format applied successfully');
         } else {
-            alert('Please click in a text box and select some text first!');
+            // Try to find any editor with current selection as fallback
+            let foundEditor = null;
+            if (typeof quillInstances !== 'undefined') {
+                Object.values(quillInstances).forEach(quill => {
+                    const selection = quill.getSelection();
+                    if (selection && selection.length > 0) {
+                        foundEditor = quill;
+                    }
+                });
+            }
+            
+            if (foundEditor) {
+                console.log('Found editor with selection, applying format');
+                foundEditor.format(formatType, color);
+            } else {
+                alert('Please select some text in a journal response box first!');
+            }
         }
     }
 </script>
