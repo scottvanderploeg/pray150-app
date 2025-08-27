@@ -512,6 +512,9 @@ def psalm(psalm_number):
     
     # Get user's journal entries for this psalm
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm.id if psalm else psalm_number)
+    print(f"📚 DEBUG: Found {len(journal_entries)} total entries for psalm {psalm_number}")
+    for entry in journal_entries:
+        print(f"📚 DEBUG: Entry {entry.id}, created: {entry.created_at}, has_content: {bool(entry.prompt_responses and any(str(v).strip() for v in entry.prompt_responses.values() if v and str(v) != 'None'))}")
     
     # Find the most recent entry with content (prioritize today's entries)
     today = datetime.now().strftime('%Y-%m-%d')
