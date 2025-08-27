@@ -9,12 +9,36 @@ let autoSaveTimeout = null;
 window.formatText = function(command, value = null) {
     console.log('Format command:', command, 'Value:', value);
     
-    // Get the currently focused editor
-    const activeEditor = document.activeElement;
+    // Get the currently focused editor - try multiple approaches
+    let activeEditor = document.activeElement;
+    
+    // If activeElement is not a custom editor, try our stored currentActiveEditor
+    if (!activeEditor || !activeEditor.classList.contains('custom-editor-content')) {
+        activeEditor = currentActiveEditor;
+    }
+    
+    // If still no active editor, try to find one that has focus
+    if (!activeEditor || !activeEditor.classList.contains('custom-editor-content')) {
+        const editors = document.querySelectorAll('.custom-editor-content');
+        for (let editor of editors) {
+            if (editor === document.activeElement || editor.contains(document.activeElement)) {
+                activeEditor = editor;
+                break;
+            }
+        }
+    }
     
     if (!activeEditor || !activeEditor.classList.contains('custom-editor-content')) {
-        console.log('No active editor found');
-        return;
+        console.log('No active editor found. Available editors:', document.querySelectorAll('.custom-editor-content').length);
+        // Try to focus the first editor as fallback
+        const firstEditor = document.querySelector('.custom-editor-content');
+        if (firstEditor) {
+            firstEditor.focus();
+            activeEditor = firstEditor;
+            console.log('Focused first editor as fallback');
+        } else {
+            return;
+        }
     }
     
     // Prevent the editor from losing focus
@@ -81,6 +105,9 @@ window.formatText = function(command, value = null) {
 window.toggleDropdown = function(dropdownId) {
     console.log('Toggling dropdown:', dropdownId);
     
+    // Make sure we don't lose focus from the editor when clicking dropdown
+    const activeEditor = currentActiveEditor || document.querySelector('.custom-editor-content:focus');
+    
     // Close all other dropdowns first
     closeAllDropdowns(dropdownId);
     
@@ -89,6 +116,14 @@ window.toggleDropdown = function(dropdownId) {
         const isVisible = dropdown.classList.contains('show');
         dropdown.classList.toggle('show', !isVisible);
         console.log('Dropdown', dropdownId, isVisible ? 'closed' : 'opened');
+    }
+    
+    // Restore focus to the editor if we had one
+    if (activeEditor && activeEditor.classList.contains('custom-editor-content')) {
+        setTimeout(() => {
+            activeEditor.focus();
+            currentActiveEditor = activeEditor;
+        }, 10);
     }
 };
 
@@ -242,6 +277,14 @@ function initializeCustomEditors() {
         editor.addEventListener('focus', function() {
             currentActiveEditor = this;
             updateButtonStates(this);
+            console.log('Editor focused:', this.getAttribute('data-prompt'));
+        });
+        
+        // Handle click to ensure focus
+        editor.addEventListener('click', function() {
+            currentActiveEditor = this;
+            updateButtonStates(this);
+            console.log('Editor clicked:', this.getAttribute('data-prompt'));
         });
         
         // Prevent default formatting shortcuts and handle them ourselves
@@ -271,6 +314,12 @@ function initializeCustomEditors() {
             closeAllDropdowns();
         }
     });
+    
+    // Ensure at least one editor is set as current if none is focused
+    if (editors.length > 0 && !currentActiveEditor) {
+        currentActiveEditor = editors[0];
+        console.log('Set first editor as default active editor');
+    }
     
     console.log('Custom editors initialized');
 }
