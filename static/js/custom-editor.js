@@ -88,9 +88,22 @@ window.formatText = function(command, value = null) {
         // Special handling for highlights
         else if (command === 'hiliteColor') {
             if (value === 'transparent') {
-                // Remove highlight
-                document.execCommand('hiliteColor', false, 'transparent');
-                document.execCommand('removeFormat', false, null);
+                if (savedRange && savedRange.collapsed) {
+                    // No selection - create a span with no background for future typing
+                    const span = document.createElement('span');
+                    span.style.backgroundColor = 'transparent';
+                    span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
+                    savedRange.insertNode(span);
+                    // Position cursor at the end of the span for future typing
+                    savedRange.setStartAfter(span);
+                    savedRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(savedRange);
+                } else {
+                    // Has selection - remove highlight
+                    document.execCommand('hiliteColor', false, 'transparent');
+                    document.execCommand('removeFormat', false, null);
+                }
             } else if (savedRange && savedRange.collapsed) {
                 // No selection - create a span for future typing with highlight
                 const span = document.createElement('span');
