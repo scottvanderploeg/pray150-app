@@ -41,44 +41,75 @@ window.formatText = function(command, value = null) {
         }
     }
     
-    // Prevent the editor from losing focus
+    // Ensure the editor has focus and save the current selection
     activeEditor.focus();
+    const selection = window.getSelection();
+    let savedRange = null;
+    
+    // Save current selection/cursor position
+    if (selection.rangeCount > 0) {
+        savedRange = selection.getRangeAt(0).cloneRange();
+    }
     
     try {
         // Special handling for font size
         if (command === 'fontSize') {
-            // Use CSS style instead of document.execCommand for better control
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
+            if (savedRange) {
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
                 
-                if (range.collapsed) {
+                if (savedRange.collapsed) {
                     // No selection - set for next typing
                     const span = document.createElement('span');
                     span.style.fontSize = value;
                     span.appendChild(document.createTextNode('\u200B')); // Zero-width space
-                    range.insertNode(span);
-                    range.setStart(span.firstChild, 1);
-                    range.collapse(true);
+                    savedRange.insertNode(span);
+                    savedRange.setStart(span.firstChild, 1);
+                    savedRange.collapse(true);
                     selection.removeAllRanges();
-                    selection.addRange(range);
+                    selection.addRange(savedRange);
                 } else {
                     // Has selection - wrap it
-                    const contents = range.extractContents();
+                    const contents = savedRange.extractContents();
                     const span = document.createElement('span');
                     span.style.fontSize = value;
                     span.appendChild(contents);
-                    range.insertNode(span);
+                    savedRange.insertNode(span);
+                    // Clear selection after wrapping
+                    savedRange.collapse(false);
+                    selection.removeAllRanges();
+                    selection.addRange(savedRange);
                 }
             }
         }
-        // Special handling for highlight removal
-        else if (command === 'hiliteColor' && value === 'transparent') {
-            document.execCommand('hiliteColor', false, 'transparent');
-            document.execCommand('removeFormat', false, null);
+        // Special handling for colors and highlights to preserve selection better
+        else if (command === 'foreColor' || command === 'hiliteColor') {
+            if (savedRange) {
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+                
+                if (command === 'hiliteColor' && value === 'transparent') {
+                    // Remove highlight
+                    document.execCommand('hiliteColor', false, 'transparent');
+                    document.execCommand('removeFormat', false, null);
+                } else {
+                    // Apply color or highlight
+                    document.execCommand(command, false, value);
+                }
+                
+                // Restore cursor position after formatting
+                if (savedRange.collapsed) {
+                    selection.removeAllRanges();
+                    selection.addRange(savedRange);
+                }
+            }
         }
         // Standard formatting commands
         else {
+            if (savedRange) {
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            }
             document.execCommand(command, false, value);
         }
         
@@ -93,7 +124,7 @@ window.formatText = function(command, value = null) {
         // Close any open dropdowns
         closeAllDropdowns();
         
-        // Keep focus on editor
+        // Keep focus on editor and ensure cursor position is maintained
         activeEditor.focus();
         
     } catch (error) {
@@ -107,6 +138,12 @@ window.toggleDropdown = function(dropdownId) {
     
     // Make sure we don't lose focus from the editor when clicking dropdown
     const activeEditor = currentActiveEditor || document.querySelector('.custom-editor-content:focus');
+    let savedSelection = null;
+    
+    // Save the current selection before opening dropdown
+    if (activeEditor && window.getSelection().rangeCount > 0) {
+        savedSelection = window.getSelection().getRangeAt(0).cloneRange();
+    }
     
     // Close all other dropdowns first
     closeAllDropdowns(dropdownId);
@@ -118,11 +155,18 @@ window.toggleDropdown = function(dropdownId) {
         console.log('Dropdown', dropdownId, isVisible ? 'closed' : 'opened');
     }
     
-    // Restore focus to the editor if we had one
+    // Restore focus and selection to the editor if we had one
     if (activeEditor && activeEditor.classList.contains('custom-editor-content')) {
         setTimeout(() => {
             activeEditor.focus();
             currentActiveEditor = activeEditor;
+            
+            // Restore the saved selection
+            if (savedSelection) {
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(savedSelection);
+            }
         }, 10);
     }
 };
