@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             quill.on('selection-change', function(range) {
                 if (range) {
                     currentActiveEditor = quill;
-                    console.log('Active editor changed');
+                    console.log('Active editor changed to:', quill.container.id);
                 }
             });
         });
@@ -164,6 +164,58 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             
             console.log('Toolbar proxy set up successfully');
+            
+            // Add debugging for color picker clicks
+            setTimeout(() => {
+                const toolbarContainer = document.querySelector('#global-toolbar');
+                if (toolbarContainer) {
+                    console.log('Adding color picker debugging');
+                    
+                    // Listen for all clicks on the toolbar
+                    toolbarContainer.addEventListener('click', (e) => {
+                        console.log('Toolbar click:', e.target.className, e.target.tagName);
+                        
+                        // Check if it's a color picker item
+                        if (e.target.closest('.ql-color') || e.target.closest('.ql-background')) {
+                            console.log('Color picker clicked!', e.target);
+                            
+                            // Get the active editor
+                            if (currentActiveEditor) {
+                                const selection = currentActiveEditor.getSelection();
+                                console.log('Current selection:', selection);
+                                
+                                if (selection && selection.length > 0) {
+                                    // Determine if it's text color or background
+                                    const isBackground = e.target.closest('.ql-background');
+                                    const formatType = isBackground ? 'background' : 'color';
+                                    
+                                    // Get color value from the clicked element
+                                    let colorValue = e.target.getAttribute('data-value');
+                                    if (!colorValue && e.target.style.backgroundColor) {
+                                        colorValue = e.target.style.backgroundColor;
+                                    }
+                                    if (!colorValue && e.target.style.color) {
+                                        colorValue = e.target.style.color;
+                                    }
+                                    
+                                    console.log('Applying', formatType, 'color:', colorValue);
+                                    
+                                    if (colorValue) {
+                                        currentActiveEditor.format(formatType, colorValue);
+                                        console.log('Color applied successfully');
+                                    } else {
+                                        console.log('No color value found');
+                                    }
+                                } else {
+                                    console.log('No text selected');
+                                }
+                            } else {
+                                console.log('No active editor');
+                            }
+                        }
+                    });
+                }
+            }, 2000);
         }
     }
     
