@@ -233,33 +233,97 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     
                     customColorToolbar.innerHTML = `
-                        <span style="font-size: 12px; font-weight: 500; color: #555;">Text Colors:</span>
-                        <button type="button" onclick="applySimpleFormat('color', 'black')" style="width: 24px; height: 24px; background: black; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Black Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'gray')" style="width: 24px; height: 24px; background: gray; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Gray Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'red')" style="width: 24px; height: 24px; background: red; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Red Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'blue')" style="width: 24px; height: 24px; background: blue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Blue Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'green')" style="width: 24px; height: 24px; background: green; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Green Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'purple')" style="width: 24px; height: 24px; background: purple; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Purple Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'orange')" style="width: 24px; height: 24px; background: orange; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Orange Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'darkblue')" style="width: 24px; height: 24px; background: darkblue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Dark Blue Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'darkgreen')" style="width: 24px; height: 24px; background: darkgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Dark Green Text"></button>
-                        <button type="button" onclick="applySimpleFormat('color', 'brown')" style="width: 24px; height: 24px; background: brown; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Brown Text"></button>
+                        <!-- Text Color Dropdown -->
+                        <div style="position: relative; display: inline-block;">
+                            <button type="button" id="textColorBtn" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px;" title="Text Colors">
+                                <svg width="16" height="16" viewBox="0 0 18 18">
+                                    <line x1="3" x2="15" y1="15" y2="15" stroke="#444" stroke-width="2"></line>
+                                    <polyline points="5.5,11 9,3 12.5,11" fill="none" stroke="#444" stroke-width="1.5"></polyline>
+                                    <line x1="11.63" x2="6.38" y1="9" y2="9" stroke="#444" stroke-width="1.5"></line>
+                                </svg>
+                                Text Color ▼
+                            </button>
+                            <div id="textColorDropdown" style="display: none; position: absolute; top: 32px; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 160px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;">
+                                    <button type="button" onclick="applySimpleFormat('color', 'black')" style="width: 24px; height: 24px; background: black; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Black"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'gray')" style="width: 24px; height: 24px; background: gray; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Gray"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'red')" style="width: 24px; height: 24px; background: red; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Red"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'blue')" style="width: 24px; height: 24px; background: blue; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Blue"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'green')" style="width: 24px; height: 24px; background: green; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Green"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'purple')" style="width: 24px; height: 24px; background: purple; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Purple"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'orange')" style="width: 24px; height: 24px; background: orange; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Orange"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'darkblue')" style="width: 24px; height: 24px; background: darkblue; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Dark Blue"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'darkgreen')" style="width: 24px; height: 24px; background: darkgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Dark Green"></button>
+                                    <button type="button" onclick="applySimpleFormat('color', 'brown')" style="width: 24px; height: 24px; background: brown; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Brown"></button>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <span style="font-size: 12px; font-weight: 500; color: #555; margin-left: 15px;">Highlights:</span>
-                        <button type="button" onclick="applySimpleFormat('background', 'yellow')" style="width: 24px; height: 24px; background: yellow; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Yellow Highlight"></button>
-                        <button type="button" onclick="applySimpleFormat('background', 'lightblue')" style="width: 24px; height: 24px; background: lightblue; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Light Blue Highlight"></button>
-                        <button type="button" onclick="applySimpleFormat('background', 'lightgreen')" style="width: 24px; height: 24px; background: lightgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Light Green Highlight"></button>
-                        <button type="button" onclick="applySimpleFormat('background', 'pink')" style="width: 24px; height: 24px; background: pink; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Pink Highlight"></button>
-                        <button type="button" onclick="applySimpleFormat('background', 'lavender')" style="width: 24px; height: 24px; background: lavender; border: 1px solid #999; border-radius: 3px; cursor: pointer; margin: 0 2px;" title="Lavender Highlight"></button>
-                        <button type="button" onclick="applySimpleFormat('background', false)" style="width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 3px; cursor: pointer; margin: 0 2px; position: relative;" title="Remove Highlight">
-                            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
-                        </button>
+                        <!-- Highlight Dropdown -->
+                        <div style="position: relative; display: inline-block; margin-left: 8px;">
+                            <button type="button" id="highlightBtn" style="background: #fff; border: 1px solid #999; border-radius: 4px; padding: 6px 12px; cursor: pointer; font-size: 12px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 6px;" title="Highlights">
+                                <svg width="16" height="16" viewBox="0 0 18 18">
+                                    <rect x="2" y="4" width="14" height="10" fill="#ffeb3b" stroke="#444" stroke-width="1"></rect>
+                                    <line x1="5" x2="13" y1="7" y2="7" stroke="#444" stroke-width="1"></line>
+                                    <line x1="5" x2="13" y1="9" y2="9" stroke="#444" stroke-width="1"></line>
+                                    <line x1="5" x2="13" y1="11" y2="11" stroke="#444" stroke-width="1"></line>
+                                </svg>
+                                Highlight ▼
+                            </button>
+                            <div id="highlightDropdown" style="display: none; position: absolute; top: 32px; left: 0; background: white; border: 1px solid #ccc; border-radius: 4px; padding: 8px; z-index: 1000; min-width: 140px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);">
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+                                    <button type="button" onclick="applySimpleFormat('background', 'yellow')" style="width: 24px; height: 24px; background: yellow; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Yellow"></button>
+                                    <button type="button" onclick="applySimpleFormat('background', 'lightblue')" style="width: 24px; height: 24px; background: lightblue; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Blue"></button>
+                                    <button type="button" onclick="applySimpleFormat('background', 'lightgreen')" style="width: 24px; height: 24px; background: lightgreen; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Light Green"></button>
+                                    <button type="button" onclick="applySimpleFormat('background', 'pink')" style="width: 24px; height: 24px; background: pink; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Pink"></button>
+                                    <button type="button" onclick="applySimpleFormat('background', 'lavender')" style="width: 24px; height: 24px; background: lavender; border: 1px solid #999; border-radius: 3px; cursor: pointer;" title="Lavender"></button>
+                                    <button type="button" onclick="applySimpleFormat('background', false)" style="width: 24px; height: 24px; background: white; border: 2px solid #666; border-radius: 3px; cursor: pointer; position: relative;" title="Remove Highlight">
+                                        <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666; font-size: 10px;">✕</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     `;
                     
                     // Insert after the toolbar
                     toolbarContainer.appendChild(customColorToolbar);
                     
-                    console.log('Custom color toolbar added successfully');
+                    // Add dropdown event handlers
+                    const textColorBtn = document.getElementById('textColorBtn');
+                    const textColorDropdown = document.getElementById('textColorDropdown');
+                    const highlightBtn = document.getElementById('highlightBtn');
+                    const highlightDropdown = document.getElementById('highlightDropdown');
+                    
+                    // Text color dropdown
+                    textColorBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        textColorDropdown.style.display = textColorDropdown.style.display === 'none' ? 'block' : 'none';
+                        highlightDropdown.style.display = 'none'; // Close other dropdown
+                    });
+                    
+                    // Highlight dropdown
+                    highlightBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        highlightDropdown.style.display = highlightDropdown.style.display === 'none' ? 'block' : 'none';
+                        textColorDropdown.style.display = 'none'; // Close other dropdown
+                    });
+                    
+                    // Close dropdowns when clicking color options
+                    textColorDropdown.addEventListener('click', () => {
+                        textColorDropdown.style.display = 'none';
+                    });
+                    
+                    highlightDropdown.addEventListener('click', () => {
+                        highlightDropdown.style.display = 'none';
+                    });
+                    
+                    // Close dropdowns when clicking outside
+                    document.addEventListener('click', () => {
+                        textColorDropdown.style.display = 'none';
+                        highlightDropdown.style.display = 'none';
+                    });
+                    
+                    console.log('Custom color toolbar with dropdowns added successfully');
                 }
             }, 1000);
             
