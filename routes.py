@@ -600,11 +600,17 @@ def save_journal():
         
         if today_entry:
             # Update existing entry with consolidated responses
+            print(f"DEBUG SAVE: Updating existing entry {today_entry.id}")
+            print(f"DEBUG SAVE: Current prompt_responses: {today_entry.prompt_responses}")
+            print(f"DEBUG SAVE: New prompt_responses to add: {prompt_responses}")
+            
             today_entry.prompt_responses.update(prompt_responses)
             
             # Update completed status if provided
             if 'completed' not in today_entry.prompt_responses:
                 today_entry.prompt_responses['completed'] = completed
+                
+            print(f"DEBUG SAVE: Updated prompt_responses: {today_entry.prompt_responses}")
             
             # Preserve emotion data if not already present and we have it from session
             if 'emotion' not in today_entry.prompt_responses:
@@ -635,6 +641,9 @@ def save_journal():
                 prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
             # Create new consolidated entry
+            print(f"DEBUG SAVE: Creating new entry for psalm {psalm_id}")
+            print(f"DEBUG SAVE: New entry prompt_responses: {prompt_responses}")
+            
             # Add completed flag to prompt_responses
             if 'completed' not in prompt_responses:
                 prompt_responses['completed'] = completed
@@ -644,7 +653,9 @@ def save_journal():
                 psalm_id=psalm_id,
                 prompt_responses=prompt_responses
             )
-            entry.save()
+            result = entry.save()
+            print(f"DEBUG SAVE: Save result: {result}")
+            print(f"DEBUG SAVE: Created entry with ID: {entry.id}")
         
         return jsonify({'success': True, 'message': 'Journal entry saved successfully!'})
         
