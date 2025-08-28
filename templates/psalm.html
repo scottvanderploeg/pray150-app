@@ -875,18 +875,26 @@
             fetch(`/get_markups/${psalmId}?translation=NIV`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success && data.markups) {
+                    console.log('Markup fetch response:', data);
+                    if (data.markups && data.markups.length > 0) {
                         applyMarkups(data.markups);
+                    } else {
+                        console.log('No markups found or empty array');
                     }
                 })
                 .catch(error => console.error('Error loading markups:', error));
         }
         
         function applyMarkups(markups) {
-            markups.forEach(markup => {
-                const markupData = markup['markup-data'] || markup.markup_data;
+            console.log('ApplyMarkups called with:', markups);
+            markups.forEach((markup, index) => {
+                console.log(`Processing markup ${index}:`, markup);
+                const markupData = markup['markup-data'] || markup.markup_data || markup;
+                console.log('Extracted markup data:', markupData);
                 if (markupData && markupData.text) {
                     applyMarkupToText(markupData);
+                } else {
+                    console.log('Invalid markup data - no text found:', markupData);
                 }
             });
         }
