@@ -835,7 +835,7 @@
                 markup_type: type,
                 text: text,
                 color: color,
-                note: note,
+                note_text: note,
                 translation: 'NIV'
             };
             
@@ -925,8 +925,10 @@
                         span.className = 'markup-note';
                         span.style.backgroundColor = 'lightcyan';
                         span.style.borderBottom = '2px dotted #007bff';
-                        span.title = markupData.note || 'Note';
-                        span.setAttribute('data-note', markupData.note || '');
+                        // Check for note text in different possible fields
+                        const noteText = markupData.note_text || markupData.note || 'Note';
+                        span.title = noteText;
+                        span.setAttribute('data-note', noteText);
                     }
                     span.textContent = textToFind;
                     
