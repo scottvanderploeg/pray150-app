@@ -131,6 +131,7 @@
                                                     {{ prompt_num }}. {{ prompt_titles[prompt_num] }}
                                                 </h6>
                                                 <div class="response-text bg-white p-3 rounded shadow-sm">
+                                                    <!-- Render HTML content safely -->
                                                     <p class="mb-0" style="line-height: 1.6; white-space: pre-wrap;">{{ entry.prompt_responses[prompt_num] | safe }}</p>
                                                 </div>
                                             </div>
