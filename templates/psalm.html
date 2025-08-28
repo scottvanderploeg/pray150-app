@@ -665,11 +665,22 @@
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
     // Bible text highlighting and note functionality
+    console.log('MARKUP SCRIPT LOADING...');
+    
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('MARKUP DOM LOADED');
         const psalmText = document.getElementById('psalmText');
         const highlightBtn = document.getElementById('highlightBtn');
         const noteBtn = document.getElementById('noteBtn');
         const toggleMarkupsBtn = document.getElementById('toggleMarkupsBtn');
+        
+        console.log('Elements found:', {
+            psalmText: !!psalmText,
+            highlightBtn: !!highlightBtn,
+            noteBtn: !!noteBtn,
+            toggleMarkupsBtn: !!toggleMarkupsBtn
+        });
+        
         let currentHighlightColor = 'yellow';
         let markupsVisible = true;
         let isHighlightMode = false;
