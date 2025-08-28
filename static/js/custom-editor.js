@@ -58,7 +58,7 @@ window.formatText = function(command, value = null) {
             selection.addRange(savedRange);
         }
         
-        // Special handling for font size and highlights - create spans for future typing
+        // Special handling for font size and font family - create spans for future typing
         if (command === 'fontSize') {
             if (savedRange && savedRange.collapsed) {
                 // No selection - create a span for future typing
@@ -76,6 +76,33 @@ window.formatText = function(command, value = null) {
                 const contents = savedRange.extractContents();
                 const span = document.createElement('span');
                 span.style.fontSize = value;
+                span.appendChild(contents);
+                savedRange.insertNode(span);
+                // Position cursor after the span
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            }
+        }
+        // Font family handling
+        else if (command === 'fontFamily') {
+            if (savedRange && savedRange.collapsed) {
+                // No selection - create a span for future typing
+                const span = document.createElement('span');
+                span.style.fontFamily = value;
+                span.appendChild(document.createTextNode('\u00A0')); // Non-breaking space
+                savedRange.insertNode(span);
+                // Position cursor at the end of the span for future typing
+                savedRange.setStartAfter(span);
+                savedRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+            } else if (savedRange) {
+                // Has selection - wrap it
+                const contents = savedRange.extractContents();
+                const span = document.createElement('span');
+                span.style.fontFamily = value;
                 span.appendChild(contents);
                 savedRange.insertNode(span);
                 // Position cursor after the span

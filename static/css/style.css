@@ -794,6 +794,55 @@ footer {
     to { transform: rotate(360deg); }
 }
 
+/* Font Dropdown Styling */
+.font-dropdown {
+    min-width: 200px;
+}
+
+.font-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.font-option:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.font-option:last-child {
+    border-bottom: none;
+}
+
+/* Ensure all font previews display correctly */
+.font-option[style*="Avenir"] {
+    font-family: 'Avenir', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.font-option[style*="Lora"] {
+    font-family: 'Lora', serif !important;
+}
+
+.font-option[style*="Times New Roman"] {
+    font-family: 'Times New Roman', Times, serif !important;
+}
+
+.font-option[style*="Helvetica"] {
+    font-family: 'Helvetica', Arial, sans-serif !important;
+}
+
+.font-option[style*="Permanent Marker"] {
+    font-family: 'Permanent Marker', cursive !important;
+    font-size: 16px;
+}
+
+.font-option[style*="Pacifico"] {
+    font-family: 'Pacifico', cursive !important;
+    font-size: 16px;
+}
+
 /* Print Styles */
 @media print {
     .navbar,

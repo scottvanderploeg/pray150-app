@@ -547,6 +547,20 @@
                             </div>
                             
                             <div class="format-dropdown">
+                                <button class="format-btn" onmousedown="event.preventDefault(); toggleDropdown('global-font')" title="Font Family">
+                                    Font ▼
+                                </button>
+                                <div id="global-font" class="format-dropdown-content font-dropdown">
+                                    <div class="font-option" style="font-family: 'Avenir', -apple-system, BlinkMacSystemFont, sans-serif;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Avenir, -apple-system, BlinkMacSystemFont, sans-serif')">Avenir</div>
+                                    <div class="font-option" style="font-family: 'Lora', serif;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Lora, serif')">Lora</div>
+                                    <div class="font-option" style="font-family: 'Times New Roman', Times, serif;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Times New Roman, Times, serif')">Times New Roman</div>
+                                    <div class="font-option" style="font-family: 'Helvetica', Arial, sans-serif;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Helvetica, Arial, sans-serif')">Helvetica</div>
+                                    <div class="font-option" style="font-family: 'Permanent Marker', cursive;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Permanent Marker, cursive')">Permanent Marker</div>
+                                    <div class="font-option" style="font-family: 'Pacifico', cursive;" onmousedown="event.preventDefault(); formatText('fontFamily', 'Pacifico, cursive')">Pacifico</div>
+                                </div>
+                            </div>
+                            
+                            <div class="format-dropdown">
                                 <button class="format-btn" onmousedown="event.preventDefault(); toggleDropdown('global-size')" title="Font Size">
                                     Size ▼
                                 </button>
