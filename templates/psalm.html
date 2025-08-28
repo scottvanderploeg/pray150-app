@@ -802,7 +802,7 @@
         
         function addNoteToSelectedText(selection, text) {
             const note = prompt('Add your note:');
-            if (note && note.trim()) {
+            if (note !== null && note.trim()) {
                 try {
                     const range = selection.getRangeAt(0);
                     const span = document.createElement('span');
@@ -825,6 +825,8 @@
                     console.error('Error adding note:', error);
                     window.Pray150?.showNotification('Error adding note. Please try again.', 'error');
                 }
+            } else if (note !== null) {
+                alert('Please enter some text for your note.');
             }
         }
         
@@ -922,7 +924,9 @@
                     const color = markupData.color || 'yellow';
                     replacementSpan = `<span class="markup-highlight" style="background-color: ${color};" data-original-color="${color}" title="Highlighted in ${color}" data-markup-text="${textToFind}">$1</span>`;
                 } else if (markupData.markup_type === 'note') {
-                    const noteText = markupData.note_text || markupData.note || 'Note';
+                    const noteText = (markupData.note_text && markupData.note_text.trim()) || 
+                                   (markupData.note && markupData.note.trim()) || 
+                                   'Personal note (click to edit)';
                     replacementSpan = `<span class="markup-note" style="background-color: lightcyan; border-bottom: 2px dotted #007bff;" title="${noteText}" data-note="${noteText}" data-markup-text="${textToFind}">$1</span>`;
                 }
                 
