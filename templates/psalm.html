@@ -893,56 +893,49 @@
         
         function applyMarkupToText(markupData) {
             const textToFind = markupData.text;
-            const walker = document.createTreeWalker(
-                psalmText,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
+            console.log('Applying markup to text:', textToFind, markupData);
             
-            const textNodes = [];
-            let node;
-            while (node = walker.nextNode()) {
-                if (node.textContent.includes(textToFind)) {
-                    textNodes.push(node);
-                }
+            // Get all text content and find matches more reliably
+            const psalmTextElement = document.getElementById('psalmText');
+            if (!psalmTextElement) {
+                console.log('Psalm text element not found');
+                return;
             }
             
-            textNodes.forEach(textNode => {
-                const text = textNode.textContent;
-                const index = text.indexOf(textToFind);
-                if (index !== -1) {
-                    const beforeText = text.substring(0, index);
-                    const afterText = text.substring(index + textToFind.length);
-                    
-                    const span = document.createElement('span');
-                    if (markupData.markup_type === 'highlight') {
-                        span.className = 'markup-highlight';
-                        span.style.backgroundColor = markupData.color || 'yellow';
-                        span.setAttribute('data-original-color', markupData.color || 'yellow');
-                        span.title = `Highlighted in ${markupData.color || 'yellow'}`;
-                    } else if (markupData.markup_type === 'note') {
-                        span.className = 'markup-note';
-                        span.style.backgroundColor = 'lightcyan';
-                        span.style.borderBottom = '2px dotted #007bff';
-                        // Check for note text in different possible fields
-                        const noteText = markupData.note_text || markupData.note || 'Note';
-                        span.title = noteText;
-                        span.setAttribute('data-note', noteText);
-                    }
-                    span.textContent = textToFind;
-                    
-                    const parent = textNode.parentNode;
-                    if (beforeText) {
-                        parent.insertBefore(document.createTextNode(beforeText), textNode);
-                    }
-                    parent.insertBefore(span, textNode);
-                    if (afterText) {
-                        parent.insertBefore(document.createTextNode(afterText), textNode);
-                    }
-                    parent.removeChild(textNode);
+            // Use innerHTML to work with the rendered content
+            let htmlContent = psalmTextElement.innerHTML;
+            
+            // Only apply if the text hasn't already been marked up
+            if (htmlContent.includes(`data-markup-text="${textToFind}"`)) {
+                console.log('Text already marked up:', textToFind);
+                return;
+            }
+            
+            // Find and replace the text with marked up version
+            const textPattern = textToFind.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape regex chars
+            const regex = new RegExp(`(${textPattern})`, 'gi');
+            
+            if (htmlContent.match(regex)) {
+                let replacementSpan;
+                if (markupData.markup_type === 'highlight') {
+                    const color = markupData.color || 'yellow';
+                    replacementSpan = `<span class="markup-highlight" style="background-color: ${color};" data-original-color="${color}" title="Highlighted in ${color}" data-markup-text="${textToFind}">$1</span>`;
+                } else if (markupData.markup_type === 'note') {
+                    const noteText = markupData.note_text || markupData.note || 'Note';
+                    replacementSpan = `<span class="markup-note" style="background-color: lightcyan; border-bottom: 2px dotted #007bff;" title="${noteText}" data-note="${noteText}" data-markup-text="${textToFind}">$1</span>`;
                 }
-            });
+                
+                // Replace first occurrence only
+                const updatedContent = htmlContent.replace(regex, replacementSpan);
+                if (updatedContent !== htmlContent) {
+                    psalmTextElement.innerHTML = updatedContent;
+                    console.log('Successfully applied markup for:', textToFind);
+                } else {
+                    console.log('No replacement made for:', textToFind);
+                }
+            } else {
+                console.log('Text not found in content:', textToFind);
+            }
         }
     });
 
