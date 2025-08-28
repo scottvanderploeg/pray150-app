@@ -801,33 +801,47 @@
         }
         
         function addNoteToSelectedText(selection, text) {
-            const note = prompt('Add your note:');
-            if (note !== null && note.trim()) {
-                try {
-                    const range = selection.getRangeAt(0);
-                    const span = document.createElement('span');
-                    span.className = 'markup-note';
-                    span.style.backgroundColor = 'lightcyan';
-                    span.style.borderBottom = '2px dotted #007bff';
-                    span.title = note.trim();
-                    span.setAttribute('data-note', note.trim());
-                    
+            // Show the selected text in the modal
+            document.getElementById('selectedTextPreview').textContent = text;
+            document.getElementById('noteTextInput').value = '';
+            
+            // Show the modal
+            const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+            noteModal.show();
+            
+            // Handle save button click
+            document.getElementById('saveNoteBtn').onclick = function() {
+                const noteText = document.getElementById('noteTextInput').value.trim();
+                if (noteText) {
                     try {
-                        range.surroundContents(span);
-                        saveMarkup(text, 'note', null, note.trim());
-                    } catch(e) {
-                        const contents = range.extractContents();
-                        span.appendChild(contents);
-                        range.insertNode(span);
-                        saveMarkup(text, 'note', null, note.trim());
+                        const range = selection.getRangeAt(0);
+                        const span = document.createElement('span');
+                        span.className = 'markup-note';
+                        span.style.backgroundColor = 'lightcyan';
+                        span.style.borderBottom = '2px dotted #007bff';
+                        span.title = noteText;
+                        span.setAttribute('data-note', noteText);
+                        
+                        try {
+                            range.surroundContents(span);
+                            saveMarkup(text, 'note', null, noteText);
+                            noteModal.hide();
+                        } catch(e) {
+                            const contents = range.extractContents();
+                            span.appendChild(contents);
+                            range.insertNode(span);
+                            saveMarkup(text, 'note', null, noteText);
+                            noteModal.hide();
+                        }
+                    } catch(error) {
+                        console.error('Error adding note:', error);
+                        window.Pray150?.showNotification('Error adding note. Please try again.', 'error');
+                        noteModal.hide();
                     }
-                } catch(error) {
-                    console.error('Error adding note:', error);
-                    window.Pray150?.showNotification('Error adding note. Please try again.', 'error');
+                } else {
+                    window.Pray150?.showNotification('Please enter some text for your note.', 'warning');
                 }
-            } else if (note !== null) {
-                alert('Please enter some text for your note.');
-            }
+            };
         }
         
         function saveMarkup(text, type, color, note) {
@@ -851,6 +865,8 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Reload markups to show the new one
+                    setTimeout(loadMarkups, 100);
                     window.Pray150?.showNotification(`${type === 'highlight' ? 'Highlight' : 'Note'} saved successfully!`, 'success');
                 } else {
                     console.error('Failed to save markup:', data.error);
@@ -882,6 +898,14 @@
         function loadMarkups() {
             const psalmId = psalmText?.getAttribute('data-psalm-id') || psalmText?.getAttribute('data-psalm-number');
             if (!psalmId) return;
+            
+            // Clear existing markups first
+            const existingMarkups = psalmText.querySelectorAll('.markup-highlight, .markup-note');
+            existingMarkups.forEach(markup => {
+                const parent = markup.parentNode;
+                parent.insertBefore(document.createTextNode(markup.textContent), markup);
+                parent.removeChild(markup);
+            });
             
             fetch(`/get_markups/${psalmId}?translation=NIV`)
                 .then(response => response.json())
