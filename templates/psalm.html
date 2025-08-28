@@ -815,36 +815,53 @@
             noteModal.show();
         }
         
-        // Handle save button click (works for both new and edited notes)
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('saveNoteBtn').onclick = function() {
-                const noteText = document.getElementById('noteTextInput').value.trim();
-                if (noteText) {
-                    if (currentEditingNote) {
-                        // Editing existing note
-                        updateExistingNote(currentEditingNote, noteText);
-                    } else {
-                        // Creating new note
-                        createNewNote(noteText);
-                    }
-                    
-                    const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
-                    noteModal.hide();
-                } else {
-                    window.Pray150?.showNotification('Please enter some text for your note.', 'warning');
-                }
-            };
+        // Set up modal event handlers once
+        function setupModalHandlers() {
+            const saveBtn = document.getElementById('saveNoteBtn');
+            const deleteBtn = document.getElementById('deleteNoteBtn');
             
-            // Handle delete button click
-            document.getElementById('deleteNoteBtn').onclick = function() {
-                if (currentEditingNote && confirm('Are you sure you want to delete this note?')) {
-                    deleteExistingNote(currentEditingNote);
+            if (saveBtn && !saveBtn.hasAttribute('data-handler-set')) {
+                saveBtn.setAttribute('data-handler-set', 'true');
+                saveBtn.onclick = function() {
+                    console.log('Save button clicked!');
+                    const noteText = document.getElementById('noteTextInput').value.trim();
+                    console.log('Note text:', noteText);
+                    console.log('Current editing note:', currentEditingNote);
                     
-                    const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
-                    noteModal.hide();
-                }
-            };
-        });
+                    if (noteText) {
+                        if (currentEditingNote) {
+                            console.log('Editing existing note...');
+                            // Editing existing note
+                            updateExistingNote(currentEditingNote, noteText);
+                        } else {
+                            console.log('Creating new note...');
+                            // Creating new note
+                            createNewNote(noteText);
+                        }
+                        
+                        const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                        noteModal.hide();
+                    } else {
+                        window.Pray150?.showNotification('Please enter some text for your note.', 'warning');
+                    }
+                };
+            }
+            
+            if (deleteBtn && !deleteBtn.hasAttribute('data-handler-set')) {
+                deleteBtn.setAttribute('data-handler-set', 'true');
+                deleteBtn.onclick = function() {
+                    if (currentEditingNote && confirm('Are you sure you want to delete this note?')) {
+                        deleteExistingNote(currentEditingNote);
+                        
+                        const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                        noteModal.hide();
+                    }
+                };
+            }
+        }
+        
+        // Call setup after DOM is ready
+        setTimeout(setupModalHandlers, 100);
         
         function createNewNote(noteText) {
             const selection = window.getSelection();
@@ -880,6 +897,7 @@
         }
         
         function updateExistingNote(editingNote, newNoteText) {
+            console.log('updateExistingNote called with:', editingNote, newNoteText);
             // Update the DOM element
             editingNote.element.setAttribute('data-note', newNoteText);
             editingNote.element.title = newNoteText;
@@ -934,6 +952,12 @@
         function updateMarkupInDatabase(originalText, newNoteText) {
             const psalmId = psalmText.getAttribute('data-psalm-id') || psalmText.getAttribute('data-psalm-number');
             
+            console.log('Updating markup in database:', {
+                psalm_id: psalmId,
+                original_text: originalText,
+                note_text: newNoteText
+            });
+            
             fetch('/update_markup', {
                 method: 'POST',
                 headers: {
@@ -948,6 +972,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('Update response:', data);
                 if (data.success) {
                     window.Pray150?.showNotification('Note updated successfully!', 'success');
                 } else {
