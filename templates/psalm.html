@@ -665,22 +665,11 @@
 <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 <script>
     // Bible text highlighting and note functionality
-    console.log('MARKUP SCRIPT LOADING...');
-    
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('MARKUP DOM LOADED');
         const psalmText = document.getElementById('psalmText');
         const highlightBtn = document.getElementById('highlightBtn');
         const noteBtn = document.getElementById('noteBtn');
         const toggleMarkupsBtn = document.getElementById('toggleMarkupsBtn');
-        
-        console.log('Elements found:', {
-            psalmText: !!psalmText,
-            highlightBtn: !!highlightBtn,
-            noteBtn: !!noteBtn,
-            toggleMarkupsBtn: !!toggleMarkupsBtn
-        });
-        
         let currentHighlightColor = 'yellow';
         let markupsVisible = true;
         let isHighlightMode = false;
@@ -877,16 +866,11 @@
         }
         
         // Load existing markups - wait for content to load
-        console.log('About to load markups...');
-        
-        // Wait for content to fully load before applying markups
         const waitForContent = () => {
             const psalmTextContent = psalmText?.textContent || '';
             if (psalmTextContent.trim().length > 0) {
-                console.log('Content loaded, now loading markups...');
                 loadMarkups();
             } else {
-                console.log('Content not loaded yet, waiting...');
                 setTimeout(waitForContent, 200);
             }
         };
@@ -894,59 +878,37 @@
         setTimeout(waitForContent, 100);
         
         function loadMarkups() {
-            console.log('LoadMarkups function called');
             const psalmId = psalmText?.getAttribute('data-psalm-id') || psalmText?.getAttribute('data-psalm-number');
-            console.log('Psalm ID found:', psalmId);
-            console.log('Psalm text element:', psalmText);
-            if (!psalmId) {
-                console.log('No psalm ID found, cannot load markups');
-                return;
-            }
+            if (!psalmId) return;
             
             fetch(`/get_markups/${psalmId}?translation=NIV`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Markup fetch response:', data);
                     if (data.markups && data.markups.length > 0) {
                         applyMarkups(data.markups);
-                    } else {
-                        console.log('No markups found or empty array');
                     }
                 })
                 .catch(error => console.error('Error loading markups:', error));
         }
         
         function applyMarkups(markups) {
-            console.log('ApplyMarkups called with:', markups);
             markups.forEach((markup, index) => {
-                console.log(`Processing markup ${index}:`, markup);
                 const markupData = markup['markup-data'] || markup.markup_data || markup;
-                console.log('Extracted markup data:', markupData);
                 if (markupData && markupData.text) {
                     applyMarkupToText(markupData);
-                } else {
-                    console.log('Invalid markup data - no text found:', markupData);
                 }
             });
         }
         
         function applyMarkupToText(markupData) {
             const textToFind = markupData.text;
-            console.log('Applying markup to text:', textToFind, markupData);
-            
-            // Get all text content and find matches more reliably
             const psalmTextElement = document.getElementById('psalmText');
-            if (!psalmTextElement) {
-                console.log('Psalm text element not found');
-                return;
-            }
+            if (!psalmTextElement) return;
             
-            // Use innerHTML to work with the rendered content
             let htmlContent = psalmTextElement.innerHTML;
             
             // Only apply if the text hasn't already been marked up
             if (htmlContent.includes(`data-markup-text="${textToFind}"`)) {
-                console.log('Text already marked up:', textToFind);
                 return;
             }
             
@@ -968,12 +930,7 @@
                 const updatedContent = htmlContent.replace(regex, replacementSpan);
                 if (updatedContent !== htmlContent) {
                     psalmTextElement.innerHTML = updatedContent;
-                    console.log('Successfully applied markup for:', textToFind);
-                } else {
-                    console.log('No replacement made for:', textToFind);
                 }
-            } else {
-                console.log('Text not found in content:', textToFind);
             }
         }
     });
