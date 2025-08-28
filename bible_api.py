@@ -53,7 +53,7 @@ class BibleAPI:
         return self.AVAILABLE_TRANSLATIONS.copy()
     
     @lru_cache(maxsize=1000)
-    def get_psalm(self, psalm_number: int, translation: str = 'ESV') -> Optional[Dict]:
+    def get_psalm(self, psalm_number: int, translation: str = 'NIV') -> Optional[Dict]:
         """
         Fetch a specific Psalm with verses
         
@@ -69,8 +69,8 @@ class BibleAPI:
             return None
             
         if translation not in self.AVAILABLE_TRANSLATIONS:
-            logger.warning(f"Unknown translation: {translation}. Using ESV as fallback.")
-            translation = 'ESV'
+            logger.warning(f"Unknown translation: {translation}. Using NIV as fallback.")
+            translation = 'NIV'
         
         # Check if this is a Hebrew or Greek translation
         if translation in ['WLC', 'LXX']:
@@ -357,7 +357,7 @@ class BibleAPI:
         
         return results
     
-    def get_daily_psalm(self, day_of_year: int, translation: str = 'ESV') -> Optional[Dict]:
+    def get_daily_psalm(self, day_of_year: int, translation: str = 'NIV') -> Optional[Dict]:
         """
         Get the daily Psalm based on day of year (cycles through all 150 Psalms)
         
@@ -465,7 +465,7 @@ def get_psalm(psalm_number: int, translation: str = 'ESV') -> Optional[Dict]:
     return bible_api.get_psalm(psalm_number, translation)
 
 
-def get_daily_psalm(day_of_year: int, translation: str = 'ESV') -> Optional[Dict]:
+def get_daily_psalm(day_of_year: int, translation: str = 'NIV') -> Optional[Dict]:
     """Get today's Psalm based on day of year"""
     return bible_api.get_daily_psalm(day_of_year, translation)
 
