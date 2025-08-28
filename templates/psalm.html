@@ -823,18 +823,13 @@
             if (saveBtn && !saveBtn.hasAttribute('data-handler-set')) {
                 saveBtn.setAttribute('data-handler-set', 'true');
                 saveBtn.onclick = function() {
-                    console.log('Save button clicked!');
                     const noteText = document.getElementById('noteTextInput').value.trim();
-                    console.log('Note text:', noteText);
-                    console.log('Current editing note:', currentEditingNote);
                     
                     if (noteText) {
                         if (currentEditingNote) {
-                            console.log('Editing existing note...');
                             // Editing existing note
                             updateExistingNote(currentEditingNote, noteText);
                         } else {
-                            console.log('Creating new note...');
                             // Creating new note
                             createNewNote(noteText);
                         }
@@ -897,7 +892,6 @@
         }
         
         function updateExistingNote(editingNote, newNoteText) {
-            console.log('updateExistingNote called with:', editingNote, newNoteText);
             // Update the DOM element
             editingNote.element.setAttribute('data-note', newNoteText);
             editingNote.element.title = newNoteText;
@@ -952,12 +946,6 @@
         function updateMarkupInDatabase(originalText, newNoteText) {
             const psalmId = psalmText.getAttribute('data-psalm-id') || psalmText.getAttribute('data-psalm-number');
             
-            console.log('Updating markup in database:', {
-                psalm_id: psalmId,
-                original_text: originalText,
-                note_text: newNoteText
-            });
-            
             fetch('/update_markup', {
                 method: 'POST',
                 headers: {
@@ -972,7 +960,6 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Update response:', data);
                 if (data.success) {
                     window.Pray150?.showNotification('Note updated successfully!', 'success');
                 } else {
