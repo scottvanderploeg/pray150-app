@@ -865,12 +865,32 @@
             }
         }
         
-        // Load existing markups
-        loadMarkups();
+        // Load existing markups - wait for content to load
+        console.log('About to load markups...');
+        
+        // Wait for content to fully load before applying markups
+        const waitForContent = () => {
+            const psalmTextContent = psalmText?.textContent || '';
+            if (psalmTextContent.trim().length > 0) {
+                console.log('Content loaded, now loading markups...');
+                loadMarkups();
+            } else {
+                console.log('Content not loaded yet, waiting...');
+                setTimeout(waitForContent, 200);
+            }
+        };
+        
+        setTimeout(waitForContent, 100);
         
         function loadMarkups() {
+            console.log('LoadMarkups function called');
             const psalmId = psalmText?.getAttribute('data-psalm-id') || psalmText?.getAttribute('data-psalm-number');
-            if (!psalmId) return;
+            console.log('Psalm ID found:', psalmId);
+            console.log('Psalm text element:', psalmText);
+            if (!psalmId) {
+                console.log('No psalm ID found, cannot load markups');
+                return;
+            }
             
             fetch(`/get_markups/${psalmId}?translation=NIV`)
                 .then(response => response.json())
