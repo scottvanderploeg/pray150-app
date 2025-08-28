@@ -513,13 +513,17 @@ def psalm(psalm_number):
     # Get user's journal entries for this psalm (always use psalm_number for consistency)
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_number)
     
-    # Find the most recent entry with content (prioritize today's entries)
+    # Find the most recent INCOMPLETE entry (don't load completed entries)
     today = datetime.now().strftime('%Y-%m-%d')
     today_entry = None
     if journal_entries:
-        # Find all entries from today and rank by content and recency
+        # Find all INCOMPLETE entries from today
         today_entries = []
-        for entry in journal_entries:            
+        for entry in journal_entries:
+            # Skip completed entries - they should not be loaded back into editor
+            if entry.prompt_responses and entry.prompt_responses.get('completed'):
+                continue
+                
             # Handle both string and datetime objects for created_at
             created_date = None
             if entry.created_at:
@@ -531,7 +535,7 @@ def psalm(psalm_number):
             if created_date and created_date == today:
                 today_entries.append(entry)
         
-        # Sort today's entries by: 1) has content, 2) most recent
+        # Sort today's INCOMPLETE entries by: 1) has content, 2) most recent
         if today_entries:
             def entry_priority(entry):
                 has_content = bool(entry.prompt_responses and any(str(v).strip() for v in entry.prompt_responses.values() if v and str(v) != 'None'))
@@ -540,9 +544,13 @@ def psalm(psalm_number):
             today_entries.sort(key=entry_priority, reverse=True)
             today_entry = today_entries[0]
         
-        # If no today entry found, get the most recent entry regardless of date
-        if not today_entry and journal_entries:
-            today_entry = journal_entries[0]  # Most recent entry
+        # If no incomplete today entry found, look for recent incomplete entries
+        if not today_entry:
+            for entry in journal_entries:
+                # Only load incomplete entries
+                if not (entry.prompt_responses and entry.prompt_responses.get('completed')):
+                    today_entry = entry
+                    break
     
     # Pass only today's entry for editor loading (empty dict if no today entry)
     entries_dict = {today_entry.id: today_entry} if today_entry else {}
