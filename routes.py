@@ -946,6 +946,83 @@ def get_markups(psalm_id):
         print(f"Error fetching markups via AJAX: {e}")
         return jsonify({'error': str(e)}), 500
 
+
+@main_bp.route('/update_markup', methods=['POST'])
+@login_required
+def update_markup():
+    """Update an existing note markup"""
+    try:
+        data = request.get_json()
+        psalm_id = data.get('psalm_id')
+        original_text = data.get('original_text')
+        note_text = data.get('note_text')
+        translation = data.get('translation', 'NIV')
+        
+        if not all([psalm_id, original_text, note_text]):
+            return jsonify({'success': False, 'error': 'Missing required fields'})
+        
+        # Find the existing markup in Supabase
+        supabase = get_supabase_client()
+        response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_id).execute()
+        
+        if response.data:
+            for markup in response.data:
+                markup_data = markup.get('markup-data', {})
+                if (markup_data.get('text') == original_text and 
+                    markup_data.get('markup_type') == 'note'):
+                    
+                    # Update the markup data
+                    updated_markup_data = markup_data.copy()
+                    updated_markup_data['note_text'] = note_text
+                    
+                    # Update in Supabase
+                    supabase.table('markups').update({
+                        'markup-data': updated_markup_data
+                    }).eq('id', markup['id']).execute()
+                    
+                    return jsonify({'success': True})
+        
+        return jsonify({'success': False, 'error': 'Note not found'})
+            
+    except Exception as e:
+        print(f"Error updating markup: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+
+@main_bp.route('/delete_markup', methods=['POST'])
+@login_required 
+def delete_markup():
+    """Delete a markup (highlight or note)"""
+    try:
+        data = request.get_json()
+        psalm_id = data.get('psalm_id')
+        text = data.get('text')
+        markup_type = data.get('markup_type')
+        translation = data.get('translation', 'NIV')
+        
+        if not all([psalm_id, text, markup_type]):
+            return jsonify({'success': False, 'error': 'Missing required fields'})
+        
+        # Find and delete the markup in Supabase
+        supabase = get_supabase_client()
+        response = supabase.table('markups').select('*').eq('user_id', current_user.id).eq('psalm_id', psalm_id).execute()
+        
+        if response.data:
+            for markup in response.data:
+                markup_data = markup.get('markup-data', {})
+                if (markup_data.get('text') == text and 
+                    markup_data.get('markup_type') == markup_type):
+                    
+                    # Delete from Supabase
+                    supabase.table('markups').delete().eq('id', markup['id']).execute()
+                    return jsonify({'success': True})
+        
+        return jsonify({'success': False, 'error': 'Markup not found'})
+            
+    except Exception as e:
+        print(f"Error deleting markup: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 @main_bp.route('/update_preferences', methods=['POST'])
 @login_required
 def update_preferences():

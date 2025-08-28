@@ -801,47 +801,101 @@
         }
         
         function addNoteToSelectedText(selection, text) {
+            // Reset editing mode
+            currentEditingNote = null;
+            
             // Show the selected text in the modal
             document.getElementById('selectedTextPreview').textContent = text;
             document.getElementById('noteTextInput').value = '';
+            document.getElementById('noteModalLabel').textContent = 'Add Your Note';
+            document.getElementById('deleteNoteBtn').style.display = 'none';
             
             // Show the modal
             const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
             noteModal.show();
-            
-            // Handle save button click
+        }
+        
+        // Handle save button click (works for both new and edited notes)
+        document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('saveNoteBtn').onclick = function() {
                 const noteText = document.getElementById('noteTextInput').value.trim();
                 if (noteText) {
-                    try {
-                        const range = selection.getRangeAt(0);
-                        const span = document.createElement('span');
-                        span.className = 'markup-note';
-                        span.style.backgroundColor = 'lightcyan';
-                        span.style.borderBottom = '2px dotted #007bff';
-                        span.title = noteText;
-                        span.setAttribute('data-note', noteText);
-                        
-                        try {
-                            range.surroundContents(span);
-                            saveMarkup(text, 'note', null, noteText);
-                            noteModal.hide();
-                        } catch(e) {
-                            const contents = range.extractContents();
-                            span.appendChild(contents);
-                            range.insertNode(span);
-                            saveMarkup(text, 'note', null, noteText);
-                            noteModal.hide();
-                        }
-                    } catch(error) {
-                        console.error('Error adding note:', error);
-                        window.Pray150?.showNotification('Error adding note. Please try again.', 'error');
-                        noteModal.hide();
+                    if (currentEditingNote) {
+                        // Editing existing note
+                        updateExistingNote(currentEditingNote, noteText);
+                    } else {
+                        // Creating new note
+                        createNewNote(noteText);
                     }
+                    
+                    const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                    noteModal.hide();
                 } else {
                     window.Pray150?.showNotification('Please enter some text for your note.', 'warning');
                 }
             };
+            
+            // Handle delete button click
+            document.getElementById('deleteNoteBtn').onclick = function() {
+                if (currentEditingNote && confirm('Are you sure you want to delete this note?')) {
+                    deleteExistingNote(currentEditingNote);
+                    
+                    const noteModal = bootstrap.Modal.getInstance(document.getElementById('noteModal'));
+                    noteModal.hide();
+                }
+            };
+        });
+        
+        function createNewNote(noteText) {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const text = selection.toString().trim();
+                try {
+                    const range = selection.getRangeAt(0);
+                    const span = document.createElement('span');
+                    span.className = 'markup-note clickable-note';
+                    span.style.backgroundColor = 'lightcyan';
+                    span.style.borderBottom = '2px dotted #007bff';
+                    span.style.cursor = 'pointer';
+                    span.title = noteText;
+                    span.setAttribute('data-note', noteText);
+                    span.setAttribute('data-markup-text', text);
+                    
+                    try {
+                        range.surroundContents(span);
+                        saveMarkup(text, 'note', null, noteText);
+                        addNoteClickListeners();
+                    } catch(e) {
+                        const contents = range.extractContents();
+                        span.appendChild(contents);
+                        range.insertNode(span);
+                        saveMarkup(text, 'note', null, noteText);
+                        addNoteClickListeners();
+                    }
+                } catch(error) {
+                    console.error('Error adding note:', error);
+                    window.Pray150?.showNotification('Error adding note. Please try again.', 'error');
+                }
+            }
+        }
+        
+        function updateExistingNote(editingNote, newNoteText) {
+            // Update the DOM element
+            editingNote.element.setAttribute('data-note', newNoteText);
+            editingNote.element.title = newNoteText;
+            
+            // Update in database
+            updateMarkupInDatabase(editingNote.originalText, newNoteText);
+        }
+        
+        function deleteExistingNote(editingNote) {
+            // Remove markup from DOM
+            const parent = editingNote.element.parentNode;
+            parent.insertBefore(document.createTextNode(editingNote.element.textContent), editingNote.element);
+            parent.removeChild(editingNote.element);
+            
+            // Delete from database
+            deleteMarkupFromDatabase(editingNote.originalText, 'note');
         }
         
         function saveMarkup(text, type, color, note) {
@@ -874,6 +928,66 @@
             })
             .catch(error => {
                 console.error('Error saving markup:', error);
+            });
+        }
+        
+        function updateMarkupInDatabase(originalText, newNoteText) {
+            const psalmId = psalmText.getAttribute('data-psalm-id') || psalmText.getAttribute('data-psalm-number');
+            
+            fetch('/update_markup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    psalm_id: psalmId,
+                    original_text: originalText,
+                    note_text: newNoteText,
+                    translation: 'NIV'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.Pray150?.showNotification('Note updated successfully!', 'success');
+                } else {
+                    console.error('Failed to update note:', data.error);
+                    window.Pray150?.showNotification('Failed to update note. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error updating note:', error);
+                window.Pray150?.showNotification('Error updating note. Please try again.', 'error');
+            });
+        }
+        
+        function deleteMarkupFromDatabase(originalText, markupType) {
+            const psalmId = psalmText.getAttribute('data-psalm-id') || psalmText.getAttribute('data-psalm-number');
+            
+            fetch('/delete_markup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    psalm_id: psalmId,
+                    text: originalText,
+                    markup_type: markupType,
+                    translation: 'NIV'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.Pray150?.showNotification('Note deleted successfully!', 'success');
+                } else {
+                    console.error('Failed to delete note:', data.error);
+                    window.Pray150?.showNotification('Failed to delete note. Please try again.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting note:', error);
+                window.Pray150?.showNotification('Error deleting note. Please try again.', 'error');
             });
         }
         
@@ -951,15 +1065,52 @@
                     const noteText = (markupData.note_text && markupData.note_text.trim()) || 
                                    (markupData.note && markupData.note.trim()) || 
                                    'Personal note (click to edit)';
-                    replacementSpan = `<span class="markup-note" style="background-color: lightcyan; border-bottom: 2px dotted #007bff;" title="${noteText}" data-note="${noteText}" data-markup-text="${textToFind}">$1</span>`;
+                    replacementSpan = `<span class="markup-note clickable-note" style="background-color: lightcyan; border-bottom: 2px dotted #007bff; cursor: pointer;" title="${noteText}" data-note="${noteText}" data-markup-text="${textToFind}">$1</span>`;
                 }
                 
                 // Replace first occurrence only
                 const updatedContent = htmlContent.replace(regex, replacementSpan);
                 if (updatedContent !== htmlContent) {
                     psalmTextElement.innerHTML = updatedContent;
+                    
+                    // Add click listeners for notes after they're added
+                    if (markupData.markup_type === 'note') {
+                        addNoteClickListeners();
+                    }
                 }
             }
+        }
+        
+        let currentEditingNote = null; // Track which note is being edited
+        
+        function addNoteClickListeners() {
+            const noteElements = psalmText.querySelectorAll('.clickable-note');
+            noteElements.forEach(noteEl => {
+                noteEl.onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Get note data
+                    const noteText = noteEl.getAttribute('data-note') || '';
+                    const selectedText = noteEl.getAttribute('data-markup-text') || noteEl.textContent;
+                    
+                    // Set editing mode
+                    currentEditingNote = {
+                        element: noteEl,
+                        originalText: selectedText,
+                        originalNote: noteText
+                    };
+                    
+                    // Show modal with existing note
+                    document.getElementById('selectedTextPreview').textContent = selectedText;
+                    document.getElementById('noteTextInput').value = noteText;
+                    document.getElementById('noteModalLabel').textContent = 'Edit Your Note';
+                    document.getElementById('deleteNoteBtn').style.display = 'block';
+                    
+                    const noteModal = new bootstrap.Modal(document.getElementById('noteModal'));
+                    noteModal.show();
+                };
+            });
         }
     });
 
