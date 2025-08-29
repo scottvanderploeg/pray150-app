@@ -498,6 +498,15 @@ body {
 .navbar-brand {
     font-size: 1.5rem;
     color: var(--secondary-color) !important;
+    max-width: 200px;
+    max-height: 40px;
+    overflow: hidden;
+}
+
+.navbar-brand img {
+    max-height: 35px;
+    width: auto;
+    max-width: 180px;
 }
 
 /* Hero Section */

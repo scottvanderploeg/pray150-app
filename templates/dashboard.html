@@ -313,7 +313,7 @@
                                 </a>
                             </div>
                             <p class="text-muted mb-0">
-                                {% set content = entry.prompt_responses.values()|list|join(' ') %}
+                                {% set content = entry.prompt_responses.values()|list|join(' ')|striptags %}
                                 {{ content[:120] }}{% if content|length > 120 %}...{% endif %}
                             </p>
                         </div>

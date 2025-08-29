@@ -59,13 +59,15 @@
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <span class="badge bg-{{
                                         'primary' if prayer.category == 'family' else
+                                        'info' if prayer.category == 'friend' else
                                         'success' if prayer.category == 'healing' else
-                                        'info' if prayer.category == 'salvation' else
-                                        'warning' if prayer.category == 'guidance' else
+                                        'warning' if prayer.category == 'salvation' else
+                                        'danger' if prayer.category == 'guidance' else
                                         'secondary' if prayer.category == 'personal-growth' else
-                                        'danger' if prayer.category == 'gratitude' else
+                                        'success' if prayer.category == 'gratitude' else
                                         'dark' if prayer.category == 'community' else
-                                        'light' if prayer.category == 'protection' else
+                                        'warning' if prayer.category == 'protection' else
+                                        'light' if prayer.category == 'other' else
                                         'primary'
                                     }}">
                                         {{ prayer.category.replace('-', ' ').title() }}
@@ -117,13 +119,15 @@
                                     <td>
                                         <span class="badge bg-{{
                                             'primary' if prayer.category == 'family' else
+                                            'info' if prayer.category == 'friend' else
                                             'success' if prayer.category == 'healing' else
-                                            'info' if prayer.category == 'salvation' else
-                                            'warning' if prayer.category == 'guidance' else
+                                            'warning' if prayer.category == 'salvation' else
+                                            'danger' if prayer.category == 'guidance' else
                                             'secondary' if prayer.category == 'personal-growth' else
-                                            'danger' if prayer.category == 'gratitude' else
+                                            'success' if prayer.category == 'gratitude' else
                                             'dark' if prayer.category == 'community' else
-                                            'light' if prayer.category == 'protection' else
+                                            'warning' if prayer.category == 'protection' else
+                                            'light' if prayer.category == 'other' else
                                             'primary'
                                         }}">
                                             {{ prayer.category.replace('-', ' ').title() }}
@@ -275,6 +279,7 @@
                         <select class="form-select" id="category" name="category" required>
                             <option value="">Choose a category...</option>
                             <option value="family">Family</option>
+                            <option value="friend">Friend</option>
                             <option value="personal-growth">Personal Growth</option>
                             <option value="healing">Healing</option>
                             <option value="salvation">Salvation</option>
@@ -282,6 +287,7 @@
                             <option value="gratitude">Gratitude</option>
                             <option value="community">Community</option>
                             <option value="protection">Protection</option>
+                            <option value="other">Other</option>
                         </select>
                     </div>
                     <div class="mb-3">
