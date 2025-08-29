@@ -514,49 +514,35 @@ def psalm(psalm_number):
     journal_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_number)
     
     # Find the most recent INCOMPLETE entry (don't load completed entries)
-    today = datetime.now().strftime('%Y-%m-%d')
-    today_entry = None
+    # Changed: No longer filter by date - drafts persist until completed
+    draft_entry = None
     if journal_entries:
-        # Find all INCOMPLETE entries from today
-        today_entries = []
+        # Find all INCOMPLETE entries (any date)
+        incomplete_entries = []
         for entry in journal_entries:
-            # Skip completed entries - they should not be loaded back into editor
+            # Skip completed entries - they should not be loaded back into editor  
             if entry.prompt_responses and entry.prompt_responses.get('completed'):
                 continue
-                
-            # Handle both string and datetime objects for created_at
-            created_date = None
-            if entry.created_at:
-                if isinstance(entry.created_at, str):
-                    created_date = entry.created_at[:10]  # Get YYYY-MM-DD part
-                else:
-                    created_date = entry.created_at.strftime('%Y-%m-%d')
-            
-            if created_date and created_date == today:
-                today_entries.append(entry)
+            # Add all incomplete entries regardless of date
+            incomplete_entries.append(entry)
         
-        # Sort today's INCOMPLETE entries by: 1) has content, 2) most recent
-        if today_entries:
+        # Sort INCOMPLETE entries by: 1) has content, 2) most recent
+        if incomplete_entries:
             def entry_priority(entry):
                 has_content = bool(entry.prompt_responses and any(str(v).strip() for v in entry.prompt_responses.values() if v and str(v) != 'None'))
                 return (has_content, entry.created_at or '')
             
-            today_entries.sort(key=entry_priority, reverse=True)
-            today_entry = today_entries[0]
+            incomplete_entries.sort(key=entry_priority, reverse=True)
+            draft_entry = incomplete_entries[0]
         
-        # If no incomplete today entry found, look for recent incomplete entries
-        if not today_entry:
-            for entry in journal_entries:
-                # Only load incomplete entries
-                if not (entry.prompt_responses and entry.prompt_responses.get('completed')):
-                    today_entry = entry
-                    break
+        # Note: draft_entry already contains the most recent incomplete entry
+        # No need for additional searching since we already found all incomplete entries
     
-    # Pass only today's entry for editor loading (empty dict if no today entry)
-    entries_dict = {today_entry.id: today_entry} if today_entry else {}
+    # Pass only the draft entry for editor loading (empty dict if no draft entry)
+    entries_dict = {draft_entry.id: draft_entry} if draft_entry else {}
     print(f"DEBUG: entries_dict: {entries_dict}")
-    if today_entry:
-        print(f"DEBUG: today_entry prompt_responses: {today_entry.prompt_responses}")
+    if draft_entry:
+        print(f"DEBUG: draft_entry prompt_responses: {draft_entry.prompt_responses}")
     
     # Get user's markups for this psalm from database
     markups = []
@@ -615,63 +601,54 @@ def save_journal():
         except (ValueError, TypeError):
             return jsonify({'success': False, 'error': 'Invalid psalm ID format'}), 400
         
-        # For consolidated saving, we need to check for today's entry
-        today = datetime.now().strftime('%Y-%m-%d')
+        # For consolidated saving, we need to check for incomplete entries (any date)
         existing_entries = JournalEntry.get_by_user_and_psalm(current_user.id, psalm_id)
         
-        # Filter to today's entries only
-        today_entry = None
+        # Find the most recent INCOMPLETE entry instead of filtering by date
+        draft_entry_to_update = None
         for entry in existing_entries:
-            # Handle both string and datetime objects for created_at
-            created_date = None
-            if entry.created_at:
-                if isinstance(entry.created_at, str):
-                    created_date = entry.created_at[:10]  # Get YYYY-MM-DD part
-                else:
-                    # If it's a datetime object, format it
-                    created_date = entry.created_at.strftime('%Y-%m-%d')
-            
-            if created_date and created_date == today:
-                today_entry = entry
-                break
+            # Only look for incomplete entries
+            if not (entry.prompt_responses and entry.prompt_responses.get('completed')):
+                draft_entry_to_update = entry
+                break  # Take the first (most recent) incomplete entry
         
-        if today_entry:
-            # Update existing entry with consolidated responses
-            print(f"DEBUG SAVE: Updating existing entry {today_entry.id}")
-            print(f"DEBUG SAVE: Current prompt_responses: {today_entry.prompt_responses}")
+        if draft_entry_to_update:
+            # Update existing draft entry with consolidated responses
+            print(f"DEBUG SAVE: Updating existing entry {draft_entry_to_update.id}")
+            print(f"DEBUG SAVE: Current prompt_responses: {draft_entry_to_update.prompt_responses}")
             print(f"DEBUG SAVE: New prompt_responses to add: {prompt_responses}")
             
             # IMPORTANT: Make sure prompt_responses is a dictionary
-            if not isinstance(today_entry.prompt_responses, dict):
-                today_entry.prompt_responses = {}
+            if not isinstance(draft_entry_to_update.prompt_responses, dict):
+                draft_entry_to_update.prompt_responses = {}
             
-            today_entry.prompt_responses.update(prompt_responses)
+            draft_entry_to_update.prompt_responses.update(prompt_responses)
             
             # Update completed status if provided
-            if 'completed' not in today_entry.prompt_responses:
-                today_entry.prompt_responses['completed'] = completed
+            if 'completed' not in draft_entry_to_update.prompt_responses:
+                draft_entry_to_update.prompt_responses['completed'] = completed
             else:
                 # Update existing completed status
-                today_entry.prompt_responses['completed'] = completed
+                draft_entry_to_update.prompt_responses['completed'] = completed
                 
-            print(f"DEBUG SAVE: Updated prompt_responses: {today_entry.prompt_responses}")
+            print(f"DEBUG SAVE: Updated prompt_responses: {draft_entry_to_update.prompt_responses}")
             
             # Preserve emotion data if not already present and we have it from session
-            if 'emotion' not in today_entry.prompt_responses:
+            if 'emotion' not in draft_entry_to_update.prompt_responses:
                 from flask import session
                 pre_reflection_data = session.get('pre_reflection', None)
                 if pre_reflection_data and pre_reflection_data.get('emotion'):
-                    today_entry.prompt_responses['emotion'] = pre_reflection_data['emotion']
+                    draft_entry_to_update.prompt_responses['emotion'] = pre_reflection_data['emotion']
                     
             # Preserve explore flag if not already present and we have it from session
-            if 'is_explore' not in today_entry.prompt_responses:
+            if 'is_explore' not in draft_entry_to_update.prompt_responses:
                 from flask import session
                 pre_reflection_data = session.get('pre_reflection', None)
                 if pre_reflection_data and pre_reflection_data.get('is_explore'):
-                    today_entry.prompt_responses['is_explore'] = pre_reflection_data['is_explore']
+                    draft_entry_to_update.prompt_responses['is_explore'] = pre_reflection_data['is_explore']
             
-            print(f"DEBUG SAVE: About to save with prompt_responses: {today_entry.prompt_responses}")
-            result = today_entry.save()
+            print(f"DEBUG SAVE: About to save with prompt_responses: {draft_entry_to_update.prompt_responses}")
+            result = draft_entry_to_update.save()
             print(f"DEBUG SAVE: Save completed, result: {result}")
         else:
             # Check if we have pre-reflection emotion data stored separately

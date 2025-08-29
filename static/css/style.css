@@ -838,9 +838,10 @@ footer {
     font-size: 16px;
 }
 
-.font-option[style*="Pacifico"] {
-    font-family: 'Pacifico', cursive !important;
+.font-option[style*="Impact"] {
+    font-family: 'Impact', Arial Black, sans-serif !important;
     font-size: 16px;
+    font-weight: bold;
 }
 
 /* Print Styles */
