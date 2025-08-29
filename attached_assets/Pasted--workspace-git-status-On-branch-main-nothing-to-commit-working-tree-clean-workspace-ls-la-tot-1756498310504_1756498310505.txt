@@ -1,0 +1,72 @@
+~/workspace$ git status
+On branch main
+nothing to commit, working tree clean
+~/workspace$ ls -la
+total 508
+drwxr-xr-x 1 runner runner   1882 Aug 29 13:34 .
+drwxrwxrwx 1 runner runner     46 Aug 29 20:09 ..
+-rw-r--r-- 1 runner runner  11452 Aug 22 17:56 admin.py
+-rw-r--r-- 1 runner runner   7678 Aug 18 20:15 api_bible_integration.py
+-rw-r--r-- 1 runner runner   5862 Aug  4 16:09 API_DOCUMENTATION.md
+-rw-r--r-- 1 runner runner   2506 Aug 20 21:30 app.py
+drwxr-xr-x 1 runner runner   5082 Aug 27 13:53 attached_assets
+-rw-r--r-- 1 runner runner  12317 Aug  4 16:09 auth_api.py
+-rw-r--r-- 1 runner runner   5872 Aug  4 20:02 auth.py
+-rw-r--r-- 1 runner runner  19843 Aug 28 20:05 bible_api.py
+-rw-r--r-- 1 runner runner   5345 Aug  5 22:25 bolls_bible_api.py
+drwxr-xr-x 1 runner runner     16 Aug  4 13:23 .cache
+-rw-r--r-- 1 runner runner    815 Aug  8 00:02 check_tables.py
+-rw-r--r-- 1 runner runner   1740 Aug  5 18:37 check_table_structure.py
+-rw-r--r-- 1 runner runner   6719 Aug  4 16:26 complete_journal_test.py
+-rw-r--r-- 1 runner runner   1876 Aug  4 16:11 create_journal_table.py
+-rw-r--r-- 1 runner runner   2352 Aug 18 20:53 create_markups_table.py
+-rw-r--r-- 1 runner runner   2907 Aug  5 18:37 create_prayer_table_fresh.py
+-rw-r--r-- 1 runner runner   2341 Aug  8 00:02 create_psalm_progress_table.py
+-rw-r--r-- 1 runner runner   2053 Aug  7 20:12 create_user_profile.py
+-rw-r--r-- 1 runner runner   1883 Aug  4 20:01 create_user_profiles_table.py
+-rw-r--r-- 1 runner runner   8259 Aug  4 18:58 database.py
+-rw-r--r-- 1 runner runner   5364 Aug 18 17:39 debug_psalm_progress.py
+-rw-r--r-- 1 runner runner   2839 Aug  4 16:35 disable_rls_temp.py
+-rw-r--r-- 1 runner runner   1531 Aug 14 19:13 fix_journal_entry.py
+-rw-r--r-- 1 runner runner   1503 Aug 18 20:16 fix_niv_issue.py
+-rw-r--r-- 1 runner runner   2865 Aug  5 18:35 fix_prayer_table.py
+drwxr-xr-x 1 runner runner    170 Aug 29 20:11 .git
+drwxr-xr-x 1 runner runner     20 Aug  4 13:29 instance
+drwxr-xr-x 1 runner runner     10 Aug  4 13:13 .local
+-rw-r--r-- 1 runner runner     99 Aug 20 21:30 main.py
+-rw-r--r-- 1 runner runner  38828 Aug 28 20:06 models.py
+-rw-r--r-- 1 runner runner   2661 Aug  6 12:42 precise_split.py
+-rw-r--r-- 1 runner runner   5514 Aug  4 14:18 psalm_data.py
+-rw-r--r-- 1 runner runner   6315 Aug 26 22:18 psalm_music_config.py
+-rw-r--r-- 1 runner runner   9466 Aug  5 22:15 psalm_superscripts.py
+drwxr-xr-x 1 runner runner    718 Aug 29 13:34 __pycache__
+-rw-r--r-- 1 runner runner    462 Aug  5 21:44 pyproject.toml
+drwxr-xr-x 1 runner runner    100 Aug  4 13:23 .pythonlibs
+-rw-r--r-- 1 runner runner    743 Aug 20 21:23 .replit
+-rw-r--r-- 1 runner runner   9051 Aug 20 21:17 replit.md
+-rw-r--r-- 1 runner runner  40899 Aug 29 13:34 routes.py
+-rwxr-xr-x 1 runner runner   1939 Aug 20 21:16 set_admin.py
+-rw-r--r-- 1 runner runner   3805 Aug 18 20:16 setup_api_bible.md
+-rw-r--r-- 1 runner runner   3628 Aug  4 16:25 setup_journal_table.py
+-rw-r--r-- 1 runner runner   1545 Aug  5 18:09 setup_prayer_table.py
+-rw-r--r-- 1 runner runner   1944 Aug  6 12:36 split_svg.py
+drwxr-xr-x 1 runner runner     22 Aug  5 19:14 static
+-rw-r--r-- 1 runner runner   1244 Aug  4 20:02 SUPABASE_MANUAL_SETUP.md
+-rw-r--r-- 1 runner runner   1953 Aug  5 18:34 SUPABASE_SETUP.md
+drwxr-xr-x 1 runner runner    582 Aug 29 13:26 templates
+-rw-r--r-- 1 runner runner   3388 Aug  4 15:39 test_auth.py
+-rw-r--r-- 1 runner runner   2261 Aug  5 21:48 test_bible_api.py
+-rw-r--r-- 1 runner runner   2898 Aug  4 16:10 test_journal_api.py
+-rw-r--r-- 1 runner runner   1056 Aug 14 19:14 test_journal_simple.py
+-rw-r--r-- 1 runner runner   5743 Aug  4 16:25 test_journal_with_rls.py
+-rw-r--r-- 1 runner runner   2138 Aug 18 19:20 test_niv2011_api.py
+-rw-r--r-- 1 runner runner    782 Aug  5 18:34 test_prayer_add.py
+-rw-r--r-- 1 runner runner   1585 Aug  5 18:37 test_prayer_simple.py
+drwxr-xr-x 1 runner runner     20 Aug 20 21:23 .upm
+-rw-r--r-- 1 runner runner 145057 Aug  5 21:44 uv.lock
+-rw-r--r-- 1 runner runner   2495 Aug  4 14:12 verify_supabase.py
+~/workspace$ cat .gitignore
+cat: .gitignore: No such file or directory
+~/workspace$ git remote -v
+origin  https://github.com/scottvanderploeg/Pray150-New (fetch)
+origin  https://github.com/scottvanderploeg/Pray150-New (push)
