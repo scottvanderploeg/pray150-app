@@ -539,11 +539,18 @@ class JournalEntry:
             entries = []
             for entry_data in result.data:
                 print(f"DEBUG: Processing entry data: {entry_data}")
+                
+                # Only include completed entries for dashboard/history display
+                prompt_responses = entry_data.get('prompt_responses', {})
+                if not prompt_responses.get('completed'):
+                    print(f"DEBUG: Skipping incomplete entry {entry_data['id']}")
+                    continue
+                
                 entry = JournalEntry(
                     id=entry_data['id'],
                     user_id=entry_data['user_id'],
                     psalm_id=entry_data['psalm_id'],
-                    prompt_responses=entry_data.get('prompt_responses', {}),
+                    prompt_responses=prompt_responses,
                     created_at=entry_data.get('created_at')
                 )
                 
