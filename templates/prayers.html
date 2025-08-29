@@ -17,9 +17,9 @@
         </div>
     </div>
 
-    <!-- Prayer Categories Tabs -->
+    <!-- View Controls -->
     <div class="row mb-4">
-        <div class="col-12">
+        <div class="col-md-8">
             <ul class="nav nav-pills" id="prayerTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="active-tab" data-bs-toggle="pill" data-bs-target="#active" type="button" role="tab">
@@ -33,6 +33,16 @@
                 </li>
             </ul>
         </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group" role="group" aria-label="View toggle">
+                <button type="button" class="btn btn-outline-secondary active" id="cardViewBtn" onclick="toggleView('card')">
+                    <i class="fas fa-th-large me-1"></i>Cards
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="listViewBtn" onclick="toggleView('list')">
+                    <i class="fas fa-list me-1"></i>List
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Tab Content -->
@@ -40,7 +50,8 @@
         <!-- Active Prayers -->
         <div class="tab-pane fade show active" id="active" role="tabpanel">
             {% if active_prayers %}
-                <div class="row">
+                <!-- Card View -->
+                <div class="row card-view" id="activeCardView">
                     {% for prayer in active_prayers %}
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card border-0 shadow-sm h-100 prayer-card">
@@ -79,6 +90,68 @@
                     </div>
                     {% endfor %}
                 </div>
+                
+                <!-- List View -->
+                <div class="list-view d-none" id="activeListView">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%"></th>
+                                    <th width="30%">Prayer Title</th>
+                                    <th width="20%">Category</th>
+                                    <th width="35%">Description</th>
+                                    <th width="10%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prayer in active_prayers %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-hands text-primary"></i>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ prayer.get_title() }}</div>
+                                        <small class="text-muted">{{ prayer.created_at.strftime('%m/%d/%y') }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{
+                                            'primary' if prayer.category == 'family' else
+                                            'success' if prayer.category == 'healing' else
+                                            'info' if prayer.category == 'salvation' else
+                                            'warning' if prayer.category == 'guidance' else
+                                            'secondary' if prayer.category == 'personal-growth' else
+                                            'danger' if prayer.category == 'gratitude' else
+                                            'dark' if prayer.category == 'community' else
+                                            'light' if prayer.category == 'protection' else
+                                            'primary'
+                                        }}">
+                                            {{ prayer.category.replace('-', ' ').title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if prayer.get_description() %}
+                                            <span class="text-muted">{{ prayer.get_description()[:100] }}{% if prayer.get_description()|length > 100 %}...{% endif %}</span>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">No description</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#answerPrayerModal"
+                                                data-prayer-id="{{ prayer.id }}"
+                                                data-prayer-title="{{ prayer.get_title() }}"
+                                                title="Mark as answered">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             {% else %}
                 <div class="text-center py-5">
                     <i class="fas fa-hands fa-4x text-muted mb-3"></i>
@@ -94,7 +167,8 @@
         <!-- Answered Prayers -->
         <div class="tab-pane fade" id="answered" role="tabpanel">
             {% if answered_prayers %}
-                <div class="row">
+                <!-- Card View -->
+                <div class="row card-view" id="answeredCardView">
                     {% for prayer in answered_prayers %}
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card border-0 shadow-sm h-100 answered-prayer-card">
@@ -103,7 +177,7 @@
                                     <span class="badge bg-success">
                                         <i class="fas fa-check me-1"></i>Answered
                                     </span>
-                                    <small class="text-muted">{{ prayer.answered_date.strftime('%m/%d/%y') }}</small>
+                                    <small class="text-muted">{{ prayer.answered_date.strftime('%m/%d/%y') if prayer.answered_date else 'N/A' }}</small>
                                 </div>
                                 <h5 class="card-title fw-bold">{{ prayer.get_title() }}</h5>
                                 {% if prayer.get_description() %}
@@ -119,6 +193,55 @@
                         </div>
                     </div>
                     {% endfor %}
+                </div>
+                
+                <!-- List View -->
+                <div class="list-view d-none" id="answeredListView">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="5%"></th>
+                                    <th width="25%">Prayer Title</th>
+                                    <th width="15%">Category</th>
+                                    <th width="25%">Description</th>
+                                    <th width="30%">God's Answer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prayer in answered_prayers %}
+                                <tr class="table-success">
+                                    <td>
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ prayer.get_title() }}</div>
+                                        <small class="text-muted">Answered: {{ prayer.answered_date.strftime('%m/%d/%y') if prayer.answered_date else 'N/A' }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ prayer.category.replace('-', ' ').title() if prayer.category else 'General' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if prayer.get_description() %}
+                                            <span class="text-muted">{{ prayer.get_description()[:80] }}{% if prayer.get_description()|length > 80 %}...{% endif %}</span>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">No description</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if prayer.answered_note %}
+                                            <span class="text-success fw-bold">{{ prayer.answered_note[:100] }}{% if prayer.answered_note|length > 100 %}...{% endif %}</span>
+                                        {% else %}
+                                            <span class="text-muted fst-italic">No details recorded</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             {% else %}
                 <div class="text-center py-5">
@@ -226,6 +349,45 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('answerPrayerId').value = prayerId;
         document.getElementById('answerPrayerTitle').textContent = prayerTitle;
     });
+});
+
+// View toggle functionality
+function toggleView(viewType) {
+    const cardViewBtn = document.getElementById('cardViewBtn');
+    const listViewBtn = document.getElementById('listViewBtn');
+    
+    // Get all view elements
+    const cardViews = document.querySelectorAll('.card-view');
+    const listViews = document.querySelectorAll('.list-view');
+    
+    if (viewType === 'card') {
+        // Show card views, hide list views
+        cardViews.forEach(view => view.classList.remove('d-none'));
+        listViews.forEach(view => view.classList.add('d-none'));
+        
+        // Update button states
+        cardViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+    } else {
+        // Show list views, hide card views
+        listViews.forEach(view => view.classList.remove('d-none'));
+        cardViews.forEach(view => view.classList.add('d-none'));
+        
+        // Update button states
+        listViewBtn.classList.add('active');
+        cardViewBtn.classList.remove('active');
+    }
+    
+    // Store user preference in localStorage
+    localStorage.setItem('prayerViewPreference', viewType);
+}
+
+// Load user's preferred view on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedView = localStorage.getItem('prayerViewPreference');
+    if (savedView && savedView === 'list') {
+        toggleView('list');
+    }
 });
 </script>
 {% endblock %}

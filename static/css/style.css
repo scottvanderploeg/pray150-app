@@ -844,6 +844,64 @@ footer {
     font-weight: bold;
 }
 
+/* Prayer List View Styles */
+.prayer-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.prayer-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.answered-prayer-card {
+    border-left: 4px solid #28a745 !important;
+}
+
+.list-view table {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.list-view tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.list-view tbody tr:hover {
+    background-color: #f8f9fa !important;
+}
+
+.list-view .badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.list-view .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+/* View Toggle Buttons */
+.btn-group .btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Mobile Responsiveness for List View */
+@media (max-width: 768px) {
+    .list-view table {
+        font-size: 0.85rem;
+    }
+    
+    .list-view th:nth-child(4),
+    .list-view td:nth-child(4) {
+        display: none; /* Hide description column on mobile */
+    }
+}
+
 /* Print Styles */
 @media print {
     .navbar,
@@ -856,5 +914,10 @@ footer {
     .psalm-text {
         border: 1px solid var(--accent-color);
         page-break-inside: avoid;
+    }
+    
+    .list-view table {
+        box-shadow: none;
+        border: 1px solid #ccc;
     }
 }
