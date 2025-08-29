@@ -669,7 +669,7 @@ def save_journal():
             
             # Add completed flag to prompt_responses
             if 'completed' not in prompt_responses:
-                prompt_responses['completed'] = completed
+                prompt_responses['completed'] = str(completed)
             
             entry = JournalEntry(
                 user_id=current_user.id,
