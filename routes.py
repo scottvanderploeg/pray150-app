@@ -92,6 +92,9 @@ def dashboard():
     # Get dates with journal entries for calendar highlighting
     journal_dates = JournalEntry.get_entry_dates_by_user(current_user.id)
     
+    # Get progress stats for progress bar
+    progress_stats = current_user.get_progress_stats()
+    
     return render_template('dashboard.html',
                          current_psalm=current_psalm,
                          current_psalm_api=current_psalm_api,
@@ -104,7 +107,8 @@ def dashboard():
                          total_journal_entries=total_journal_entries,
                          emotion_trends_week=emotion_trends_week,
                          emotion_trends_month=emotion_trends_month,
-                         journal_dates=journal_dates)
+                         journal_dates=journal_dates,
+                         progress_stats=progress_stats)
 
 @main_bp.route('/reflect/<int:psalm_number>')
 @login_required

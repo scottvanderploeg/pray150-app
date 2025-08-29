@@ -196,6 +196,56 @@ class User(UserMixin):
             print(f"Error getting current psalm: {e}")
             return 1  # Default to Psalm 1
 
+    def get_progress_stats(self):
+        """Get user's progress through the 150 Psalms"""
+        try:
+            supabase = get_supabase_client()
+            
+            # Get all journal entries for this user to see which psalms have been completed
+            journal_result = supabase.table('journal_entries').select('psalm_id, prompt_responses')\
+                .eq('user_id', str(self.id)).execute()
+            
+            if not journal_result.data:
+                return {
+                    'completed_count': 0,
+                    'total_count': 150,
+                    'percentage': 0,
+                    'completed_psalms': []
+                }
+            
+            # Get all psalms that have been completed (exclude explore sessions)
+            completed_psalms = set()
+            for entry in journal_result.data:
+                psalm_id = entry.get('psalm_id')
+                prompt_responses = entry.get('prompt_responses', {})
+                
+                # Check if this was an explore session - if so, don't count it for progression
+                is_explore = prompt_responses.get('is_explore', False)
+                # Only count psalms that are explicitly marked as completed
+                is_completed = prompt_responses.get('completed', False)
+                
+                if psalm_id and not is_explore and is_completed:
+                    completed_psalms.add(int(psalm_id))
+            
+            completed_count = len(completed_psalms)
+            percentage = round((completed_count / 150) * 100, 1)
+            
+            return {
+                'completed_count': completed_count,
+                'total_count': 150,
+                'percentage': percentage,
+                'completed_psalms': sorted(list(completed_psalms))
+            }
+            
+        except Exception as e:
+            print(f"Error getting progress stats: {e}")
+            return {
+                'completed_count': 0,
+                'total_count': 150,
+                'percentage': 0,
+                'completed_psalms': []
+            }
+
     def update_listening_progress(self, psalm_number, position_seconds):
         """Update user's listening progress"""
         try:

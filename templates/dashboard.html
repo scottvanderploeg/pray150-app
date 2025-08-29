@@ -83,6 +83,80 @@
     </div>
     {% endif %}
 
+    <!-- Progress Tracking -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header" style="background-color: #B5B9C4; border: none;">
+                    <h3 class="mb-0" style="color: #333E4D;">
+                        <i class="fas fa-chart-line me-2"></i>Your Prayer Journey Progress
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold" style="color: #333E4D;">Psalms Completed</span>
+                                    <span class="badge" style="background-color: #E93C02; color: white; font-size: 0.9rem;">
+                                        {{ progress_stats.completed_count }} of {{ progress_stats.total_count }}
+                                    </span>
+                                </div>
+                                <div class="progress" style="height: 20px; background-color: #f5f5f5;">
+                                    <div class="progress-bar" 
+                                         role="progressbar" 
+                                         style="width: {{ progress_stats.percentage }}%; background-color: #E93C02;"
+                                         aria-valuenow="{{ progress_stats.percentage }}" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-muted">{{ progress_stats.percentage }}% Complete</small>
+                                    <small class="text-muted">{{ 150 - progress_stats.completed_count }} remaining</small>
+                                </div>
+                            </div>
+                            {% if progress_stats.completed_count > 0 %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-trophy me-2" style="color: #D1AEA9;"></i>
+                                <small class="text-muted">
+                                    {% if progress_stats.percentage < 10 %}
+                                        Great start! You're building a strong prayer foundation.
+                                    {% elif progress_stats.percentage < 25 %}
+                                        Wonderful progress! You're developing a consistent prayer habit.
+                                    {% elif progress_stats.percentage < 50 %}
+                                        Amazing dedication! You're halfway through your journey.
+                                    {% elif progress_stats.percentage < 75 %}
+                                        Incredible commitment! You're in the final stretch.
+                                    {% elif progress_stats.percentage < 100 %}
+                                        Outstanding! You're so close to completing all 150 Psalms.
+                                    {% else %}
+                                        🎉 Congratulations! You've completed your journey through all 150 Psalms!
+                                    {% endif %}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="progress-circle d-inline-flex align-items-center justify-content-center" 
+                                 style="width: 100px; height: 100px; border-radius: 50%; 
+                                        background: conic-gradient(#E93C02 {{ progress_stats.percentage * 3.6 }}deg, #f5f5f5 0deg);
+                                        position: relative;">
+                                <div class="inner-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 80px; height: 80px; border-radius: 50%; background-color: white;">
+                                    <div class="text-center">
+                                        <div class="fw-bold" style="color: #333E4D; font-size: 1.2rem;">{{ progress_stats.percentage }}%</div>
+                                        <small class="text-muted" style="font-size: 0.7rem;">Complete</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Psalm Navigator -->
     <div class="row mb-4">
         <div class="col-12">
